@@ -1,8 +1,8 @@
+"use client";
+
 import { Textarea } from "@/components/ui/textarea";
 import { CodeProps } from "./props";
 import { BaseStyles } from "../Base";
-import { labFiles } from "../Lab/config";
-
 
 import {
   Tabs,
@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/tabs";
 import { TabsStyles } from "./styles"
 import { useState } from "react";
+import { appConfig } from "@/lib";
 
-function Code({ id, labData }: CodeProps) {
+function Code({ id, taskData }: CodeProps) {
   if(!id) return;
   return (
       <div className="w-full h-full p-0 gap-0">
@@ -21,7 +22,7 @@ function Code({ id, labData }: CodeProps) {
             id={id}
             placeholder={id} 
             className="w-full h-full p-0 gap-0"
-            defaultValue={labData.codeByKey[id]}
+            defaultValue={taskData.contentByFileId[id]}
           />
       </div>
   );
@@ -36,13 +37,13 @@ function CodeTab({ title, file }: { title: string; file: string }) {
   );
 }
 
-function CodeTabs({labData} : CodeProps) {
-  const [tab, setTab] = useState("markup");
-  const codeFiles = labFiles.filter(f => f.edit === true);
+function CodeTabs({taskData} : CodeProps) {
+  const [tab, setTab] = useState("component");
+  const codeFiles = appConfig.taskWorkbenchFiles.filter(f => f.edit === true);
 
   return (
     <Tabs
-      defaultValue={codeFiles[0].key}
+      defaultValue={codeFiles[0].id}
       value={tab}
       onValueChange={setTab}
       className={`${BaseStyles.frameRow} h-96`}
@@ -50,11 +51,11 @@ function CodeTabs({labData} : CodeProps) {
       <div className="flex-6 p-0 gap-0">
         {codeFiles.map((file) => (
           <TabsContent
-            key={file.key}
-            value={file.key}
+            key={file.id}
+            value={file.id}
             className={TabsStyles.content}
           >
-            <Code id={file.key} labData={labData}/>
+            <Code id={file.id} taskData={taskData}/>
           </TabsContent>
         ))}
       </div>
@@ -74,8 +75,8 @@ function CodeTabs({labData} : CodeProps) {
   );
 }
 
-function CodeList({labData} : CodeProps) {
-  return (<CodeTabs labData={labData}/>);
+function CodeList({taskData} : CodeProps) {
+  return (<CodeTabs taskData={taskData} />);
 }
 
 export {

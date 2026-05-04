@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { Lab } from "../Lab";
+import { Lab } from "../LabWorkbench";
 import { PageProps } from "./props";
-import { LabFileKey } from "../Lab/props";
-import { labFiles } from "../Lab/config";
+import { LabFileKey } from "../LabWorkbench/props";
+import { labFiles } from "../LabWorkbench/config";
 
 async function Page({task="innovatika-listitem-tariff-option"}: PageProps) {
     const labCodeFiles = labFiles.filter(f => f.edit === true);
@@ -33,9 +33,9 @@ async function Page({task="innovatika-listitem-tariff-option"}: PageProps) {
     }
 
     return (
-        <div className="bg-white shadow-sm rounded-s flex flex-col gap-2 m-2 p-2">
+        <main className="bg-white shadow-sm rounded-s flex flex-col gap-2 m-2 p-2">
             <Lab initialLabData={initialLabData} />
-        </div>
+        </main>
     );
 }
 

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { labFiles } from "../../Lab/config";
+import { labFiles } from "../../LabWorkbench/config";
 
 type PromptFileProps = {
     title?: string;

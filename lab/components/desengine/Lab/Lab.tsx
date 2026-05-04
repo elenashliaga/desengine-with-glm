@@ -1,48 +1,32 @@
 "use client";
 
-import { type LabSelectProps, type LabProps } from "./props";
-
-import { InOut } from "../InOut";
-import { Prompt } from "../Propmt";
 import { useState } from "react";
-import { CodeList } from "../Code";
-import { BaseStyles } from "../Base";
+import { LabSelect } from "../LabSelect";
+import { LabWorkbench } from "../LabWorkbench";
+import { LabProps } from "./props"
 
-function LabSelect({ task, onTaskChange } : LabSelectProps) {
-    return(
-        <div className={BaseStyles.frameRow}>
-            <p>Выберите задачу:</p>
-            <select
-                value={task}
-                onChange={(t) => onTaskChange(t.target.value)}
-            >
-                <option value="innovatika-listitem-tariff-option">innovatika-listitem-tariff-option</option>
-                <option value="innovatika-segment-tariff-summary">innovatika-segment-tariff-summary</option>
-                <option value="innovatika-status-indicator-value">innovatika-status-indicator-value</option>
-            </select>
-        </div>
-    );
-}
+function Lab({initTaskItem, initTaskData, taskListItems} : LabProps) {
+    const [taskItem, setTaskItem] = useState(initTaskItem);
+    const [taskData, setTaskData] = useState(initTaskData);
 
-function Lab({initialLabData}: LabProps) {
-    const [labData, setLabData] = useState(initialLabData);
+    function handleTaskChange(taskId: string) {
+        // потом: сохранить текущий draft, загрузить новую задачу
+    }
+
     return (
-        <div className={BaseStyles.frameCol}>
-            <LabSelect 
-                task={labData.task}
-                onTaskChange={
-                    (task: string) =>
-                    setLabData((prev) => ({ ...prev, task }))
-                }
+        <main>
+            <LabSelect
+                taskListItems={taskListItems}
+                currentTaskId={taskItem.id}
+                onTaskChange={handleTaskChange}
             />
-            <InOut task={labData.task}/>
-            <CodeList labData={labData}/>
-            <Prompt />
-        </div>
+
+            <LabWorkbench
+                taskItem={taskItem}
+                taskData={taskData}
+                onTaskDataChange={null}
+            />
+        </main>
     );
 }
-
-
-export {
-    Lab,
-}
+export { Lab }

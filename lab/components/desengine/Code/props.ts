@@ -1,10 +1,8 @@
+import { TaskData } from "@/lib";
 import { BaseProps } from "../Base";
-import { LabData } from "../Lab";
-import { LabFileKey } from "../Lab/props";
 
 type CodeProps = BaseProps & {
-    id?: LabFileKey;
-    labData: LabData;
+    taskData: TaskData;
 }
 
 export { type CodeProps }

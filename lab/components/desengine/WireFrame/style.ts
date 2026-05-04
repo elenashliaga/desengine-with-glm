@@ -1,1 +1,0 @@
-export const shrink = "w-fit gap-4 p-6";

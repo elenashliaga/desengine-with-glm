@@ -1,9 +1,5 @@
-import { Page } from "@/components/desengine/Page"
-
-export default function Default() {
+export default function Page() {
     return (
-        <Page   title = "Тестовый стенд"
-                labData = {{ task: "innovatika-listitem-tariff-option" }}
-        />
+        <main />
     );
 }
