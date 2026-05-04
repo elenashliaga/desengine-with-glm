@@ -12,17 +12,27 @@ import {
 } from "@/components/ui/tabs";
 import { TabsStyles } from "./styles"
 import { useState } from "react";
-import { appConfig } from "@/lib";
+import { taskWorkbenchFiles } from "@/lib/client";
 
-function Code({ id, taskData }: CodeProps) {
-  if(!id) return;
+function Code({ id, taskData, onTaskDataChange }: CodeProps) {
+  if (!id) return null;
   return (
       <div className="w-full h-full p-0 gap-0">
           <Textarea
             id={id}
             placeholder={id} 
             className="w-full h-full p-0 gap-0"
-            defaultValue={taskData.contentByFileId[id]}
+            value={taskData.contentByFileId[id] ?? ""}
+            onChange={(event) => {
+              if (!onTaskDataChange) return;
+              onTaskDataChange({
+                ...taskData,
+                contentByFileId: {
+                  ...taskData.contentByFileId,
+                  [id]: event.target.value,
+                },
+              });
+            }}
           />
       </div>
   );
@@ -37,13 +47,13 @@ function CodeTab({ title, file }: { title: string; file: string }) {
   );
 }
 
-function CodeTabs({taskData} : CodeProps) {
+function CodeTabs({ taskData, onTaskDataChange } : CodeProps) {
   const [tab, setTab] = useState("component");
-  const codeFiles = appConfig.taskWorkbenchFiles.filter(f => f.edit === true);
+  const codeFiles = taskWorkbenchFiles.filter((f) => f.edit === true);
 
   return (
     <Tabs
-      defaultValue={codeFiles[0].id}
+      defaultValue={codeFiles[0]?.id}
       value={tab}
       onValueChange={setTab}
       className={`${BaseStyles.frameRow} h-96`}
@@ -55,7 +65,7 @@ function CodeTabs({taskData} : CodeProps) {
             value={file.id}
             className={TabsStyles.content}
           >
-            <Code id={file.id} taskData={taskData}/>
+            <Code id={file.id} taskData={taskData} onTaskDataChange={onTaskDataChange} />
           </TabsContent>
         ))}
       </div>
@@ -63,8 +73,8 @@ function CodeTabs({taskData} : CodeProps) {
       <TabsList className={`${TabsStyles.list} flex flex-2 flex-col`}>
         {codeFiles.map((file) => (
           <TabsTrigger
-            key={file.key}
-            value={file.key}
+            key={file.id}
+            value={file.id}
             className={TabsStyles.trigger}
           >
             <CodeTab title={file.title} file={file.fileName} />
@@ -75,8 +85,8 @@ function CodeTabs({taskData} : CodeProps) {
   );
 }
 
-function CodeList({taskData} : CodeProps) {
-  return (<CodeTabs taskData={taskData} />);
+function CodeList({ taskData, onTaskDataChange } : CodeProps) {
+  return (<CodeTabs taskData={taskData} onTaskDataChange={onTaskDataChange} />);
 }
 
 export {

@@ -8,9 +8,24 @@ import { LabProps } from "./props"
 function Lab({initTaskItem, initTaskData, taskListItems} : LabProps) {
     const [taskItem, setTaskItem] = useState(initTaskItem);
     const [taskData, setTaskData] = useState(initTaskData);
+    const [status, setStatus] = useState<string>("");
+    const [started, setStarted] = useState<boolean>(Boolean(initTaskItem.started));
 
-    function handleTaskChange(taskId: string) {
-        // потом: сохранить текущий draft, загрузить новую задачу
+    async function handleTaskChange(taskId: string) {
+        setStatus("Загрузка задания…");
+
+        const res = await fetch(`/api/tasks/${taskId}`, { method: "GET" });
+        const data = await res.json();
+
+        if (!data?.ok) {
+            setStatus(data?.error || "Ошибка загрузки задания");
+            return;
+        }
+
+        setTaskItem(data.taskItem);
+        setTaskData(data.taskData);
+        setStarted(Boolean(data.started));
+        setStatus("");
     }
 
     return (
@@ -21,10 +36,16 @@ function Lab({initTaskItem, initTaskData, taskListItems} : LabProps) {
                 onTaskChange={handleTaskChange}
             />
 
+            {status && (
+                <p className="text-sm text-muted-foreground">{status}</p>
+            )}
+
             <LabWorkbench
                 taskItem={taskItem}
                 taskData={taskData}
-                onTaskDataChange={null}
+                onTaskDataChange={setTaskData}
+                started={started}
+                onStartedChange={setStarted}
             />
         </main>
     );

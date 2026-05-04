@@ -1,4 +1,4 @@
-import { TaskData, TaskListItem } from "@/lib";
+import type { TaskData, TaskListItem } from "@/lib/types";
 import { BaseProps } from "../Base";
 type LabProps = BaseProps & {
     initTaskItem: TaskListItem;

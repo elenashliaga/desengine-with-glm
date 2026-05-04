@@ -1,24 +1,46 @@
-import { ReactNode } from "react";
-import { labFiles } from "../../LabWorkbench/config";
+import { taskWorkbenchFiles } from "@/lib/client";
 
 type PromptFileProps = {
-    title?: string;
-    children?: ReactNode;
+    fileId: string;
+    title: string;
+    checked: boolean;
+    disabled?: boolean;
+    onToggle: (fileId: string, checked: boolean) => void;
 }
 
-function PromptFile({title="Файл"}: PromptFileProps) {
+function PromptFile({ fileId, title, checked, disabled, onToggle }: PromptFileProps) {
     return (
-        <div><input type="checkbox" value={title}/> <code>{title}</code></div>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={checked}
+            disabled={disabled}
+            onChange={(event) => onToggle(fileId, event.target.checked)}
+          />
+          <code>{title}</code>
+        </label>
     );
 }
 
-function PromptFileList({ }: PromptFileProps) {
+type PromptFileListProps = {
+    selectedFileIds: string[];
+    disabled?: boolean;
+    onToggle: (fileId: string, checked: boolean) => void;
+}
+
+function PromptFileList({ selectedFileIds, disabled, onToggle }: PromptFileListProps) {
+    const promptFiles = taskWorkbenchFiles.filter((file) => file.edit === true)
+
     return (
-        <div>
-            {labFiles.map(file => (
+        <div className="space-y-1">
+            {promptFiles.map((file) => (
                 <PromptFile
-                    key={file.key}
+                    key={file.id}
+                    fileId={file.id}
                     title={file.fileName}
+                    checked={selectedFileIds.includes(file.id)}
+                    disabled={disabled}
+                    onToggle={onToggle}
                 />
             ))}
         </div>
@@ -28,5 +50,5 @@ function PromptFileList({ }: PromptFileProps) {
 export {
     PromptFile,
     PromptFileList,
-    type PromptFileProps
-}
+    type PromptFileProps,
+} 

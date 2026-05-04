@@ -7,7 +7,10 @@ function LabSelect({currentTaskId, taskListItems=[], onTaskChange } : LabSelectP
     return(
         <div className={BaseStyles.frameRow}>
             <p>Выберите задачу:</p>
-            <select defaultValue={currentTaskId}>
+            <select
+              defaultValue={currentTaskId}
+              onChange={(event) => onTaskChange(event.target.value)}
+            >
                 {taskListItems.map((t) => (
                     <option key={t.id} value={t.id}>{t.id}</option>    
                 ))}

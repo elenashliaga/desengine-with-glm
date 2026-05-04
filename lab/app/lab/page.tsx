@@ -1,4 +1,4 @@
-import { getTaskListItems, readTaskData } from "@/lib"
+import { getTaskListItems, readTaskData } from "@/lib/server"
 import { Lab } from "@/components/desengine/Lab"
 
 export default async function Page() {
@@ -10,7 +10,9 @@ export default async function Page() {
     const tasksListItemsLevel = tasksListItemsAll;
 
     const initTaskItem = tasksListItemsLevel[0];   // * потом, возможно, будет сложней логика
-    const initTaskData = await readTaskData(initTaskItem)
+    const initTaskData = initTaskItem?.started
+      ? await readTaskData(initTaskItem)
+      : { taskId: initTaskItem.id, contentByFileId: {}, promptHistory: [] }
 
     return (
         <Lab

@@ -1,18 +1,24 @@
 import { z } from "zod"
 
-// тип выводится из схемы
 const TaskConfigSchema = z.object({
-    id: z.string(),
-    image: {
-        width: z.number(),
-        height: z.number(),
-    },
+  image: z.object({
+    width: z.number(),
+    height: z.number(),
+  }),
 })
 
 type TaskConfig = z.infer<typeof TaskConfigSchema>
 
 type TaskListItem = {
   id: string
+  image: TaskConfig["image"]
+  started: boolean
+}
+
+export type PromptHistoryEntry = {
+  text: string
+  createdAt: string
+  selectedFileIds: string[]
 }
 
 // все файлы
@@ -20,6 +26,7 @@ type TaskListItem = {
 export type TaskData = {
   taskId: string
   contentByFileId: Record<string, string>
+  promptHistory: PromptHistoryEntry[]
 }
 
 export {

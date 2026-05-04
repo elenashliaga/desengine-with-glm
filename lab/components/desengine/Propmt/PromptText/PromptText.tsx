@@ -1,15 +1,22 @@
-import { ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
 type PromptTextProps = {
-    title?: string;
-    children?: ReactNode;
+    value: string;
+    disabled?: boolean;
+    onChange: (value: string) => void;
 }
 
-function PromptText({}: PromptTextProps) {
+function PromptText({ value, disabled, onChange }: PromptTextProps) {
     return (
         <div className="flex-6 h-full">
-            <Textarea id="prompt" placeholder="Полный текст промпта"  className="w-full h-full"/>
+            <Textarea
+              id="prompt"
+              value={value}
+              disabled={disabled}
+              onChange={(event) => onChange(event.target.value)}
+              placeholder="Опиши, что нужно уточнить или исправить"
+              className="w-full h-full"
+            />
         </div>
     );
 }

@@ -1,0 +1,57 @@
+import { writeFile } from "node:fs/promises"
+import path from "node:path"
+
+import { appConfig } from "@/lib/server"
+
+type Params = { taskId: string }
+
+type Body = {
+  updates: Array<{
+    fileId: string
+    content: string
+  }>
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<Params> },
+) {
+  const { taskId } = await params
+  const body = (await request.json().catch(() => null)) as Body | null
+
+  const updates = Array.isArray(body?.updates) ? body.updates : []
+
+  const editable = new Map(
+    appConfig.taskWorkbenchFiles
+      .filter((f) => f.edit === true)
+      .map((f) => [f.id, f.fileName] as const),
+  )
+
+  const errors: Array<{ fileId: string; error: string }> = []
+  let written = 0
+
+  for (const update of updates) {
+    if (!update || typeof update.fileId !== "string") continue
+
+    const fileName = editable.get(update.fileId)
+    if (!fileName) continue
+    if (fileName.toLowerCase().endsWith(".png")) continue
+
+    const filePath = path.join(appConfig.tasksRoot, taskId, fileName)
+    try {
+      await writeFile(filePath, update.content ?? "", "utf-8")
+      written += 1
+    } catch (error) {
+      errors.push({
+        fileId: update.fileId,
+        error: error instanceof Error ? error.message : "Ошибка записи файла",
+      })
+    }
+  }
+
+  if (errors.length) {
+    return Response.json({ ok: false, written, errors }, { status: 500 })
+  }
+
+  return Response.json({ ok: true, written })
+}

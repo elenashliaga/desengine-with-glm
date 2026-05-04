@@ -1,10 +1,12 @@
 import { BaseProps } from "../Base";
-import { TaskData, TaskListItem } from "@/lib";
+import type { TaskData, TaskListItem } from "@/lib/types";
 
 type LabWorkbenchProps = BaseProps & {
     taskItem: TaskListItem;
     taskData: TaskData;
-    onTaskDataChange: null;
+    onTaskDataChange: (next: TaskData) => void;
+    started: boolean;
+    onStartedChange: (next: boolean) => void;
 }
 
 export { type LabWorkbenchProps }
