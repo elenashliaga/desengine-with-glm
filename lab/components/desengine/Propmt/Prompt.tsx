@@ -4,17 +4,29 @@ import { PromptText } from "./PromptText";
 import { PromptControls } from "./PromptControls";
 import { BaseProps, BaseStyles } from "../Base";
 import { taskWorkbenchFiles } from "@/lib/client";
-import type { TaskData } from "@/lib/types";
+import type { TaskData, TaskListItem, TaskTransition } from "@/lib/types";
 
 type PromptProps = BaseProps & {
     taskId: string;
+    taskItem: TaskListItem;
     taskData: TaskData;
     started: boolean;
+    onTaskItemChange: (next: TaskListItem | null) => void;
     onTaskDataChange: (next: TaskData) => void;
+    onTransition: (transition: TaskTransition | null) => void;
     onIterationApplied: () => void;
 }
 
-function Prompt({ taskId, taskData, started, onTaskDataChange, onIterationApplied }: PromptProps) {
+function Prompt({
+    taskId,
+    taskItem,
+    taskData,
+    started,
+    onTaskItemChange,
+    onTaskDataChange,
+    onTransition,
+    onIterationApplied,
+}: PromptProps) {
     const [promptText, setPromptText] = useState("");
     const [status, setStatus] = useState("");
     const [error, setError] = useState("");
@@ -69,7 +81,9 @@ function Prompt({ taskId, taskData, started, onTaskDataChange, onIterationApplie
             return;
         }
 
+        onTaskItemChange(data.taskItem ?? null);
         onTaskDataChange(data.taskData);
+        onTransition(data.transition ?? null);
         onIterationApplied();
         setPromptText("");
         setStatus("Уточнение применено");
@@ -91,6 +105,9 @@ function Prompt({ taskId, taskData, started, onTaskDataChange, onIterationApplie
 
             {status && <p className="text-sm text-muted-foreground">{status}</p>}
             {error && <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">{error}</pre>}
+            <p className="text-sm text-muted-foreground">
+                Осталось промптов на этом уровне: {Math.max(taskItem.progress.promptsLimit - taskItem.progress.promptsUsed, 0)}
+            </p>
 
             <div className="space-y-2">
                 <p className="text-sm font-medium">История уточнений</p>
@@ -101,6 +118,9 @@ function Prompt({ taskId, taskData, started, onTaskDataChange, onIterationApplie
                         {taskData.promptHistory.slice().reverse().map((entry) => (
                             <div key={`${entry.createdAt}-${entry.text}`} className="rounded-md border p-3 text-sm">
                                 <p className="text-muted-foreground">{entry.createdAt}</p>
+                                <p className="text-muted-foreground">
+                                  Уровень: {entry.levelNumber ?? "не указан"}
+                                </p>
                                 <p className="whitespace-pre-wrap">{entry.text}</p>
                                 <p className="text-muted-foreground">
                                   Файлы: {entry.selectedFileIds.length ? entry.selectedFileIds.join(", ") : "все"}

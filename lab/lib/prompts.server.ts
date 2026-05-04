@@ -10,3 +10,8 @@ export async function readPrompt(kind: PromptKind, name: PromptName) {
   const filePath = path.join(process.cwd(), "prompts", kind, `${name}.md`)
   return readFile(filePath, "utf-8")
 }
+
+export async function readLevelDidacticPrompt(promptKey: string) {
+  const filePath = path.join(process.cwd(), "prompts", "didactic", "levels", `${promptKey}.md`)
+  return readFile(filePath, "utf-8")
+}

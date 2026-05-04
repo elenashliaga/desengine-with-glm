@@ -7,6 +7,9 @@ import { appConfig } from "@/lib/server"
 
 type Params = { taskId: string }
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 function transpile(code: string, fileName: string) {
   const res = ts.transpileModule(code, {
     fileName,
@@ -187,5 +190,12 @@ export async function GET(
     mockJs,
   })
 
-  return Response.json({ ok: true, module: runtimeModule, props })
+  return Response.json(
+    { ok: true, module: runtimeModule, props },
+    {
+      headers: {
+        "cache-control": "no-store, no-cache, must-revalidate",
+      },
+    },
+  )
 }

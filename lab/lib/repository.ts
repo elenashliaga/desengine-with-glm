@@ -1,61 +1,15 @@
-import { access, readdir, readFile, writeFile } from "node:fs/promises"
+import { access, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "./config.server"
 import {
   type PromptHistoryEntry,
-  type TaskListItem,
-       TaskConfigSchema,
-  type TaskConfig,
   type TaskData,
 } from "./types"
 
 const promptHistoryFileName = "prompt-history.json"
 
-export async function getTaskListItems(): Promise<TaskListItem[]> {
-  const entries = await readdir(appConfig.tasksRoot, { withFileTypes: true })
-  const taskDirs = entries.filter((entry) => entry.isDirectory())
-
-  const tasks = await Promise.all(
-    taskDirs.map(async (entry) => {
-      const taskId = entry.name
-
-      const configPath = path.join(
-        appConfig.tasksRoot,
-        taskId,
-        appConfig.taskConfigFile,
-      )
-
-      let taskConfig: TaskConfig;
-      try {
-        const rawTaskConfig = await readFile(configPath, "utf-8")
-        const parsedTaskConfig = TaskConfigSchema.parse(JSON.parse(rawTaskConfig))
-        taskConfig = {
-          ...parsedTaskConfig,
-        }
-      } catch {
-        // TODO Сейчас здесь все ошибки конфигурации свалены в одну кучу — исправить
-        // ? Может, где-то отдельно держать дефолтовое значение?
-        taskConfig = {
-          image: {
-            width: 10,
-            height: 10,
-          }
-        }
-      }
-
-      return {
-        id: taskId,
-        image: taskConfig.image,
-        started: await isTaskStarted(taskId),
-      } satisfies TaskListItem;
-    })
-  )
-
-  return tasks.sort((a, b) => a.id.localeCompare(b.id))
-}
-
-export async function readTaskData(task: TaskListItem): Promise<TaskData> {
+export async function readTaskData(task: { id: string }): Promise<TaskData> {
   const textFiles = appConfig.taskWorkbenchFiles.filter((file) => {
     // На MVP не читаем бинарные файлы (PNG).
     return !file.fileName.toLowerCase().endsWith(".png")
@@ -119,6 +73,7 @@ export async function readPromptHistory(taskId: string): Promise<PromptHistoryEn
         typeof entry.text === "string" &&
         typeof entry.createdAt === "string" &&
         Array.isArray(entry.selectedFileIds) &&
+        (typeof entry.levelNumber === "number" || typeof entry.levelNumber === "undefined") &&
         entry.selectedFileIds.every((item: unknown) => typeof item === "string")
       )
     })

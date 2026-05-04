@@ -12,7 +12,7 @@ const parsed = AppConfigSchema.parse(JSON.parse(raw))
 const appConfig: AppConfig = {
   ...parsed,
   tasksRoot: path.resolve(process.cwd(), parsed.tasksRoot),
+  userProgressFile: path.resolve(process.cwd(), parsed.userProgressFile),
 }
 
 export { appConfig }
-

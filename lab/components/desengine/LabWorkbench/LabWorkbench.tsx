@@ -15,11 +15,22 @@ type SaveErrorItem = {
     error: string;
 }
 
-function LabWorkbench({taskItem, taskData, onTaskDataChange, started, onStartedChange}: LabWorkbenchProps) {
+function LabWorkbench({
+    taskItem,
+    taskData,
+    onTaskItemChange,
+    onTaskDataChange,
+    started,
+    onStartedChange,
+    onBackToLevelList,
+    onTransition,
+}: LabWorkbenchProps) {
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const [saveError, setSaveError] = useState<string>("");
     const [startStatus, setStartStatus] = useState<"" | "starting" | "error">("");
     const [startError, setStartError] = useState<string>("");
+    const [completePending, setCompletePending] = useState(false);
+    const [completeError, setCompleteError] = useState("");
     const [previewVersion, setPreviewVersion] = useState(0);
 
     const editableFileIds = useMemo(() => {
@@ -77,15 +88,59 @@ function LabWorkbench({taskItem, taskData, onTaskDataChange, started, onStartedC
             return;
         }
 
+        onTaskItemChange(data.taskItem ?? null);
         onTaskDataChange(data.taskData);
         onStartedChange(true);
         setStartStatus("");
         setPreviewVersion((current) => current + 1);
     }
 
+    async function handleComplete() {
+        setCompletePending(true);
+        setCompleteError("");
+
+        const res = await fetch(`/api/tasks/${taskItem.id}/complete`, { method: "POST" });
+        const data = await res.json().catch(() => null);
+
+        setCompletePending(false);
+
+        if (!res.ok || !data?.ok) {
+            setCompleteError(data?.error || "Не удалось завершить уровень");
+            return;
+        }
+
+        onTaskItemChange(data.taskItem ?? null);
+        onTaskDataChange(data.taskData);
+        onTransition(data.transition ?? null);
+    }
+
     return (
         <div className={BaseStyles.frameCol}>
-            <p>Рабочий стол</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p>Рабочий стол</p>
+                    <p className="text-sm text-muted-foreground">
+                        Задача: <code>{taskItem.id}</code>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        Уровень {taskItem.progress.currentLevel} из {taskItem.maxLevel}. Промптов: {taskItem.progress.promptsUsed} / {taskItem.progress.promptsLimit}.
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={onBackToLevelList}>
+                        К списку задач уровня
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        disabled={completePending || taskItem.progress.currentLevelStatus === "completed"}
+                        onClick={handleComplete}
+                    >
+                        {completePending ? "Завершение…" : "Я закончил"}
+                    </Button>
+                </div>
+            </div>
+
             <InOut
               task={taskItem.id}
               started={started}
@@ -116,12 +171,21 @@ function LabWorkbench({taskItem, taskData, onTaskDataChange, started, onStartedC
                     <Prompt
                       key={taskItem.id}
                       taskId={taskItem.id}
+                      taskItem={taskItem}
                       taskData={taskData}
                       started={started}
+                      onTaskItemChange={onTaskItemChange}
                       onTaskDataChange={onTaskDataChange}
+                      onTransition={onTransition}
                       onIterationApplied={() => setPreviewVersion((current) => current + 1)}
                     />
                 </div>
+            )}
+
+            {completeError && (
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                    {completeError}
+                </pre>
             )}
         </div>
     );

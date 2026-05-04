@@ -2,5 +2,6 @@
     "image": {
         "width": 235,
         "height": 106
-    }
+    },
+    "maxLevel": 20
 }

@@ -3,6 +3,7 @@ import { z } from "zod"
 // Схема конфигурации приложения (env/config.json)
 const AppConfigSchema = z.object({
   tasksRoot: z.string(),
+  userProgressFile: z.string(),
   taskConfigFile: z.string(),
   taskImageFile: z.string(),
   taskWorkbenchFiles: z.array(
@@ -18,4 +19,3 @@ const AppConfigSchema = z.object({
 export type AppConfig = z.infer<typeof AppConfigSchema>
 
 export { AppConfigSchema }
-

@@ -1,8 +1,15 @@
 import { readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig, isTaskStarted, readTaskData } from "@/lib/server"
-import { readPrompt } from "@/lib/prompts.server"
+import {
+  appConfig,
+  getLevelForTaskItem,
+  getTaskListItemById,
+  isTaskStarted,
+  markTaskLevelInProgress,
+  readTaskData,
+} from "@/lib/server"
+import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
 
 type Params = { taskId: string }
 
@@ -61,14 +68,21 @@ export async function POST(
 ) {
   const { taskId } = await params
 
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json({ ok: false, error: "OPENAI_API_KEY не настроен" }, { status: 400 })
+  const taskItem = await getTaskListItemById(taskId)
+  if (!taskItem) {
+    return Response.json({ ok: false, error: "Задание не найдено" }, { status: 404 })
   }
 
   const already = await isTaskStarted(taskId)
   if (already) {
-    const taskData = await readTaskData({ id: taskId, image: { width: 0, height: 0 }, started: true })
-    return Response.json({ ok: true, taskData })
+    const progress = await markTaskLevelInProgress(taskId)
+    const level = await getLevelForTaskItem(taskItem)
+    const taskData = await readTaskData(taskItem)
+    return Response.json({ ok: true, taskData, taskItem: { ...taskItem, progress }, level })
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return Response.json({ ok: false, error: "OPENAI_API_KEY не настроен" }, { status: 400 })
   }
 
   const imagePath = path.join(appConfig.tasksRoot, taskId, appConfig.taskImageFile)
@@ -81,9 +95,12 @@ export async function POST(
     return Response.json({ ok: false, error: "Картинка задания не найдена" }, { status: 404 })
   }
 
-  const [prod, did] = await Promise.all([
+  const level = await getLevelForTaskItem(taskItem)
+
+  const [prod, did, levelDidactic] = await Promise.all([
     readPrompt("production", "start-component"),
     readPrompt("didactic", "start-component"),
+    readLevelDidacticPrompt(level.promptKey),
   ])
 
   const fileList = appConfig.taskWorkbenchFiles
@@ -94,6 +111,8 @@ export async function POST(
 ${prod}
 
 ${did}
+
+${levelDidactic}
 
 ЗАДАНИЕ:
 По PNG-картинке создай первичную реализацию набора файлов компонента.
@@ -184,6 +203,13 @@ ${JSON.stringify(fileList, null, 2)}
     await writeFile(filePath, String(content ?? ""), "utf-8")
   }
 
-  const taskData = await readTaskData({ id: taskId, image: { width: 0, height: 0 }, started: true })
-  return Response.json({ ok: true, taskData })
+  const progress = await markTaskLevelInProgress(taskId)
+  const nextTaskItem = await getTaskListItemById(taskId)
+  const taskData = await readTaskData({ id: taskId })
+  return Response.json({
+    ok: true,
+    taskData,
+    taskItem: nextTaskItem ? { ...nextTaskItem, progress } : { ...taskItem, progress },
+    level,
+  })
 }

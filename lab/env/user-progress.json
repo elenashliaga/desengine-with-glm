@@ -1,0 +1,56 @@
+{
+  "tasks": {
+    "innovatika-listitem-tariff-option": {
+      "currentLevel": 3,
+      "updatedAt": "2026-05-04T15:30:23.056Z",
+      "levels": {
+        "1": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "completionReason": "prompt_limit"
+        },
+        "2": {
+          "status": "completed",
+          "promptsUsed": 1,
+          "completionReason": "manual"
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      }
+    },
+    "innovatika-segment-tariff-summary": {
+      "currentLevel": 1,
+      "updatedAt": "2026-05-04T15:53:28.176Z",
+      "levels": {
+        "1": {
+          "status": "in_progress",
+          "promptsUsed": 2
+        },
+        "2": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      }
+    },
+    "innovatika-status-indicator-value": {
+      "currentLevel": 1,
+      "updatedAt": "2026-05-04T15:55:13.699Z",
+      "levels": {
+        "1": {
+          "status": "in_progress",
+          "promptsUsed": 2
+        },
+        "2": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      }
+    }
+  }
+}

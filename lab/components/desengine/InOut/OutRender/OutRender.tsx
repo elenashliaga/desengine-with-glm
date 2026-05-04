@@ -12,7 +12,10 @@ function OutRender({ task, started, reloadKey, onStart, startStatus, startError 
     const [Component, setComponent] = useState<PreviewComponent | null>(null);
     const [props, setProps] = useState<Record<string, unknown>>({});
 
-    const moduleUrl = useMemo(() => `/api/tasks/${task}/module`, [task]);
+    const moduleUrl = useMemo(
+        () => `/api/tasks/${task}/module?v=${reloadKey}`,
+        [task, reloadKey],
+    );
 
     useEffect(() => {
         let cancelled = false;
@@ -25,7 +28,7 @@ function OutRender({ task, started, reloadKey, onStart, startStatus, startError 
             if (!started) return;
 
             try {
-                const res = await fetch(moduleUrl, { method: "GET" });
+                const res = await fetch(moduleUrl, { method: "GET", cache: "no-store" });
                 const data = await res.json().catch(() => null);
 
                 if (!res.ok || !data?.ok) {
@@ -56,7 +59,7 @@ function OutRender({ task, started, reloadKey, onStart, startStatus, startError 
 
         load();
         return () => { cancelled = true; };
-    }, [moduleUrl, started, reloadKey]);
+    }, [moduleUrl, started]);
 
     return (
         <div className="flex-1">

@@ -10,9 +10,9 @@ export const statusIconStyle = (isEnabled: boolean): string =>
   [
     'status-icon',
     isEnabled ? 'text-[#16a34a]' : 'text-black',
-    `w-[${ICON_BOX_SIZE}px]`,
-    `min-w-[${ICON_BOX_SIZE}px]`,
-    `h-[${ICON_BOX_SIZE}px]`,
+    'w-[16px]',
+    'min-w-[16px]',
+    'h-[16px]',
     'inline-flex',
     'items-center',
     'justify-center',

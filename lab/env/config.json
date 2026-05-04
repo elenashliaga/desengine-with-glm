@@ -1,5 +1,6 @@
 {
     "tasksRoot"      : "tasks",
+    "userProgressFile": "env/user-progress.json",
     "taskConfigFile" : "config.json",
     "taskImageFile"  : "image.png",
     "taskWorkbenchFiles" : [

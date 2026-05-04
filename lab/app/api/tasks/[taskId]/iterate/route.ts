@@ -4,11 +4,14 @@ import path from "node:path"
 import {
   appendPromptHistory,
   appConfig,
+  getLevelForTaskItem,
+  getTaskListItemById,
   isTaskStarted,
   readPromptHistory,
   readTaskData,
+  registerPromptForCurrentLevel,
 } from "@/lib/server"
-import { readPrompt } from "@/lib/prompts.server"
+import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
 
 type Params = { taskId: string }
 
@@ -87,6 +90,19 @@ export async function POST(
     return Response.json({ ok: false, error: "Сначала запустите задачу" }, { status: 400 })
   }
 
+  const taskItem = await getTaskListItemById(taskId)
+  if (!taskItem) {
+    return Response.json({ ok: false, error: "Задание не найдено" }, { status: 404 })
+  }
+
+  if (taskItem.progress.currentLevelStatus === "completed") {
+    return Response.json({ ok: false, error: "Текущий уровень уже завершён" }, { status: 409 })
+  }
+
+  if (taskItem.progress.promptsUsed >= taskItem.progress.promptsLimit) {
+    return Response.json({ ok: false, error: "Лимит промптов для уровня уже исчерпан" }, { status: 409 })
+  }
+
   const imagePath = path.join(appConfig.tasksRoot, taskId, appConfig.taskImageFile)
 
   let imageBase64: string
@@ -112,9 +128,13 @@ export async function POST(
     return Response.json({ ok: false, error: "Выберите хотя бы один файл для контекста" }, { status: 400 })
   }
 
-  const taskData = await readTaskData({ id: taskId, image: { width: 0, height: 0 }, started: true })
+  const level = await getLevelForTaskItem(taskItem)
+  const taskData = await readTaskData(taskItem)
   const promptHistory = await readPromptHistory(taskId)
-  const productionPrompt = await readPrompt("production", "iterate-component")
+  const [productionPrompt, levelDidacticPrompt] = await Promise.all([
+    readPrompt("production", "iterate-component"),
+    readLevelDidacticPrompt(level.promptKey),
+  ])
 
   const selectedFiles = selectedFileIds.map((fileId) => {
     const file = editableById.get(fileId)
@@ -141,6 +161,8 @@ export async function POST(
 
   const instruction = `
 ${productionPrompt}
+
+${levelDidacticPrompt}
 
 Верни JSON со всеми ключами "component", "stories", "styles", "mock", "props".
 Если какой-то файл не нужно менять, верни для него null.
@@ -234,8 +256,16 @@ ${selectedFilesText}
     text: promptText,
     createdAt: new Date().toISOString(),
     selectedFileIds,
+    levelNumber: taskItem.progress.currentLevel,
   })
 
-  const nextTaskData = await readTaskData({ id: taskId, image: { width: 0, height: 0 }, started: true })
-  return Response.json({ ok: true, taskData: nextTaskData })
+  const progressUpdate = await registerPromptForCurrentLevel(taskId)
+  const nextTaskItem = await getTaskListItemById(taskId)
+  const nextTaskData = await readTaskData({ id: taskId })
+  return Response.json({
+    ok: true,
+    taskData: nextTaskData,
+    taskItem: nextTaskItem ? { ...nextTaskItem, progress: progressUpdate.summary } : null,
+    transition: progressUpdate.transition,
+  })
 }
