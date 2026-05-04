@@ -6,7 +6,9 @@
 
 ## Статус и ближайшая цель
 
-Ближайшая цель: как можно быстрее запустить работающую систему на **ChatGPT API** (внешний провайдер по ключу).
+Ближайшая цель: поддерживать работающий MVP с **настраиваемым LLM-провайдером**:
+- OpenAI по ключу;
+- Ollama по URL на локальной машине или в локальной сети.
 
 ## Карта спецификаций
 
@@ -16,8 +18,8 @@
 - Итерация (LLM‑запуск): см. `openspec/specs/iteration/spec.md`.
 - Слепок (публичная публикация): см. `openspec/specs/snapshot/spec.md`.
 - Пользователь и прогресс: см. `openspec/specs/user-progress/spec.md`.
-- Подключение LLM (MVP: ChatGPT API): см. `openspec/specs/llm/chatgpt/spec.md`.
-  - На практике это одна спецификация `openspec/specs/llm/spec.md` (ChatGPT на MVP).
+- Подключение LLM: см. `openspec/specs/llm/spec.md`.
+- Локальный endpoint LLM: см. `openspec/specs/llm-endpoint/spec.md`.
 
 ## Термины (кратко)
 

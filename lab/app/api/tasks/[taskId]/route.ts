@@ -22,7 +22,20 @@ export async function GET(
   const started = await isTaskStarted(taskId)
   const taskData = started
     ? await readTaskData(taskItem)
-    : { taskId, contentByFileId: {}, promptHistory: [] }
+    : {
+        taskId,
+        contentByFileId: {},
+        promptHistory: [],
+        llmUsageSummary: {
+          totalCalls: 0,
+          teachingCostCents: 0,
+          providersUsed: [],
+          inputTokens: null,
+          outputTokens: null,
+          totalTokens: null,
+          callsWithoutProviderMetrics: 0,
+        },
+      }
   const level = await getLevelForTaskItem(taskItem)
 
   return Response.json({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LabWorkbench } from "../LabWorkbench";
 import { LevelOverview } from "../LevelOverview";
@@ -41,6 +41,24 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     const [status, setStatus] = useState<string>("");
     const [started, setStarted] = useState<boolean>(Boolean(initTaskItem?.started));
 
+    async function initializeCurrentLevel(taskId: string) {
+        setStatus("Инициирующий запуск уровня…");
+
+        const res = await fetch(`/api/tasks/${taskId}/start`, { method: "POST" });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.ok) {
+            setStatus(data?.error || "Ошибка инициирующего запуска уровня");
+            return false;
+        }
+
+        setTaskItem(data.taskItem);
+        setTaskData(data.taskData);
+        setStarted(true);
+        setStatus("");
+        return true;
+    }
+
     async function loadLevelOverview(levelId?: string) {
         const ref = levelId ? `/api/levels/${levelId}` : "/api/levels/current";
         const res = await fetch(ref, { method: "GET" });
@@ -73,6 +91,10 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         setStarted(Boolean(data.started));
         setScreen({ type: "task" });
         setStatus("");
+
+        if (data.taskItem && Boolean(data.started) && !data.taskItem.progress.currentLevelInitialized) {
+            await initializeCurrentLevel(taskId);
+        }
     }
 
     async function handleNavigateLevel(levelId: string) {
@@ -100,6 +122,21 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         router.push(createTransitionHref(transition));
         setScreen({ type: "transition", transition });
     }
+
+    useEffect(() => {
+        if (screen.type !== "task") return;
+        if (!taskItem || !started) return;
+        if (taskItem.progress.currentLevelInitialized) return;
+
+        const currentTaskId = taskItem.id;
+        const timeoutId = window.setTimeout(() => {
+            void initializeCurrentLevel(currentTaskId);
+        }, 0);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [screen, started, taskItem]);
 
     return (
         <main>

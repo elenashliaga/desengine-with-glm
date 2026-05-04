@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises"
+import { writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import {
@@ -11,6 +11,7 @@ import {
   readTaskData,
   registerPromptForCurrentLevel,
 } from "@/lib/server"
+import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
 import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
 
 type Params = { taskId: string }
@@ -32,43 +33,6 @@ function extractJson(text: string): unknown {
   return JSON.parse(candidate)
 }
 
-function getOutputText(data: unknown): string {
-  if (
-    data &&
-    typeof data === "object" &&
-    "output_text" in data &&
-    typeof data.output_text === "string" &&
-    data.output_text.trim()
-  ) {
-    return data.output_text
-  }
-
-  const output =
-    data &&
-    typeof data === "object" &&
-    "output" in data &&
-    Array.isArray(data.output)
-      ? data.output
-      : []
-
-  for (const item of output) {
-    const content = item && typeof item === "object" && Array.isArray(item.content) ? item.content : []
-    for (const part of content) {
-      if (
-        part &&
-        typeof part === "object" &&
-        part.type === "output_text" &&
-        typeof part.text === "string" &&
-        part.text.trim()
-      ) {
-        return part.text
-      }
-    }
-  }
-
-  return ""
-}
-
 export async function POST(
   request: Request,
   { params }: { params: Promise<Params> },
@@ -79,10 +43,6 @@ export async function POST(
 
   if (!promptText) {
     return Response.json({ ok: false, error: "Введите уточняющий промпт" }, { status: 400 })
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json({ ok: false, error: "OPENAI_API_KEY не настроен" }, { status: 400 })
   }
 
   const started = await isTaskStarted(taskId)
@@ -99,18 +59,12 @@ export async function POST(
     return Response.json({ ok: false, error: "Текущий уровень уже завершён" }, { status: 409 })
   }
 
-  if (taskItem.progress.promptsUsed >= taskItem.progress.promptsLimit) {
-    return Response.json({ ok: false, error: "Лимит промптов для уровня уже исчерпан" }, { status: 409 })
+  if (!taskItem.progress.currentLevelInitialized) {
+    return Response.json({ ok: false, error: "Сначала дождитесь инициирующего запуска текущего уровня" }, { status: 409 })
   }
 
-  const imagePath = path.join(appConfig.tasksRoot, taskId, appConfig.taskImageFile)
-
-  let imageBase64: string
-  try {
-    const buf = await readFile(imagePath)
-    imageBase64 = buf.toString("base64")
-  } catch {
-    return Response.json({ ok: false, error: "Картинка задания не найдена" }, { status: 404 })
+  if (taskItem.progress.promptsUsed >= taskItem.progress.promptsLimit) {
+    return Response.json({ ok: false, error: "Лимит промптов для уровня уже исчерпан" }, { status: 409 })
   }
 
   const editableFiles = appConfig.taskWorkbenchFiles.filter((file) => file.edit === true)
@@ -180,53 +134,31 @@ ${JSON.stringify(fileList, null, 2)}
 ${selectedFilesText}
 `.trim()
 
-  const model = process.env.DESENGINE_OPENAI_MODEL || "gpt-4o-2024-08-06"
-
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "desengine_iterate_component_files",
-          strict: true,
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            required: ["component", "stories", "styles", "mock", "props"],
-            properties: {
-              component: { type: ["string", "null"] },
-              stories: { type: ["string", "null"] },
-              styles: { type: ["string", "null"] },
-              mock: { type: ["string", "null"] },
-              props: { type: ["string", "null"] },
-            },
-          },
+  let outputText = ""
+  let llmCall: Awaited<ReturnType<typeof runStructuredLlmRequest>>
+  try {
+    llmCall = await runStructuredLlmRequest({
+      instruction,
+      schemaName: "desengine_iterate_component_files",
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        required: ["component", "stories", "styles", "mock", "props"],
+        properties: {
+          component: { type: ["string", "null"] },
+          stories: { type: ["string", "null"] },
+          styles: { type: ["string", "null"] },
+          mock: { type: ["string", "null"] },
+          props: { type: ["string", "null"] },
         },
       },
-      input: [
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: instruction },
-            { type: "input_image", image_url: `data:image/png;base64,${imageBase64}` },
-          ],
-        },
-      ],
-    }),
-  })
-
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    return Response.json({ ok: false, error: data?.error?.message || "Ошибка OpenAI API" }, { status: 500 })
+    })
+    outputText = llmCall.outputText
+  } catch (error) {
+    const response = toLlmErrorResponse(error)
+    return Response.json(response.body, { status: response.status })
   }
 
-  const outputText = getOutputText(data)
   let payload: FilesPayload
   try {
     const parsed = extractJson(outputText)
@@ -243,6 +175,7 @@ ${selectedFilesText}
   }
 
   const editable = new Map(editableFiles.map((file) => [file.id, file.fileName] as const))
+  const changedFileIds: string[] = []
 
   for (const [fileId, content] of Object.entries(payload)) {
     const fileName = editable.get(fileId)
@@ -250,6 +183,7 @@ ${selectedFilesText}
 
     const filePath = path.join(appConfig.tasksRoot, taskId, fileName)
     await writeFile(filePath, content, "utf-8")
+    changedFileIds.push(fileId)
   }
 
   await appendPromptHistory(taskId, {
@@ -257,6 +191,12 @@ ${selectedFilesText}
     createdAt: new Date().toISOString(),
     selectedFileIds,
     levelNumber: taskItem.progress.currentLevel,
+    changedFileIds,
+    llmCall: {
+      provider: llmCall.provider,
+      model: llmCall.model,
+      metrics: llmCall.metrics,
+    },
   })
 
   const progressUpdate = await registerPromptForCurrentLevel(taskId)

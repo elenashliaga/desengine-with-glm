@@ -150,13 +150,20 @@ function ensureTaskProgress(
 
 function countPromptsByLevel(promptHistory: PromptHistoryEntry[]) {
   const counts = new Map<number, number>()
+  const firstCreatedAtByLevel = new Map<number, string>()
 
   for (const entry of promptHistory) {
     const levelNumber = entry.levelNumber ?? 1
     counts.set(levelNumber, (counts.get(levelNumber) ?? 0) + 1)
+    if (!firstCreatedAtByLevel.has(levelNumber)) {
+      firstCreatedAtByLevel.set(levelNumber, entry.createdAt)
+    }
   }
 
-  return counts
+  return {
+    counts,
+    firstCreatedAtByLevel,
+  }
 }
 
 function reconcileTaskProgressWithHistory(
@@ -165,7 +172,7 @@ function reconcileTaskProgressWithHistory(
   taskProgress: TaskProgress,
   promptHistory: PromptHistoryEntry[],
 ) {
-  const countsByLevel = countPromptsByLevel(promptHistory)
+  const { counts: countsByLevel, firstCreatedAtByLevel } = countPromptsByLevel(promptHistory)
   let changed = false
 
   for (let levelNumber = 1; levelNumber <= taskConfig.maxLevel; levelNumber += 1) {
@@ -181,6 +188,11 @@ function reconcileTaskProgressWithHistory(
 
     if (countedPrompts > 0 && levelProgress.status === "available") {
       levelProgress.status = "in_progress"
+      changed = true
+    }
+
+    if (countedPrompts > 0 && !levelProgress.initializedAt) {
+      levelProgress.initializedAt = firstCreatedAtByLevel.get(levelNumber) ?? new Date().toISOString()
       changed = true
     }
 
@@ -233,6 +245,7 @@ function summarizeTaskProgress(
     currentLevel: currentLevelNumber,
     currentLevelId: currentLevel.id,
     currentLevelStatus: levelProgress.status,
+    currentLevelInitialized: Boolean(levelProgress.initializedAt),
     promptsUsed: levelProgress.promptsUsed,
     promptsLimit: currentLevel.maxPromptsPerTask,
     maxLevel: taskConfig.maxLevel,
@@ -447,6 +460,39 @@ export async function markTaskLevelInProgress(taskId: string) {
   return summarizeTaskProgress(levels, taskConfig, taskProgress)
 }
 
+export async function markCurrentTaskLevelInitialized(taskId: string) {
+  const [levels, store, taskConfig, promptHistory] = await Promise.all([
+    getLevelsCatalog(),
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+    readTaskPromptHistory(taskId),
+  ])
+
+  const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
+  reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
+
+  const currentLevelNumber = taskProgress.currentLevel
+  const levelProgress = taskProgress.levels[String(currentLevelNumber)]
+  let changed = false
+
+  if (!levelProgress.initializedAt) {
+    levelProgress.initializedAt = new Date().toISOString()
+    changed = true
+  }
+
+  if (levelProgress.status === "available") {
+    levelProgress.status = "in_progress"
+    changed = true
+  }
+
+  if (changed) {
+    taskProgress.updatedAt = new Date().toISOString()
+    await writeUserProgressStore(store)
+  }
+
+  return summarizeTaskProgress(levels, taskConfig, taskProgress)
+}
+
 export async function registerPromptForCurrentLevel(taskId: string): Promise<TaskProgressMutationResult> {
   const [levels, store, taskConfig, promptHistory] = await Promise.all([
     getLevelsCatalog(),
@@ -460,6 +506,13 @@ export async function registerPromptForCurrentLevel(taskId: string): Promise<Tas
   const currentLevelNumber = taskProgress.currentLevel
   const currentLevel = requireLevel(levels, currentLevelNumber)
   const levelProgress = taskProgress.levels[String(currentLevelNumber)]
+
+  if (!levelProgress.initializedAt) {
+    return {
+      summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
+      transition: null,
+    }
+  }
 
   if (levelProgress.status === "completed") {
     return {
@@ -509,6 +562,7 @@ export async function completeCurrentTaskLevel(
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
   reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
   const currentLevelNumber = taskProgress.currentLevel
+  const currentLevel = requireLevel(levels, currentLevelNumber)
   const levelProgress = taskProgress.levels[String(currentLevelNumber)]
 
   if (levelProgress.status === "completed" && currentLevelNumber === taskConfig.maxLevel) {
@@ -519,6 +573,9 @@ export async function completeCurrentTaskLevel(
   }
 
   levelProgress.status = "completed"
+  if (reason === "manual") {
+    levelProgress.promptsUsed = currentLevel.maxPromptsPerTask
+  }
   levelProgress.completedAt = new Date().toISOString()
   levelProgress.completionReason = reason
   taskProgress.updatedAt = new Date().toISOString()

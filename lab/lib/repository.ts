@@ -5,9 +5,58 @@ import { appConfig } from "./config.server"
 import {
   type PromptHistoryEntry,
   type TaskData,
+  type TaskLlmUsageSummary,
 } from "./types"
 
 const promptHistoryFileName = "prompt-history.json"
+const teachingCostPerIterationCents = 3
+
+function buildTaskLlmUsageSummary(promptHistory: PromptHistoryEntry[]): TaskLlmUsageSummary {
+  const providersUsed = new Set<string>()
+  let inputTokensTotal = 0
+  let outputTokensTotal = 0
+  let totalTokensTotal = 0
+  let hasInputTokens = false
+  let hasOutputTokens = false
+  let hasTotalTokens = false
+  let callsWithoutProviderMetrics = 0
+
+  for (const entry of promptHistory) {
+    if (!entry.llmCall) continue
+
+    providersUsed.add(entry.llmCall.provider)
+
+    if (entry.llmCall.metrics.status !== "available") {
+      callsWithoutProviderMetrics += 1
+      continue
+    }
+
+    if (typeof entry.llmCall.metrics.inputTokens === "number") {
+      inputTokensTotal += entry.llmCall.metrics.inputTokens
+      hasInputTokens = true
+    }
+
+    if (typeof entry.llmCall.metrics.outputTokens === "number") {
+      outputTokensTotal += entry.llmCall.metrics.outputTokens
+      hasOutputTokens = true
+    }
+
+    if (typeof entry.llmCall.metrics.totalTokens === "number") {
+      totalTokensTotal += entry.llmCall.metrics.totalTokens
+      hasTotalTokens = true
+    }
+  }
+
+  return {
+    totalCalls: promptHistory.length,
+    teachingCostCents: promptHistory.length * teachingCostPerIterationCents,
+    providersUsed: [...providersUsed],
+    inputTokens: hasInputTokens ? inputTokensTotal : null,
+    outputTokens: hasOutputTokens ? outputTokensTotal : null,
+    totalTokens: hasTotalTokens ? totalTokensTotal : null,
+    callsWithoutProviderMetrics,
+  }
+}
 
 export async function readTaskData(task: { id: string }): Promise<TaskData> {
   const textFiles = appConfig.taskWorkbenchFiles.filter((file) => {
@@ -38,6 +87,7 @@ export async function readTaskData(task: { id: string }): Promise<TaskData> {
     taskId: task.id,
     contentByFileId: Object.fromEntries(entries),
     promptHistory,
+    llmUsageSummary: buildTaskLlmUsageSummary(promptHistory),
   }
 }
 

@@ -3,10 +3,10 @@ import path from "path";
 import PageShell  from "@/components/desengine/PageShell";
 import TaskRunner from "@/components/desengine/TaskRunner";
 import LabWorkspace from "@/components/desengine/LabWorkspace";
+import { getLlmStatus } from "@/lib/llm.server";
 
-export default function Page() {
-  const hasOpenAIKey = Boolean(process.env.OPENAI_API_KEY);
-  const openAIModel = process.env.DESENGINE_OPENAI_MODEL || "";
+export default async function Page() {
+  const llmStatus = await getLlmStatus();
 
   const generatedPath = path.join(process.cwd(), "generated", "Generated.tsx");
   const propsPath = path.join(process.cwd(), "generated", "props.json");
@@ -22,12 +22,18 @@ export default function Page() {
   return (
     <PageShell>
       <div className="rounded-md border p-3 text-sm">
-        <strong>ChatGPT API:</strong>{" "}
-        {hasOpenAIKey ? "ключ настроен" : "ключ НЕ настроен"}.
-        {openAIModel ? ` Модель: ${openAIModel}.` : ""}
-        {!hasOpenAIKey && (
+        <strong>LLM-провайдер:</strong> {llmStatus.label}.{" "}
+        <strong>Режим:</strong> {llmStatus.provider}.{" "}
+        <strong>Статус:</strong> {llmStatus.availability.message}.
+        {llmStatus.config.model ? ` Модель: ${llmStatus.config.model}.` : ""}
+        {llmStatus.config.baseUrl ? ` URL: ${llmStatus.config.baseUrl}.` : ""}
+        {typeof llmStatus.config.timeoutMs === "number" ? ` Таймаут: ${llmStatus.config.timeoutMs} мс.` : ""}
+        {!llmStatus.ready && (
           <div className="mt-1 text-muted-foreground">
-            Настрой: `lab/.env.local` (см. `lab/env/openai.md`).
+            Настрой `lab/.env.local`.
+            {llmStatus.provider === "ollama"
+              ? " См. `lab/env/ollama.md`."
+              : " См. `lab/env/openai.md`."}
           </div>
         )}
       </div>

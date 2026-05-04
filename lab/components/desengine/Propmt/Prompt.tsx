@@ -57,6 +57,11 @@ function Prompt({
             return;
         }
 
+        if (!taskItem.progress.currentLevelInitialized) {
+            setError("Сначала дождитесь инициирующего запуска текущего уровня");
+            return;
+        }
+
         if (!promptText.trim()) {
             setError("Введите уточняющий промпт");
             return;
@@ -92,14 +97,14 @@ function Prompt({
     return (
         <div className="space-y-3">
             <div className={`${BaseStyles.frameRow} h-64`}>
-            <PromptText value={promptText} disabled={!started || pending} onChange={setPromptText} />
+            <PromptText value={promptText} disabled={!started || pending || !taskItem.progress.currentLevelInitialized} onChange={setPromptText} />
             <div className="flex flex-2 flex-col h-full">
                 <PromptFileList
                   selectedFileIds={selectedFileIds}
-                  disabled={!started || pending}
+                  disabled={!started || pending || !taskItem.progress.currentLevelInitialized}
                   onToggle={handleToggle}
                 />
-                <PromptControls disabled={!started} pending={pending} onRun={handleRun} />
+                <PromptControls disabled={!started || !taskItem.progress.currentLevelInitialized} pending={pending} onRun={handleRun} />
             </div>
             </div>
 
@@ -108,6 +113,36 @@ function Prompt({
             <p className="text-sm text-muted-foreground">
                 Осталось промптов на этом уровне: {Math.max(taskItem.progress.promptsLimit - taskItem.progress.promptsUsed, 0)}
             </p>
+            {!taskItem.progress.currentLevelInitialized && (
+                <p className="text-sm text-muted-foreground">
+                    Система сначала выполняет скрытый инициирующий запуск этого уровня. Уточняющие промпты станут доступны после него.
+                </p>
+            )}
+
+            <div className="rounded-md border p-3 text-sm">
+                <p>
+                    <strong>Учебная стоимость:</strong> {taskData.llmUsageSummary.teachingCostCents} центов.
+                </p>
+                <p className="text-muted-foreground">
+                    Это отдельный учебный индикатор и не заменяет реальные метрики провайдера.
+                </p>
+                <p className="mt-2">
+                    <strong>Реальные метрики LLM:</strong>{" "}
+                    {taskData.llmUsageSummary.totalCalls === 0
+                      ? "ещё не накоплены."
+                      : taskData.llmUsageSummary.totalTokens === null
+                        ? "провайдер не вернул токеновые данные."
+                        : `всего токенов ${taskData.llmUsageSummary.totalTokens} (вход: ${taskData.llmUsageSummary.inputTokens ?? "н/д"}, выход: ${taskData.llmUsageSummary.outputTokens ?? "н/д"}).`}
+                </p>
+                {taskData.llmUsageSummary.providersUsed.length > 0 && (
+                    <p className="text-muted-foreground">
+                        Провайдеры в истории: {taskData.llmUsageSummary.providersUsed.join(", ")}.
+                        {taskData.llmUsageSummary.callsWithoutProviderMetrics > 0
+                          ? ` Запусков без метрик: ${taskData.llmUsageSummary.callsWithoutProviderMetrics}.`
+                          : ""}
+                    </p>
+                )}
+            </div>
 
             <div className="space-y-2">
                 <p className="text-sm font-medium">История уточнений</p>
@@ -115,7 +150,7 @@ function Prompt({
                     <p className="text-sm text-muted-foreground">Пока пусто</p>
                 ) : (
                     <div className="space-y-2">
-                        {taskData.promptHistory.slice().reverse().map((entry) => (
+                        {taskData.promptHistory.map((entry) => (
                             <div key={`${entry.createdAt}-${entry.text}`} className="rounded-md border p-3 text-sm">
                                 <p className="text-muted-foreground">{entry.createdAt}</p>
                                 <p className="text-muted-foreground">
@@ -125,6 +160,17 @@ function Prompt({
                                 <p className="text-muted-foreground">
                                   Файлы: {entry.selectedFileIds.length ? entry.selectedFileIds.join(", ") : "все"}
                                 </p>
+                                <p className="text-muted-foreground">
+                                  Изменены: {entry.changedFileIds?.length ? entry.changedFileIds.join(", ") : "нет изменений"}
+                                </p>
+                                {entry.llmCall && (
+                                    <p className="text-muted-foreground">
+                                      LLM: {entry.llmCall.provider} / {entry.llmCall.model}.{" "}
+                                      {entry.llmCall.metrics.status === "available"
+                                        ? `Токены: ${entry.llmCall.metrics.totalTokens ?? "н/д"}`
+                                        : "Метрики не возвращены провайдером"}
+                                    </p>
+                                )}
                             </div>
                         ))}
                     </div>

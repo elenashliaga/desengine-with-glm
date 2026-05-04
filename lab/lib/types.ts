@@ -1,4 +1,5 @@
 import { z } from "zod"
+import type { LlmCallRecord } from "./llm.types"
 
 const TaskConfigSchema = z.object({
   image: z.object({
@@ -28,6 +29,7 @@ const LevelsCatalogSchema = z.object({
 const TaskLevelProgressSchema = z.object({
   status: z.enum(["available", "in_progress", "completed"]),
   promptsUsed: z.number().int().min(0),
+  initializedAt: z.string().optional(),
   completedAt: z.string().optional(),
   completionReason: z.enum(["manual", "prompt_limit"]).optional(),
 })
@@ -52,6 +54,7 @@ type TaskProgressSummary = {
   currentLevel: number
   currentLevelId: string
   currentLevelStatus: TaskLevelProgress["status"]
+  currentLevelInitialized: boolean
   promptsUsed: number
   promptsLimit: number
   maxLevel: number
@@ -72,6 +75,18 @@ export type PromptHistoryEntry = {
   createdAt: string
   selectedFileIds: string[]
   levelNumber?: number
+  changedFileIds?: string[]
+  llmCall?: LlmCallRecord
+}
+
+export type TaskLlmUsageSummary = {
+  totalCalls: number
+  teachingCostCents: number
+  providersUsed: string[]
+  inputTokens: number | null
+  outputTokens: number | null
+  totalTokens: number | null
+  callsWithoutProviderMetrics: number
 }
 
 // все файлы
@@ -80,6 +95,7 @@ export type TaskData = {
   taskId: string
   contentByFileId: Record<string, string>
   promptHistory: PromptHistoryEntry[]
+  llmUsageSummary: TaskLlmUsageSummary
 }
 
 export type LevelOverviewTaskItem = TaskListItem & {

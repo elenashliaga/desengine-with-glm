@@ -6,9 +6,11 @@ import {
   getLevelForTaskItem,
   getTaskListItemById,
   isTaskStarted,
+  markCurrentTaskLevelInitialized,
   markTaskLevelInProgress,
   readTaskData,
 } from "@/lib/server"
+import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
 import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
 
 type Params = { taskId: string }
@@ -25,43 +27,6 @@ function extractJson(text: string): unknown {
   return JSON.parse(candidate)
 }
 
-function getOutputText(data: unknown): string {
-  if (
-    data &&
-    typeof data === "object" &&
-    "output_text" in data &&
-    typeof data.output_text === "string" &&
-    data.output_text.trim()
-  ) {
-    return data.output_text
-  }
-
-  const output =
-    data &&
-    typeof data === "object" &&
-    "output" in data &&
-    Array.isArray(data.output)
-      ? data.output
-      : []
-
-  for (const item of output) {
-    const content = item && typeof item === "object" && Array.isArray(item.content) ? item.content : []
-    for (const part of content) {
-      if (
-        part &&
-        typeof part === "object" &&
-        part.type === "output_text" &&
-        typeof part.text === "string" &&
-        part.text.trim()
-      ) {
-        return part.text
-      }
-    }
-  }
-
-  return ""
-}
-
 export async function POST(
   _request: Request,
   { params }: { params: Promise<Params> },
@@ -73,16 +38,13 @@ export async function POST(
     return Response.json({ ok: false, error: "Задание не найдено" }, { status: 404 })
   }
 
+  const level = await getLevelForTaskItem(taskItem)
   const already = await isTaskStarted(taskId)
-  if (already) {
+
+  if (already && taskItem.progress.currentLevelInitialized) {
     const progress = await markTaskLevelInProgress(taskId)
-    const level = await getLevelForTaskItem(taskItem)
     const taskData = await readTaskData(taskItem)
     return Response.json({ ok: true, taskData, taskItem: { ...taskItem, progress }, level })
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return Response.json({ ok: false, error: "OPENAI_API_KEY не настроен" }, { status: 400 })
   }
 
   const imagePath = path.join(appConfig.tasksRoot, taskId, appConfig.taskImageFile)
@@ -95,19 +57,42 @@ export async function POST(
     return Response.json({ ok: false, error: "Картинка задания не найдена" }, { status: 404 })
   }
 
-  const level = await getLevelForTaskItem(taskItem)
-
-  const [prod, did, levelDidactic] = await Promise.all([
+  const [prod, did, levelDidactic, taskData] = await Promise.all([
     readPrompt("production", "start-component"),
     readPrompt("didactic", "start-component"),
     readLevelDidacticPrompt(level.promptKey),
+    readTaskData(taskItem),
   ])
 
-  const fileList = appConfig.taskWorkbenchFiles
-    .filter((f) => f.edit === true)
-    .map((f) => ({ id: f.id, fileName: f.fileName }))
+  const editableFiles = appConfig.taskWorkbenchFiles.filter((f) => f.edit === true)
+  const fileList = editableFiles.map((f) => ({ id: f.id, fileName: f.fileName }))
+  const filesText = editableFiles
+    .map((file) => {
+      const content = taskData.contentByFileId[file.id] ?? ""
+      return `FILE ${file.id} (${file.fileName})\n\`\`\`tsx\n${content}\n\`\`\``
+    })
+    .join("\n\n")
 
-  const instruction = `
+  const instruction = already
+    ? `
+${prod}
+
+${did}
+
+${levelDidactic}
+
+ЗАДАНИЕ:
+Это инициирующий запуск нового уровня для уже существующей задачи.
+Посмотри на PNG-картинку и на все текущие файлы задачи.
+Подготовь компонент к работе на уровне ${level.number}, сохранив полезные наработки и обновив реализацию там, где это требуется новой дидактикой уровня.
+
+Верни полный набор файлов по ключам:
+${JSON.stringify(fileList, null, 2)}
+
+ТЕКУЩЕЕ СОСТОЯНИЕ ВСЕХ ФАЙЛОВ:
+${filesText}
+`.trim()
+    : `
 ${prod}
 
 ${did}
@@ -121,55 +106,32 @@ ${levelDidactic}
 ${JSON.stringify(fileList, null, 2)}
 `.trim()
 
-  // Structured Outputs (json_schema) поддерживаются не всеми моделями.
-  // Берём совместимую по умолчанию, но оставляем возможность переопределить env-переменной.
-  const model = process.env.DESENGINE_OPENAI_MODEL || "gpt-4o-2024-08-06"
-
-  const res = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "desengine_start_component_files",
-          strict: true,
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            required: ["component", "stories", "styles", "mock", "props"],
-            properties: {
-              component: { type: "string" },
-              stories: { type: "string" },
-              styles: { type: "string" },
-              mock: { type: "string" },
-              props: { type: "string" },
-            },
-          },
+  let outputText = ""
+  try {
+    const result = await runStructuredLlmRequest({
+      target: "init",
+      instruction,
+      imageBase64,
+      schemaName: "desengine_start_component_files",
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        required: ["component", "stories", "styles", "mock", "props"],
+        properties: {
+          component: { type: "string" },
+          stories: { type: "string" },
+          styles: { type: "string" },
+          mock: { type: "string" },
+          props: { type: "string" },
         },
       },
-      input: [
-        {
-          role: "user",
-          content: [
-            { type: "input_text", text: instruction },
-            { type: "input_image", image_url: `data:image/png;base64,${imageBase64}` },
-          ],
-        },
-      ],
-    }),
-  })
-
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    return Response.json({ ok: false, error: data?.error?.message || "Ошибка OpenAI API" }, { status: 500 })
+    })
+    outputText = result.outputText
+  } catch (error) {
+    const response = toLlmErrorResponse(error)
+    return Response.json(response.body, { status: response.status })
   }
 
-  const outputText = getOutputText(data)
   let payload: FilesPayload
   try {
     const parsed = extractJson(outputText)
@@ -183,7 +145,6 @@ ${JSON.stringify(fileList, null, 2)}
         debug: {
           outputTextPreview: outputText.slice(0, 800),
           outputTextLength: outputText.length,
-          outputItemTypes: Array.isArray(data?.output) ? data.output.map((i: { type?: string }) => i?.type).filter(Boolean) : [],
         },
       },
       { status: 500 },
@@ -191,9 +152,7 @@ ${JSON.stringify(fileList, null, 2)}
   }
 
   const editable = new Map(
-    appConfig.taskWorkbenchFiles
-      .filter((f) => f.edit === true)
-      .map((f) => [f.id, f.fileName] as const),
+    editableFiles.map((f) => [f.id, f.fileName] as const),
   )
 
   for (const [fileId, content] of Object.entries(payload)) {
@@ -203,12 +162,12 @@ ${JSON.stringify(fileList, null, 2)}
     await writeFile(filePath, String(content ?? ""), "utf-8")
   }
 
-  const progress = await markTaskLevelInProgress(taskId)
+  const progress = await markCurrentTaskLevelInitialized(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)
-  const taskData = await readTaskData({ id: taskId })
+  const nextTaskData = await readTaskData({ id: taskId })
   return Response.json({
     ok: true,
-    taskData,
+    taskData: nextTaskData,
     taskItem: nextTaskItem ? { ...nextTaskItem, progress } : { ...taskItem, progress },
     level,
   })
