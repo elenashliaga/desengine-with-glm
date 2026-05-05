@@ -2,6 +2,9 @@ import "server-only"
 
 import { appConfig } from "@/lib/config.server"
 import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "@/lib/llm.types"
+import localConfig from "@/lib/local-config.cjs"
+
+localConfig.loadLocalConfig()
 
 type LlmStructuredRequest = {
   instruction: string

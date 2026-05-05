@@ -1,37 +1,16 @@
 import fs from "node:fs"
 import path from "node:path"
 import { execFile } from "node:child_process"
+import { createRequire } from "node:module"
 import { promisify } from "node:util"
 
 const execFileAsync = promisify(execFile)
+const require = createRequire(import.meta.url)
+const { getLocalConfigPath, readLocalConfig } = require("../lab/lib/local-config.cjs")
 const rootDir = process.cwd()
 const labDir = path.join(rootDir, "lab")
-const envPath = path.join(labDir, ".env.local")
+const envPath = getLocalConfigPath(labDir)
 const nextCliPath = path.join(labDir, "node_modules", "next", "dist", "bin", "next")
-
-function readEnvFile(filePath) {
-  if (!fs.existsSync(filePath)) {
-    return {}
-  }
-
-  const source = fs.readFileSync(filePath, "utf-8")
-  const entries = source
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"))
-
-  const env = {}
-
-  for (const line of entries) {
-    const separatorIndex = line.indexOf("=")
-    if (separatorIndex === -1) continue
-    const key = line.slice(0, separatorIndex).trim()
-    const value = line.slice(separatorIndex + 1).trim()
-    env[key] = value
-  }
-
-  return env
-}
 
 function getNodeVersionStatus() {
   const [major] = process.versions.node.split(".").map(Number)
@@ -103,7 +82,7 @@ async function runBuildCheck() {
 }
 
 async function main() {
-  const fileEnv = readEnvFile(envPath)
+  const fileEnv = readLocalConfig(envPath)
   const env = { ...fileEnv, ...process.env }
   const checks = []
 
@@ -114,10 +93,10 @@ async function main() {
     createCheck(
       "env-file",
       fs.existsSync(envPath),
-      fs.existsSync(envPath) ? "Файл lab/.env.local найден" : "Файл lab/.env.local не найден",
+      fs.existsSync(envPath) ? "Файл lab/config.txt найден" : "Файл lab/config.txt не найден",
       fs.existsSync(envPath)
         ? "Локальная конфигурация присутствует."
-        : "Создайте `lab/.env.local` на основе `lab/.env.local.example`.",
+        : "Создайте `lab/config.txt` на основе `lab/config-example.txt`.",
     ),
   )
 

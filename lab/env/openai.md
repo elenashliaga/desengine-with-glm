@@ -14,11 +14,13 @@
 
 ## Как задать
 
-Создай файл `lab/.env.local` (он игнорируется git) на основе [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1) и оставь в нём только актуальные LLM-переменные:
+Переименуй [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1) в `lab/config.txt` и укажи в нём актуальный ключ OpenAI:
 
 ```
 OPENAI_API_KEY=...
-DESENGINE_OPENAI_MODEL=...
+DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 ```
+
+`DESENGINE_OPENAI_MODEL` уже предзаполнен типовым значением, поэтому обычно достаточно заменить только `OPENAI_API_KEY`.
 
 Для доступа по email см. `lab/env/access-control.md`.

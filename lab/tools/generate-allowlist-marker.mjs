@@ -1,4 +1,10 @@
 import crypto from "node:crypto"
+import { createRequire } from "node:module"
+
+const require = createRequire(import.meta.url)
+const { loadLocalConfig } = require("../lib/local-config.cjs")
+
+loadLocalConfig()
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase()
@@ -6,6 +12,7 @@ function normalizeEmail(email) {
 
 function printUsage() {
   console.error("Использование:")
+  console.error("  node tools/generate-allowlist-marker.mjs user@example.com")
   console.error("  DESENGINE_ALLOWLIST_SALT=... node tools/generate-allowlist-marker.mjs user@example.com")
   console.error("  node tools/generate-allowlist-marker.mjs user@example.com --salt=my-secret-salt")
 }

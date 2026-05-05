@@ -11,12 +11,14 @@
 
 ## Как задать
 
-Добавь в `lab/.env.local` значения из блока доступа по email в [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1):
+Переименуй [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1) в `lab/config.txt` и проверь значения блока доступа по email:
 
 ```bash
 DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
-DESENGINE_ALLOWLIST_SALT=...
+DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 ```
+
+Оба значения уже предзаполнены в шаблоне. Для локального знакомства этого достаточно, а для рабочего окружения salt нужно заменить на реальный секрет.
 
 ## Как это работает
 

@@ -43,7 +43,7 @@ npm --prefix lab install
 
 ## 3. Создайте локальную конфигурацию
 
-Создайте файл `lab/.env.local` на основе [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1).
+Переименуйте [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1) в `lab/config.txt`.
 
 Это можно сделать любым привычным способом:
 
@@ -51,14 +51,16 @@ npm --prefix lab install
 - через редактор кода;
 - через командную строку, если вам так удобнее.
 
-Минимально важные переменные:
+Что нужно проверить в файле:
 
 ```env
 OPENAI_API_KEY=...
-DESENGINE_OPENAI_MODEL=...
-DESENGINE_ALLOWLIST_BASE_URL=...
-DESENGINE_ALLOWLIST_SALT=...
+DESENGINE_OPENAI_MODEL=gpt-4.1-nano
+DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
+DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 ```
+
+В шаблоне уже оставлены типовые значения для модели и allowlist-настроек, поэтому обычно вручную меняется только `OPENAI_API_KEY`.
 
 Подробности:
 
@@ -104,7 +106,7 @@ npm run smoke
 1. Открыть этот файл и пройти установку строго по инструкции, не подглядывая в другие документы.
 2. Самостоятельно проверить, есть ли у него `node` и `npm`.
 3. Установить зависимости проекта.
-4. Создать `lab/.env.local` на основе примера.
+4. Переименовать `lab/config-example.txt` в `lab/config.txt`.
 5. Заполнить обязательные переменные окружения.
 6. Запустить приложение.
 7. Открыть приложение в браузере.
@@ -116,7 +118,7 @@ npm run smoke
 
 - на каком шаге человек остановился;
 - какие слова или термины пришлось объяснять отдельно;
-- понял ли человек разницу между установкой, настройкой `.env` и входом через allowlist;
+- понял ли человек разницу между установкой, настройкой `config.txt` и входом через allowlist;
 - смог ли он без подсказки открыть именно корневой маршрут `/`;
 - понял ли он, почему до допуска видит только страницу состояния;
 - пришлось ли ему чинить `node`, `npm` или shell вручную;

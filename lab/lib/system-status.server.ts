@@ -2,6 +2,9 @@ import "server-only"
 
 import { getLlmStatus } from "@/lib/llm.server"
 import { getAccessControlConfig, hasAccessSession } from "@/lib/access-control.server"
+import localConfig from "@/lib/local-config.cjs"
+
+localConfig.loadLocalConfig()
 
 type SystemStatusTone = "ready" | "warning" | "blocked"
 
@@ -105,7 +108,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     instructions.push({
       id: "openai-config",
       actor: "Администратор",
-      text: "Добавьте `OPENAI_API_KEY` в `lab/.env.local`, чтобы LLM-сценарии лаборатории стали рабочими.",
+      text: "Добавьте `OPENAI_API_KEY` в `lab/config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
     })
   }
 
@@ -155,7 +158,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     summary: accessConfig.isConfigured ? "Allowlist настроен" : "Allowlist не настроен",
     detail: accessConfig.isConfigured
       ? "Базовый URL и salt заданы."
-      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/.env.local`.",
+      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/config.txt`.",
   })
 
   if (!accessConfig.isConfigured) {

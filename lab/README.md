@@ -20,7 +20,8 @@
 
 ## Документация по настройке
 
-- Шаблон env: [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1)
+- Локальный конфиг: `lab/config.txt`
+- Шаблон конфига: [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1)
 - OpenAI: `lab/env/openai.md`
 - Доступ по email через allowlist: `lab/env/access-control.md`
 

@@ -1,6 +1,7 @@
 import "server-only"
 
 import { cookies } from "next/headers"
+import localConfig from "@/lib/local-config.cjs"
 
 import {
   ACCESS_COOKIE_NAME,
@@ -10,6 +11,8 @@ import {
   normalizeEmail,
   verifyAccessSessionValue,
 } from "@/lib/access-control"
+
+localConfig.loadLocalConfig()
 
 async function verifyAllowlistAccess(email: string): Promise<{
   ok: boolean
@@ -22,7 +25,7 @@ async function verifyAllowlistAccess(email: string): Promise<{
     return {
       ok: false,
       reason: "misconfigured",
-      error: "Проверка доступа не настроена. Задайте DESENGINE_ALLOWLIST_BASE_URL и DESENGINE_ALLOWLIST_SALT в lab/.env.local.",
+      error: "Проверка доступа не настроена. Задайте DESENGINE_ALLOWLIST_BASE_URL и DESENGINE_ALLOWLIST_SALT в lab/config.txt.",
     }
   }
 
