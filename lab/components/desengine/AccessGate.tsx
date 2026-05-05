@@ -39,7 +39,7 @@ function AccessGate({ configured, nextPath }: AccessGateProps) {
         return
       }
 
-      router.push(nextPath || "/lab")
+      router.push(nextPath || "/")
       router.refresh()
     })
   }
@@ -80,7 +80,7 @@ function AccessGate({ configured, nextPath }: AccessGateProps) {
             <div className="space-y-2">
               <h2 className="text-lg font-semibold text-black">Проверка доступа</h2>
               <p className="text-sm leading-6 text-black/60">
-                После успешной проверки откроется лаборатория и её API.
+                После успешной проверки откроется стартовая страница desengine и её API.
               </p>
             </div>
 
@@ -118,7 +118,7 @@ function AccessGate({ configured, nextPath }: AccessGateProps) {
                 disabled={isPending || !configured}
                 className="h-11 w-full rounded-xl bg-black text-sm text-white hover:bg-black/85"
               >
-                {isPending ? "Проверяем доступ…" : "Открыть лабораторию"}
+                {isPending ? "Проверяем доступ…" : "Открыть desengine"}
               </Button>
             </form>
           </div>

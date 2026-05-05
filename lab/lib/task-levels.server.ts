@@ -1,6 +1,6 @@
 import "server-only"
 
-import { access, readdir, readFile, writeFile } from "node:fs/promises"
+import { access, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "./config.server"
@@ -657,5 +657,36 @@ export async function completeCurrentTaskLevel(
   return {
     summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
     transition,
+  }
+}
+
+export async function resetTask(taskId: string) {
+  const [store, taskConfig] = await Promise.all([
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+  ])
+
+  const taskDir = path.join(appConfig.tasksRoot, taskId)
+  const keepFiles = new Set<string>([
+    appConfig.taskConfigFile,
+    ...Object.keys(taskConfig.images).map((imageId) => `${imageId}.png`),
+  ])
+
+  const entries = await readdir(taskDir, { withFileTypes: true })
+
+  await Promise.all(
+    entries.map(async (entry) => {
+      if (keepFiles.has(entry.name)) return
+
+      await rm(path.join(taskDir, entry.name), {
+        recursive: true,
+        force: true,
+      })
+    }),
+  )
+
+  if (store.tasks[taskId]) {
+    delete store.tasks[taskId]
+    await writeUserProgressStore(store)
   }
 }

@@ -19,6 +19,7 @@ import {
   getTaskListItemsWithProgress,
   markCurrentTaskLevelInitialized,
   markTaskLevelInProgress,
+  resetTask,
   registerPromptForCurrentLevel,
 } from "./task-levels.server"
 
@@ -39,5 +40,6 @@ export {
   markTaskLevelInProgress,
   readPromptHistory,
   readTaskData,
+  resetTask,
   registerPromptForCurrentLevel,
 }
