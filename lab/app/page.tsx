@@ -1,6 +1,6 @@
 import { AccessGate } from "@/components/desengine/AccessGate"
 import { HomeTaskList } from "@/components/desengine/HomeTaskList"
-import { getAccessControlConfig, hasAccessSession } from "@/lib/access-control.server"
+import { getSystemStatusModel } from "@/lib/system-status.server"
 import { getTaskListItems } from "@/lib/server"
 
 type PageProps = {
@@ -20,7 +20,7 @@ function getNextPath(nextParam: string | string[] | undefined): string {
     return "/"
   }
 
-  if (!nextPath.startsWith("/lab") && !nextPath.startsWith("/pre") && nextPath !== "/") {
+  if (!nextPath.startsWith("/lab") && nextPath !== "/") {
     return "/"
   }
 
@@ -30,10 +30,17 @@ function getNextPath(nextParam: string | string[] | undefined): string {
 export default async function Page({ searchParams }: PageProps) {
   const params = searchParams ? await searchParams : undefined
   const nextPath = getNextPath(params?.next)
+  const status = await getSystemStatusModel()
 
-  if (!(await hasAccessSession())) {
-    const { isConfigured } = getAccessControlConfig()
-    return <AccessGate configured={isConfigured} nextPath={nextPath} />
+  if (!status.hasAccess) {
+    return (
+      <AccessGate
+        configured={status.allowlistConfigured}
+        nextPath={nextPath}
+        statusItems={status.items}
+        instructions={status.instructions}
+      />
+    )
   }
 
   const tasks = await getTaskListItems()

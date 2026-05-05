@@ -20,7 +20,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 10px;
-  font-family: Inter, system-ui, sans-serif;
+  font-family: "Segoe UI", "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background: hsl(var(--background));

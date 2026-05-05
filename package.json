@@ -1,10 +1,12 @@
 {
   "name": "desengine",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Локальная лаборатория desengine",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm --prefix lab run dev",
+    "build": "npm --prefix lab run build",
+    "start": "npm --prefix lab run start",
+    "smoke": "node scripts/smoke-local-install.mjs"
   },
   "keywords": [],
   "author": "",

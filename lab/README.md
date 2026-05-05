@@ -2,25 +2,21 @@
 
 Локальная лаборатория для работы с учебными React-задачами.
 
+Для локального запуска нужен нормально установленный `Node.js` вместе с `npm`.
+
 ## Быстрый старт
 
-1. Создай `lab/.env.local` на основе [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1).
-2. Заполни переменные окружения:
+1. Работай из корня репозитория.
+2. Пройди шаги из [INSTALL.md](/Users/op/dev/olgapavlova/desengine/INSTALL.md:1).
+3. Открой [http://localhost:3000](http://localhost:3000).
 
-```bash
-OPENAI_API_KEY=...
-DESENGINE_OPENAI_MODEL=...
-DESENGINE_ALLOWLIST_BASE_URL=...
-DESENGINE_ALLOWLIST_SALT=...
-```
+До допуска по allowlist приложение показывает только страницу состояния системы. Даже без `OPENAI_API_KEY` оболочка откроется, но LLM-сценарии не будут готовы.
 
-3. Запусти dev-сервер:
+## Пользовательский поток
 
-```bash
-npm run dev
-```
-
-4. Открой [http://localhost:3000](http://localhost:3000).
+- Пользователь открывает только браузер.
+- На `/` он видит статусы системы и инструкции.
+- Список задач открывается только после успешной allowlist-проверки по email.
 
 ## Документация по настройке
 
@@ -28,9 +24,10 @@ npm run dev
 - OpenAI: `lab/env/openai.md`
 - Доступ по email через allowlist: `lab/env/access-control.md`
 
-## Полезные команды
+## Админские команды
 
 ```bash
-cd lab
-DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
+npm run build
+npm run smoke
+npm --prefix lab run allowlist:marker -- user@example.com
 ```

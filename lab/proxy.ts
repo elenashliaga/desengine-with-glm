@@ -8,7 +8,7 @@ function isProtectedApiPath(pathname: string): boolean {
 }
 
 function isProtectedPagePath(pathname: string): boolean {
-  return pathname.startsWith("/lab") || pathname.startsWith("/pre")
+  return pathname.startsWith("/lab")
 }
 
 export async function proxy(request: NextRequest) {
@@ -40,5 +40,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/lab/:path*", "/pre/:path*", "/api/:path*"],
+  matcher: ["/lab/:path*", "/api/:path*"],
 }
