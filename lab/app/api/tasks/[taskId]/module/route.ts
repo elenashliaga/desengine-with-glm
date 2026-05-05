@@ -115,6 +115,7 @@ function buildClientRuntimeModule(files: {
   componentJs: string
   stylesJs: string
   mockJs: string
+  propsJs: string
 }) {
   return `
 const __DESENGINE_MODULES__ = {
@@ -128,7 +129,7 @@ ${files.stylesJs}
 ${files.mockJs}
   },
   "./props": function(module, exports, require) {
-    module.exports = {};
+${files.propsJs}
   }
 };
 
@@ -172,15 +173,18 @@ export async function GET(
   const componentPath = path.join(baseDir, "Component.tsx")
   const stylesPath = path.join(baseDir, "styles.ts")
   const mockPath = path.join(baseDir, "mock.ts")
+  const propsPath = path.join(baseDir, "props.ts")
 
-  const [componentRaw, stylesRaw, mockRaw] = await Promise.all([
+  const [componentRaw, stylesRaw, mockRaw, propsRaw] = await Promise.all([
     readFile(componentPath, "utf-8"),
     readFile(stylesPath, "utf-8").catch(() => "export const styles = {};"),
     readFile(mockPath, "utf-8").catch(() => "export const mock = {};"),
+    readFile(propsPath, "utf-8").catch(() => "export {};"),
   ])
 
   const stylesJs = transpile(stylesRaw, stylesPath)
   const mockJs = transpile(mockRaw, mockPath)
+  const propsJs = transpile(propsRaw, propsPath)
   const componentJs = transpile(componentRaw, componentPath)
   const props = pickPropsFromMock(mockJs, extractExpectedPropNames(componentRaw))
 
@@ -188,6 +192,7 @@ export async function GET(
     componentJs,
     stylesJs,
     mockJs,
+    propsJs,
   })
 
   return Response.json(

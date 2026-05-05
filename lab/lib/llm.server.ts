@@ -6,6 +6,7 @@ import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "@/lib/llm.types"
 type LlmStructuredRequest = {
   instruction: string
   imageBase64?: string
+  imageBase64List?: string[]
   schemaName: string
   schema: Record<string, unknown>
   target?: "default" | "init"
@@ -27,64 +28,12 @@ class LlmError extends Error {
   }
 }
 
-function parsePositiveInteger(rawValue: string | undefined): number | null {
-  if (!rawValue) return null
-
-  const value = Number(rawValue)
-  if (!Number.isInteger(value) || value <= 0) return null
-
-  return value
-}
-
-function trimTrailingSlash(url: string): string {
-  return url.replace(/\/+$/, "")
-}
-
 function getLlmProvider(): LlmProvider {
-  const configured = process.env.DESENGINE_LLM_PROVIDER
-  if (configured === "openai" || configured === "ollama") {
-    return configured
-  }
-
-  return appConfig.llm.provider
-}
-
-function getInitLlmProvider(): LlmProvider {
-  const configured = process.env.DESENGINE_INIT_LLM_PROVIDER
-  if (configured === "openai" || configured === "ollama") {
-    return configured
-  }
-
-  return getLlmProvider()
+  return "openai"
 }
 
 function getOpenAIModel(): string {
   return process.env.DESENGINE_OPENAI_MODEL || appConfig.llm.openai.defaultModel
-}
-
-function getInitOpenAIModel(): string {
-  return process.env.DESENGINE_INIT_OPENAI_MODEL || getOpenAIModel()
-}
-
-function getOllamaBaseUrl(): string {
-  return trimTrailingSlash(process.env.DESENGINE_OLLAMA_BASE_URL || appConfig.llm.ollama.defaultBaseUrl)
-}
-
-function getOllamaModel(): string {
-  return (process.env.DESENGINE_OLLAMA_MODEL || "").trim()
-}
-
-function getInitOllamaModel(): string {
-  return (process.env.DESENGINE_INIT_OLLAMA_MODEL || getOllamaModel()).trim()
-}
-
-function getOllamaTimeoutMs(): number | null {
-  return parsePositiveInteger(process.env.DESENGINE_OLLAMA_TIMEOUT_MS)
-}
-
-function createAbortSignal(timeoutMs?: number): AbortSignal | undefined {
-  if (!timeoutMs) return undefined
-  return AbortSignal.timeout(timeoutMs)
 }
 
 function getOutputTextFromOpenAI(data: unknown): string {
@@ -131,7 +80,7 @@ function getOpenAIMetrics(data: unknown): LlmUsageMetrics {
     "usage" in data &&
     data.usage &&
     typeof data.usage === "object"
-      ? data.usage as Record<string, unknown>
+      ? (data.usage as Record<string, unknown>)
       : null
 
   if (!usage) {
@@ -150,38 +99,6 @@ function getOpenAIMetrics(data: unknown): LlmUsageMetrics {
   }
 }
 
-function getOllamaMetrics(data: unknown): LlmUsageMetrics {
-  const payload = data && typeof data === "object" ? data as Record<string, unknown> : null
-  if (!payload) {
-    return {
-      status: "unavailable",
-      reason: "provider_did_not_return_metrics",
-    }
-  }
-
-  const inputTokens = typeof payload.prompt_eval_count === "number" ? payload.prompt_eval_count : null
-  const outputTokens = typeof payload.eval_count === "number" ? payload.eval_count : null
-  const totalTokens =
-    typeof inputTokens === "number" && typeof outputTokens === "number"
-      ? inputTokens + outputTokens
-      : null
-
-  if (inputTokens === null && outputTokens === null && totalTokens === null) {
-    return {
-      status: "unavailable",
-      reason: "provider_did_not_return_metrics",
-    }
-  }
-
-  return {
-    status: "available",
-    inputTokens,
-    outputTokens,
-    totalTokens,
-    costUsd: null,
-  }
-}
-
 function mapFetchError(error: unknown, fallbackMessage: string): never {
   if (error instanceof LlmError) {
     throw error
@@ -194,56 +111,41 @@ function mapFetchError(error: unknown, fallbackMessage: string): never {
   throw new LlmError("network", fallbackMessage)
 }
 
-function ensureOpenAIConfig(target: "default" | "init") {
+function ensureOpenAIConfig() {
   if (!process.env.OPENAI_API_KEY) {
     throw new LlmError("config", "Для режима OpenAI не настроен OPENAI_API_KEY")
   }
 
   return {
     provider: "openai" as const,
-    model: target === "init" ? getInitOpenAIModel() : getOpenAIModel(),
+    model: getOpenAIModel(),
     apiKey: process.env.OPENAI_API_KEY,
   }
 }
 
-function ensureOllamaConfig(target: "default" | "init") {
-  const baseUrl = getOllamaBaseUrl()
-  const model = target === "init" ? getInitOllamaModel() : getOllamaModel()
-  const timeoutMs = getOllamaTimeoutMs()
-
-  if (!baseUrl) {
-    throw new LlmError("config", "Для режима Ollama не настроен DESENGINE_OLLAMA_BASE_URL")
-  }
-
-  if (!model) {
-    throw new LlmError("config", "Для режима Ollama не настроен DESENGINE_OLLAMA_MODEL")
-  }
-
-  if (!timeoutMs) {
-    throw new LlmError("config", "Для режима Ollama не настроен DESENGINE_OLLAMA_TIMEOUT_MS")
-  }
-
-  return {
-    provider: "ollama" as const,
-    baseUrl,
-    model,
-    timeoutMs,
-  }
-}
-
 async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
-  const config = ensureOpenAIConfig(request.target ?? "default")
+  const config = ensureOpenAIConfig()
+  const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
+  const startedAt = Date.now()
 
   const content: Array<{ type: string; text?: string; image_url?: string }> = [
     { type: "input_text", text: request.instruction },
   ]
 
-  if (request.imageBase64) {
-    content.push({ type: "input_image", image_url: `data:image/png;base64,${request.imageBase64}` })
+  for (const imageBase64 of images) {
+    content.push({ type: "input_image", image_url: `data:image/png;base64,${imageBase64}` })
   }
 
   let res: Response
   try {
+    console.log("[desengine][openai] start", {
+      target: request.target ?? "default",
+      model: config.model,
+      imageCount: images.length,
+      instructionLength: request.instruction.length,
+      schemaName: request.schemaName,
+    })
+
     res = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -269,6 +171,12 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
       }),
     })
   } catch (error) {
+    console.error("[desengine][openai] network_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      durationMs: Date.now() - startedAt,
+      message: error instanceof Error ? error.message : String(error),
+    })
     mapFetchError(error, "Не удалось подключиться к OpenAI API")
   }
 
@@ -284,8 +192,22 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
       typeof data.error.message === "string"
         ? data.error.message
         : "Ошибка OpenAI API"
+    console.error("[desengine][openai] provider_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      status: res.status,
+      durationMs: Date.now() - startedAt,
+      message: providerMessage,
+    })
     throw new LlmError("provider", providerMessage)
   }
+
+  console.log("[desengine][openai] success", {
+    target: request.target ?? "default",
+    model: config.model,
+    status: res.status,
+    durationMs: Date.now() - startedAt,
+  })
 
   return {
     provider: "openai",
@@ -295,69 +217,7 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
   }
 }
 
-async function callOllama(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
-  const config = ensureOllamaConfig(request.target ?? "default")
-
-  const images = request.imageBase64 ? [request.imageBase64] : []
-
-  let res: Response
-  try {
-    res = await fetch(`${config.baseUrl}/api/generate`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: config.model,
-        prompt: request.instruction,
-        images,
-        format: request.schema,
-        stream: false,
-      }),
-      signal: createAbortSignal(config.timeoutMs),
-    })
-  } catch (error) {
-    mapFetchError(error, "Не удалось подключиться к Ollama endpoint")
-  }
-
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    const providerMessage =
-      data &&
-      typeof data === "object" &&
-      "error" in data &&
-      typeof data.error === "string"
-        ? data.error
-        : "Ollama endpoint вернул ошибку"
-    throw new LlmError("provider", providerMessage)
-  }
-
-  const responseText =
-    data &&
-    typeof data === "object" &&
-    "response" in data &&
-    typeof data.response === "string"
-      ? data.response
-      : ""
-
-  if (!responseText.trim()) {
-    throw new LlmError("invalid_response", "Ollama вернула пустой или неподдерживаемый ответ")
-  }
-
-  return {
-    provider: "ollama",
-    model: config.model,
-    outputText: responseText,
-    metrics: getOllamaMetrics(data),
-  }
-}
-
 export async function runStructuredLlmRequest(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
-  const provider = request.target === "init" ? getInitLlmProvider() : getLlmProvider()
-  if (provider === "ollama") {
-    return callOllama(request)
-  }
-
   return callOpenAI(request)
 }
 
@@ -388,112 +248,8 @@ export function toLlmErrorResponse(error: unknown) {
   }
 }
 
-async function checkOllamaAvailability(): Promise<LlmStatus["availability"]> {
-  const config = ensureOllamaConfig()
-
-  let res: Response
-  try {
-    res = await fetch(`${config.baseUrl}/api/tags`, {
-      signal: createAbortSignal(config.timeoutMs),
-    })
-  } catch (error) {
-    if (error instanceof Error && error.name === "TimeoutError") {
-      return {
-        ok: false,
-        message: "Проверка Ollama завершилась по таймауту",
-      }
-    }
-
-    return {
-      ok: false,
-      message: "Ollama endpoint недоступен по сети",
-    }
-  }
-
-  const data = await res.json().catch(() => null)
-  if (!res.ok) {
-    return {
-      ok: false,
-      message: "Ollama endpoint вернул ошибку при проверке доступности",
-    }
-  }
-
-  const models =
-    data &&
-    typeof data === "object" &&
-    "models" in data &&
-    Array.isArray(data.models)
-      ? data.models
-      : null
-
-  if (!models) {
-    return {
-      ok: false,
-      message: "Ollama endpoint вернул неподдерживаемый формат списка моделей",
-    }
-  }
-
-  const hasModel = models.some((item) => {
-    if (!item || typeof item !== "object") return false
-
-    const name = "name" in item && typeof item.name === "string" ? item.name : null
-    const model = "model" in item && typeof item.model === "string" ? item.model : null
-
-    return name === config.model || model === config.model
-  })
-
-  if (!hasModel) {
-    return {
-      ok: false,
-      message: `Ollama доступна, но модель ${config.model} не найдена`,
-    }
-  }
-
-  return {
-    ok: true,
-    message: "Ollama доступна и модель найдена",
-  }
-}
-
 export async function getLlmStatus(): Promise<LlmStatus> {
   const provider = getLlmProvider()
-
-  if (provider === "ollama") {
-    try {
-      const config = ensureOllamaConfig()
-      const availability = await checkOllamaAvailability()
-
-      return {
-        provider,
-        label: "Ollama",
-        ready: availability.ok,
-        config: {
-          model: config.model,
-          baseUrl: config.baseUrl,
-          timeoutMs: config.timeoutMs,
-          hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
-        },
-        availability,
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Конфигурация Ollama некорректна"
-      return {
-        provider,
-        label: "Ollama",
-        ready: false,
-        config: {
-          model: getOllamaModel() || null,
-          baseUrl: getOllamaBaseUrl() || null,
-          timeoutMs: getOllamaTimeoutMs(),
-          hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
-        },
-        availability: {
-          ok: false,
-          message,
-        },
-      }
-    }
-  }
 
   try {
     const config = ensureOpenAIConfig()
@@ -503,8 +259,6 @@ export async function getLlmStatus(): Promise<LlmStatus> {
       ready: true,
       config: {
         model: config.model,
-        baseUrl: null,
-        timeoutMs: null,
         hasOpenAIKey: true,
       },
       availability: {
@@ -520,8 +274,6 @@ export async function getLlmStatus(): Promise<LlmStatus> {
       ready: false,
       config: {
         model: getOpenAIModel(),
-        baseUrl: null,
-        timeoutMs: null,
         hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
       },
       availability: {

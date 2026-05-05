@@ -3,6 +3,7 @@ import path from "node:path"
 
 import { appConfig } from "./config.server"
 import {
+  type TaskLabContext,
   type PromptHistoryEntry,
   type TaskData,
   type TaskLlmUsageSummary,
@@ -58,7 +59,10 @@ function buildTaskLlmUsageSummary(promptHistory: PromptHistoryEntry[]): TaskLlmU
   }
 }
 
-export async function readTaskData(task: { id: string }): Promise<TaskData> {
+export async function readTaskData(
+  task: { id: string },
+  labContext: TaskLabContext | null = null,
+): Promise<TaskData> {
   const textFiles = appConfig.taskWorkbenchFiles.filter((file) => {
     // На MVP не читаем бинарные файлы (PNG).
     return !file.fileName.toLowerCase().endsWith(".png")
@@ -88,6 +92,7 @@ export async function readTaskData(task: { id: string }): Promise<TaskData> {
     contentByFileId: Object.fromEntries(entries),
     promptHistory,
     llmUsageSummary: buildTaskLlmUsageSummary(promptHistory),
+    labContext,
   }
 }
 

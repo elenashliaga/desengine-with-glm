@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig } from "@/lib/server"
+import { appConfig, getTaskLabContext, getTaskListItemById } from "@/lib/server"
 
 type Params = { taskId: string }
 
@@ -18,12 +18,19 @@ export async function POST(
 ) {
   const { taskId } = await params
   const body = (await request.json().catch(() => null)) as Body | null
+  const taskItem = await getTaskListItemById(taskId)
+
+  if (!taskItem) {
+    return Response.json({ ok: false, error: "Задание не найдено" }, { status: 404 })
+  }
+
+  const labContext = await getTaskLabContext(taskItem)
 
   const updates = Array.isArray(body?.updates) ? body.updates : []
 
   const editable = new Map(
     appConfig.taskWorkbenchFiles
-      .filter((f) => f.edit === true)
+      .filter((f) => f.edit === true && labContext.editableFileIds.includes(f.id))
       .map((f) => [f.id, f.fileName] as const),
   )
 

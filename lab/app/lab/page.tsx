@@ -1,6 +1,7 @@
 import {
   getLevelById,
   getLevelOverview,
+  getTaskLabContext,
   getTaskListItemById,
   readTaskData,
 } from "@/lib/server"
@@ -32,7 +33,8 @@ export default async function Page({
 
     const initLevelOverview = await getLevelOverview(levelIdParam)
     const initTaskItem = taskIdParam ? await getTaskListItemById(taskIdParam) : null
-    const initTaskData = initTaskItem ? await readTaskData(initTaskItem) : null
+    const initTaskLabContext = initTaskItem ? await getTaskLabContext(initTaskItem) : null
+    const initTaskData = initTaskItem ? await readTaskData(initTaskItem, initTaskLabContext) : null
 
     let initScreen: LabScreenState = { type: "level" }
 

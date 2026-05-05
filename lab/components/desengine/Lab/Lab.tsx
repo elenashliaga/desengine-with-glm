@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { LabWorkbench } from "../LabWorkbench";
 import { LevelOverview } from "../LevelOverview";
 import { TaskLevelTransition } from "../TaskLevelTransition";
@@ -32,8 +31,11 @@ function createTransitionHref(transition: TaskTransition) {
     return `/lab?${params.toString()}`;
 }
 
+function pushLocalUrl(href: string) {
+    window.history.pushState(null, "", href);
+}
+
 function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabProps) {
-    const router = useRouter();
     const [screen, setScreen] = useState<LabScreenState>(initScreen);
     const [levelOverview, setLevelOverview] = useState<LevelOverviewData>(initLevelOverview);
     const [taskItem, setTaskItem] = useState(initTaskItem);
@@ -59,8 +61,11 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         return true;
     }
 
-    async function loadLevelOverview(levelId?: string) {
+    async function loadLevelOverview(levelId?: string, options?: { silent?: boolean }) {
         const ref = levelId ? `/api/levels/${levelId}` : "/api/levels/current";
+        if (!options?.silent) {
+            setStatus("Загрузка уровня…");
+        }
         const res = await fetch(ref, { method: "GET" });
         const data = await res.json().catch(() => null);
 
@@ -76,7 +81,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     async function handleTaskOpen(taskId: string) {
         setStatus("Загрузка задания…");
-        router.push(createTaskHref(taskId));
+        pushLocalUrl(createTaskHref(taskId));
 
         const res = await fetch(`/api/tasks/${taskId}`, { method: "GET" });
         const data = await res.json();
@@ -98,18 +103,17 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     }
 
     async function handleNavigateLevel(levelId: string) {
-        setStatus("Загрузка уровня…");
-        router.push(createLevelHref(levelId));
-        await loadLevelOverview(levelId);
+        pushLocalUrl(createLevelHref(levelId));
+        setScreen({ type: "level" });
+        setStatus("");
+        void loadLevelOverview(levelId, { silent: true });
     }
 
     async function handleReturnToLevelList(levelId?: string) {
-        setStatus("Возвращаю к списку задач…");
-        router.push(createLevelHref(levelId));
-        const overview = await loadLevelOverview(levelId);
-        if (overview) {
-            setScreen({ type: "level" });
-        }
+        pushLocalUrl(createLevelHref(levelId));
+        setScreen({ type: "level" });
+        setStatus("");
+        void loadLevelOverview(levelId, { silent: true });
     }
 
     function handleTaskItemChange(next: TaskListItem | null) {
@@ -119,7 +123,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     function handleTransition(transition: TaskTransition | null) {
         if (!transition) return;
-        router.push(createTransitionHref(transition));
+        pushLocalUrl(createTransitionHref(transition));
         setScreen({ type: "transition", transition });
     }
 
@@ -158,7 +162,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     transition={screen.transition}
                     pending={status.length > 0}
                     onContinue={() => {
-                        router.push(createTaskHref(screen.transition.taskId));
+                        pushLocalUrl(createTaskHref(screen.transition.taskId));
                         setScreen({ type: "task" });
                     }}
                     onBackToLevelList={() => handleReturnToLevelList(screen.transition.toLevel?.id)}

@@ -23,13 +23,14 @@ function PromptFile({ fileId, title, checked, disabled, onToggle }: PromptFilePr
 }
 
 type PromptFileListProps = {
+    fileIds: string[];
     selectedFileIds: string[];
     disabled?: boolean;
     onToggle: (fileId: string, checked: boolean) => void;
 }
 
-function PromptFileList({ selectedFileIds, disabled, onToggle }: PromptFileListProps) {
-    const promptFiles = taskWorkbenchFiles.filter((file) => file.edit === true)
+function PromptFileList({ fileIds, selectedFileIds, disabled, onToggle }: PromptFileListProps) {
+    const promptFiles = taskWorkbenchFiles.filter((file) => file.edit === true && fileIds.includes(file.id))
 
     return (
         <div className="space-y-1">

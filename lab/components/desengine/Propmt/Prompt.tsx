@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { PromptFileList } from "./PromptFile";
 import { PromptText } from "./PromptText";
 import { PromptControls } from "./PromptControls";
 import { BaseProps, BaseStyles } from "../Base";
-import { taskWorkbenchFiles } from "@/lib/client";
 import type { TaskData, TaskListItem, TaskTransition } from "@/lib/types";
 
 type PromptProps = BaseProps & {
@@ -32,11 +31,12 @@ function Prompt({
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
-    const editableFileIds = useMemo(
-      () => taskWorkbenchFiles.filter((file) => file.edit === true).map((file) => file.id),
-      [],
-    )
+    const editableFileIds = taskData.labContext?.editableFileIds ?? []
     const [selectedFileIds, setSelectedFileIds] = useState<string[]>(editableFileIds);
+
+    useEffect(() => {
+        setSelectedFileIds(editableFileIds);
+    }, [editableFileIds]);
 
     function handleToggle(fileId: string, checked: boolean) {
         setSelectedFileIds((current) => {
@@ -100,6 +100,7 @@ function Prompt({
             <PromptText value={promptText} disabled={!started || pending || !taskItem.progress.currentLevelInitialized} onChange={setPromptText} />
             <div className="flex flex-2 flex-col h-full">
                 <PromptFileList
+                  fileIds={editableFileIds}
                   selectedFileIds={selectedFileIds}
                   disabled={!started || pending || !taskItem.progress.currentLevelInitialized}
                   onToggle={handleToggle}

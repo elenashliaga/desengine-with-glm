@@ -65,7 +65,26 @@ function OutRender({ task, started, reloadKey, onStart, startStatus, startError 
         <div className="flex-1">
             {!started ? (
                 <div className="space-y-3">
-                    <TaskStart task={{ id: task, image: { width: 0, height: 0 }, started: false }} onStarted={onStart} />
+                    <TaskStart
+                      task={{
+                        id: task,
+                        image: { width: 0, height: 0 },
+                        started: false,
+                        maxLevel: 1,
+                        progress: {
+                          currentLevel: 1,
+                          currentLevelId: "level-1",
+                          currentLevelStatus: "available",
+                          currentLevelInitialized: false,
+                          promptsUsed: 0,
+                          promptsLimit: 0,
+                          maxLevel: 1,
+                          isCompleted: false,
+                          hasNextLevel: false,
+                        },
+                      }}
+                      onStarted={onStart}
+                    />
                     {startStatus === "starting" && (
                         <p className="text-sm text-muted-foreground">Генерация файлов…</p>
                     )}

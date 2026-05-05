@@ -32,14 +32,15 @@ function LabWorkbench({
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
     const [previewVersion, setPreviewVersion] = useState(0);
+    const editableIds = taskData.labContext?.editableFileIds ?? [];
 
     const editableFileIds = useMemo(() => {
         return new Set(
             taskWorkbenchFiles
-                .filter((f) => f.edit === true)
+                .filter((f) => f.edit === true && editableIds.includes(f.id))
                 .map((f) => f.id)
         );
-    }, []);
+    }, [editableIds]);
 
     async function handleSave() {
         setSaveStatus("saving");
@@ -143,12 +144,26 @@ function LabWorkbench({
 
             <InOut
               task={taskItem.id}
+              taskData={taskData}
               started={started}
               reloadKey={previewVersion}
               onStart={handleStart}
               startStatus={startStatus}
               startError={startError}
             />
+
+            {taskData.labContext && (
+                <div className="rounded-md border p-4 text-sm">
+                    <p className="font-medium">Пояснение уровня</p>
+                    <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
+                        {taskData.labContext.commonExplanation}
+                    </p>
+                    <p className="mt-4 font-medium">Пояснение задачи</p>
+                    <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
+                        {taskData.labContext.taskExplanation}
+                    </p>
+                </div>
+            )}
 
             {started && (
                 <div className="space-y-3">

@@ -1,4 +1,4 @@
-export type LlmProvider = "openai" | "ollama"
+export type LlmProvider = "openai"
 
 export type LlmUsageMetrics =
   | {
@@ -25,8 +25,6 @@ export type LlmStatus = {
   ready: boolean
   config: {
     model: string | null
-    baseUrl: string | null
-    timeoutMs: number | null
     hasOpenAIKey: boolean
   }
   availability: {

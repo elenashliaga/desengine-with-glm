@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-const LlmProviderSchema = z.enum(["openai", "ollama"])
+const LlmProviderSchema = z.enum(["openai"])
 
 // Схема конфигурации приложения (env/config.json)
 const AppConfigSchema = z.object({
@@ -12,9 +12,6 @@ const AppConfigSchema = z.object({
     provider: LlmProviderSchema,
     openai: z.object({
       defaultModel: z.string().min(1),
-    }),
-    ollama: z.object({
-      defaultBaseUrl: z.string().min(1),
     }),
   }),
   taskWorkbenchFiles: z.array(

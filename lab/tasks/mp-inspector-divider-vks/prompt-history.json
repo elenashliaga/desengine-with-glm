@@ -1,0 +1,51 @@
+[
+  {
+    "text": "1. А почему сейчас нет надписи на лейбле хоть какой-нибудь? Добавь.\n2. Кажется, что лейбл по вертикали слишком высокий. Уменьши в два раза.",
+    "createdAt": "2026-05-05T14:08:33.277Z",
+    "selectedFileIds": [
+      "component",
+      "stories",
+      "styles"
+    ],
+    "levelNumber": 2,
+    "changedFileIds": [
+      "component",
+      "styles"
+    ],
+    "llmCall": {
+      "provider": "openai",
+      "model": "gpt-5.3-codex",
+      "metrics": {
+        "status": "available",
+        "inputTokens": 1246,
+        "outputTokens": 760,
+        "totalTokens": 2006,
+        "costUsd": null
+      }
+    }
+  },
+  {
+    "text": "Куда исчез голубой фон и полоска? Надо вернуть.",
+    "createdAt": "2026-05-05T14:10:20.956Z",
+    "selectedFileIds": [
+      "component",
+      "stories",
+      "styles"
+    ],
+    "levelNumber": 2,
+    "changedFileIds": [
+      "styles"
+    ],
+    "llmCall": {
+      "provider": "openai",
+      "model": "gpt-5.3-codex",
+      "metrics": {
+        "status": "available",
+        "inputTokens": 1222,
+        "outputTokens": 482,
+        "totalTokens": 1704,
+        "costUsd": null
+      }
+    }
+  }
+]

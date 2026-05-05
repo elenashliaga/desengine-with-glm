@@ -4,6 +4,7 @@ import { access, readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "./config.server"
+import { readLevelCommonExplanation } from "./prompts.server"
 import {
   LevelsCatalogSchema,
   TaskConfigSchema,
@@ -12,6 +13,7 @@ import {
   type LevelConfig,
   type LevelOverview,
   type LevelOverviewTaskItem,
+  type TaskLabContext,
   type TaskConfig,
   type TaskListItem,
   type TaskProgress,
@@ -33,15 +35,34 @@ type TaskProgressMutationResult = {
   transition: TaskTransition | null
 }
 
-const levelsConfigPath = path.join(process.cwd(), "levels", "config.json")
-
 function defaultUserProgressStore(): UserProgressStore {
   return { tasks: {} }
 }
 
 async function readLevelsCatalogRaw() {
-  const raw = await readFile(levelsConfigPath, "utf-8")
-  return LevelsCatalogSchema.parse(JSON.parse(raw))
+  const levelsRoot = path.join(process.cwd(), "levels")
+  const entries = await readdir(levelsRoot, { withFileTypes: true })
+  const levelDirs = entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+
+  const levels = await Promise.all(
+    levelDirs.map(async (levelId) => {
+      const [configRaw, overviewRaw] = await Promise.all([
+        readFile(path.join(levelsRoot, levelId, "config.json"), "utf-8"),
+        readFile(path.join(levelsRoot, levelId, "overview.md"), "utf-8").catch(() => ""),
+      ])
+
+      const parsed = JSON.parse(configRaw)
+      return {
+        ...parsed,
+        description: overviewRaw.trim(),
+      }
+    }),
+  )
+
+  return LevelsCatalogSchema.parse({ levels })
 }
 
 async function readUserProgressStore() {
@@ -88,13 +109,13 @@ async function readTaskPromptHistory(taskId: string): Promise<PromptHistoryEntry
 }
 
 function buildInitialTaskProgress(maxLevel: number): TaskProgress {
-  const levels = Object.fromEntries(
+  const levels: TaskProgress["levels"] = Object.fromEntries(
     Array.from({ length: maxLevel }, (_, index) => {
       const levelNumber = index + 1
       return [
         String(levelNumber),
         {
-          status: "available",
+          status: "available" as const,
           promptsUsed: 0,
         },
       ]
@@ -229,6 +250,59 @@ function requireLevel(levels: LevelConfig[], levelNumber: number) {
   return level
 }
 
+function requireTaskImage(taskConfig: TaskConfig, imageId: string) {
+  const images = taskConfig.images as Record<string, { width: number; height: number }>
+  const image = images[imageId]
+  if (!image) {
+    throw new Error(`Для картинки "${imageId}" не заданы размеры в config.json`)
+  }
+
+  return image
+}
+
+function normalizeEditableFileIds(level: LevelConfig) {
+  const knownFileIds = new Set(appConfig.taskWorkbenchFiles.map((file) => file.id))
+  return level.editableFileIds.filter((fileId) => knownFileIds.has(fileId))
+}
+
+async function buildTaskLabContext(
+  taskId: string,
+  level: LevelConfig,
+  taskConfig: TaskConfig,
+): Promise<TaskLabContext> {
+  const levelTaskNotes = taskConfig.levelTaskNotes as Record<string, string>
+  const taskExplanation = levelTaskNotes[String(level.number)]
+
+  if (!taskExplanation) {
+    throw new Error(`Для уровня ${level.number} у задачи "${taskId}" отсутствует levelTaskNotes`)
+  }
+
+  const commonExplanation = await readLevelCommonExplanation(
+    level.id,
+    level.description,
+  )
+
+  return {
+    levelId: level.id,
+    levelNumber: level.number,
+    labId: level.labId,
+    commonExplanation,
+    taskExplanation,
+    editableFileIds: normalizeEditableFileIds(level),
+    images: level.images.map((imageConfig) => {
+      const size = requireTaskImage(taskConfig, imageConfig.id)
+
+      return {
+        id: imageConfig.id,
+        src: `/api/tasks/${taskId}/image?imageId=${encodeURIComponent(imageConfig.id)}`,
+        width: size.width,
+        height: size.height,
+        show: imageConfig.show,
+      }
+    }),
+  }
+}
+
 function summarizeTaskProgress(
   levels: LevelConfig[],
   taskConfig: TaskConfig,
@@ -318,20 +392,10 @@ export async function getTaskListItemsWithProgress(): Promise<TaskListItem[]> {
     readTaskCatalog(),
   ])
 
-  let changed = false
-
-  const result = await Promise.all(tasks.map(async (task) => {
+  const result = tasks.map((task) => {
     const taskProgress = ensureTaskProgress(store, task.id, task.config.maxLevel)
-    const promptHistory = await readTaskPromptHistory(task.id)
-    if (reconcileTaskProgressWithHistory(levels, task.config, taskProgress, promptHistory)) {
-      changed = true
-    }
     return buildTaskListItem(task, levels, taskProgress)
-  }))
-
-  if (changed) {
-    await writeUserProgressStore(store)
-  }
+  })
 
   return result
 }
@@ -343,17 +407,10 @@ export async function getLevelOverview(levelId?: string | null): Promise<LevelOv
     readTaskCatalog(),
   ])
 
-  let changed = false
-
-  const taskSnapshots = await Promise.all(tasks.map(async (task) => {
+  const taskSnapshots = tasks.map((task) => {
     const taskProgress = ensureTaskProgress(store, task.id, task.config.maxLevel)
-    const promptHistory = await readTaskPromptHistory(task.id)
-    if (reconcileTaskProgressWithHistory(levels, task.config, taskProgress, promptHistory)) {
-      changed = true
-    }
-
     return { task, taskProgress }
-  }))
+  })
 
   const fallbackLevel =
     levels.find((level) =>
@@ -391,10 +448,6 @@ export async function getLevelOverview(levelId?: string | null): Promise<LevelOv
 
   const levelIndex = levels.findIndex((item) => item.id === level.id)
 
-  if (changed) {
-    await writeUserProgressStore(store)
-  }
-
   return {
     level,
     availableTasks: availableTasks.sort((a, b) => a.id.localeCompare(b.id)),
@@ -417,6 +470,16 @@ export async function getTaskListItemById(taskId: string) {
 export async function getLevelForTaskItem(taskItem: TaskListItem) {
   const levels = await getLevelsCatalog()
   return requireLevel(levels, taskItem.progress.currentLevel)
+}
+
+export async function getTaskLabContext(taskItem: TaskListItem) {
+  const [levels, taskConfig] = await Promise.all([
+    getLevelsCatalog(),
+    readTaskConfig(taskItem.id),
+  ])
+
+  const level = requireLevel(levels, taskItem.progress.currentLevel)
+  return buildTaskLabContext(taskItem.id, level, taskConfig)
 }
 
 function buildTransition(

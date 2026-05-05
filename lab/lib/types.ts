@@ -1,15 +1,81 @@
 import { z } from "zod"
 import type { LlmCallRecord } from "./llm.types"
 
-const TaskConfigSchema = z.object({
-  image: z.object({
-    width: z.number(),
-    height: z.number(),
+const TaskImageSchema = z.object({
+  width: z.number(),
+  height: z.number(),
+})
+
+const LegacyTaskConfigSchema = z.union([
+  z.object({
+    image: TaskImageSchema,
+    maxLevel: z.number().int().min(1),
   }),
+  z.object({
+    base: TaskImageSchema,
+    variants: TaskImageSchema.optional(),
+    maxLevel: z.number().int().min(1),
+  }),
+])
+
+const ModernTaskConfigSchema = z.object({
+  images: z.record(z.string().min(1), TaskImageSchema),
+  levelTaskNotes: z.record(z.string().min(1), z.string().min(1)),
   maxLevel: z.number().int().min(1),
 })
 
+const TaskConfigSchema = z
+  .union([ModernTaskConfigSchema, LegacyTaskConfigSchema])
+  .transform((value) => {
+    if ("images" in value) {
+      const base = value.images.base
+      const variants = value.images.variants ?? null
+
+      return {
+        image: base,
+        base,
+        variants,
+        images: {
+          ...value.images,
+          ...(variants ? { variants } : {}),
+        },
+        levelTaskNotes: value.levelTaskNotes,
+        maxLevel: value.maxLevel,
+      }
+    }
+
+    if ("image" in value) {
+      return {
+        image: value.image,
+        base: value.image,
+        variants: null,
+        images: {
+          base: value.image,
+        },
+        levelTaskNotes: {},
+        maxLevel: value.maxLevel,
+      }
+    }
+
+    return {
+      image: value.base,
+      base: value.base,
+      variants: value.variants ?? null,
+      images: {
+        base: value.base,
+        ...(value.variants ? { variants: value.variants } : {}),
+      },
+      levelTaskNotes: {},
+      maxLevel: value.maxLevel,
+    }
+  })
+
 type TaskConfig = z.infer<typeof TaskConfigSchema>
+
+const LevelImageConfigSchema = z.object({
+  id: z.string().min(1),
+  show: z.boolean(),
+})
 
 const LevelConfigSchema = z.object({
   id: z.string().min(1),
@@ -18,8 +84,32 @@ const LevelConfigSchema = z.object({
   description: z.string().min(1),
   promptKey: z.string().min(1),
   layoutKey: z.string().min(1),
-  contentKey: z.string().min(1),
   maxPromptsPerTask: z.number().int().min(1),
+  labId: z.string().min(1).optional(),
+  images: z.array(LevelImageConfigSchema).optional(),
+  editableFileIds: z.array(z.string().min(1)).optional(),
+}).transform((value) => {
+  const defaultImages =
+    value.number === 1
+      ? [{ id: "base", show: true }]
+      : [
+          { id: "base", show: true },
+          { id: "variants", show: true },
+        ]
+
+  const defaultEditableFileIds =
+    value.number === 1
+      ? ["component", "stories"]
+      : value.number === 2
+        ? ["component", "stories", "styles"]
+        : ["component", "stories", "styles", "mock", "props"]
+
+  return {
+    ...value,
+    labId: value.labId ?? (value.number === 1 ? "level-1" : value.number === 2 ? "level-2" : "shared-lab"),
+    images: value.images ?? defaultImages,
+    editableFileIds: value.editableFileIds ?? defaultEditableFileIds,
+  }
 })
 
 const LevelsCatalogSchema = z.object({
@@ -89,6 +179,24 @@ export type TaskLlmUsageSummary = {
   callsWithoutProviderMetrics: number
 }
 
+export type TaskLabImage = {
+  id: string
+  src: string
+  width: number
+  height: number
+  show: boolean
+}
+
+export type TaskLabContext = {
+  levelId: string
+  levelNumber: number
+  labId: string
+  commonExplanation: string
+  taskExplanation: string
+  editableFileIds: string[]
+  images: TaskLabImage[]
+}
+
 // все файлы
 // ? Тут точно нужен taskId?
 export type TaskData = {
@@ -96,6 +204,7 @@ export type TaskData = {
   contentByFileId: Record<string, string>
   promptHistory: PromptHistoryEntry[]
   llmUsageSummary: TaskLlmUsageSummary
+  labContext: TaskLabContext | null
 }
 
 export type LevelOverviewTaskItem = TaskListItem & {

@@ -14,7 +14,7 @@ import { TabsStyles } from "./styles"
 import { useState } from "react";
 import { taskWorkbenchFiles } from "@/lib/client";
 
-function Code({ id, taskData, onTaskDataChange }: CodeProps) {
+function Code({ id, taskData, onTaskDataChange }: CodeProps & { id: string }) {
   if (!id) return null;
   return (
       <div className="w-full h-full p-0 gap-0">
@@ -49,7 +49,16 @@ function CodeTab({ title, file }: { title: string; file: string }) {
 
 function CodeTabs({ taskData, onTaskDataChange } : CodeProps) {
   const [tab, setTab] = useState("component");
-  const codeFiles = taskWorkbenchFiles.filter((f) => f.edit === true);
+  const editableFileIds = taskData.labContext?.editableFileIds ?? [];
+  const codeFiles = taskWorkbenchFiles.filter((f) => f.edit === true && editableFileIds.includes(f.id));
+
+  if (codeFiles.length === 0) {
+    return (
+      <div className={`${BaseStyles.frameRow} h-96 items-center justify-center text-sm text-muted-foreground`}>
+        Для этого уровня пока нет доступных файлов для редактирования.
+      </div>
+    );
+  }
 
   return (
     <Tabs

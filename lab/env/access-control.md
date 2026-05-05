@@ -9,7 +9,7 @@
 
 ## Как задать
 
-Добавь в `lab/.env.local`:
+Добавь в `lab/.env.local` значения из блока доступа по email в [lab/.env.local.example](/Users/op/dev/olgapavlova/desengine/lab/.env.local.example:1):
 
 ```bash
 DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/

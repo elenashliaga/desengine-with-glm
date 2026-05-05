@@ -124,6 +124,357 @@
         }
       },
       "updatedAt": "2026-05-04T19:21:21.606Z"
+    },
+    "mp-inspector-divider-vks": {
+      "currentLevel": 2,
+      "levels": {
+        "1": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "initializedAt": "2026-05-05T13:59:12.208Z",
+          "completedAt": "2026-05-05T14:06:48.201Z",
+          "completionReason": "manual"
+        },
+        "2": {
+          "status": "in_progress",
+          "promptsUsed": 3,
+          "initializedAt": "2026-05-05T14:07:05.722Z"
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-05T14:10:20.970Z"
+    },
+    "dipole-radio": {
+      "currentLevel": 1,
+      "levels": {
+        "1": {
+          "status": "in_progress",
+          "promptsUsed": 0,
+          "initializedAt": "2026-05-05T14:10:55.282Z"
+        },
+        "2": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-05T14:10:55.282Z"
+    },
+    "dipole-button": {
+      "currentLevel": 1,
+      "levels": {
+        "1": {
+          "status": "in_progress",
+          "promptsUsed": 0,
+          "initializedAt": "2026-05-05T14:25:50.303Z"
+        },
+        "2": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-05T14:25:50.303Z"
+    },
+    "easy-buy-app-button": {
+      "currentLevel": 1,
+      "levels": {
+        "1": {
+          "status": "in_progress",
+          "promptsUsed": 2,
+          "initializedAt": "2026-05-05T14:26:28.262Z"
+        },
+        "2": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-05T14:27:02.291Z"
     }
   }
 }

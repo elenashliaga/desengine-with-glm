@@ -23,17 +23,11 @@ export default async function Page() {
     <PageShell>
       <div className="rounded-md border p-3 text-sm">
         <strong>LLM-провайдер:</strong> {llmStatus.label}.{" "}
-        <strong>Режим:</strong> {llmStatus.provider}.{" "}
         <strong>Статус:</strong> {llmStatus.availability.message}.
         {llmStatus.config.model ? ` Модель: ${llmStatus.config.model}.` : ""}
-        {llmStatus.config.baseUrl ? ` URL: ${llmStatus.config.baseUrl}.` : ""}
-        {typeof llmStatus.config.timeoutMs === "number" ? ` Таймаут: ${llmStatus.config.timeoutMs} мс.` : ""}
         {!llmStatus.ready && (
           <div className="mt-1 text-muted-foreground">
-            Настрой `lab/.env.local`.
-            {llmStatus.provider === "ollama"
-              ? " См. `lab/env/ollama.md`."
-              : " См. `lab/env/openai.md`."}
+            Настрой `lab/.env.local`. См. `lab/env/openai.md`.
           </div>
         )}
       </div>

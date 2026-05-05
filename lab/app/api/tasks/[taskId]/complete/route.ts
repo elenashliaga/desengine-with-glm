@@ -1,5 +1,6 @@
 import {
   completeCurrentTaskLevel,
+  getTaskLabContext,
   getTaskListItemById,
   readTaskData,
 } from "@/lib/server"
@@ -19,7 +20,8 @@ export async function POST(
 
   const progressUpdate = await completeCurrentTaskLevel(taskId, "manual")
   const nextTaskItem = await getTaskListItemById(taskId)
-  const taskData = await readTaskData({ id: taskId })
+  const labContext = nextTaskItem ? await getTaskLabContext(nextTaskItem) : null
+  const taskData = await readTaskData({ id: taskId }, labContext)
 
   return Response.json({
     ok: true,

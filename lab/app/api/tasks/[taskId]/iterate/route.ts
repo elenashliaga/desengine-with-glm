@@ -1,13 +1,13 @@
-import { writeFile } from "node:fs/promises"
+import { readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import {
   appendPromptHistory,
   appConfig,
   getLevelForTaskItem,
+  getTaskLabContext,
   getTaskListItemById,
   isTaskStarted,
-  readPromptHistory,
   readTaskData,
   registerPromptForCurrentLevel,
 } from "@/lib/server"
@@ -67,7 +67,15 @@ export async function POST(
     return Response.json({ ok: false, error: "Лимит промптов для уровня уже исчерпан" }, { status: 409 })
   }
 
-  const editableFiles = appConfig.taskWorkbenchFiles.filter((file) => file.edit === true)
+  const labContext = await getTaskLabContext(taskItem)
+  const promptImages = labContext.images.filter((image) => image.show)
+  if (promptImages.length === 0) {
+    return Response.json({ ok: false, error: "Для уровня не настроены картинки для LLM-контекста" }, { status: 400 })
+  }
+
+  const editableFiles = appConfig.taskWorkbenchFiles.filter(
+    (file) => file.edit === true && labContext.editableFileIds.includes(file.id),
+  )
   const editableById = new Map(editableFiles.map((file) => [file.id, file] as const))
 
   const requestedFileIds = Array.isArray(body?.selectedFileIds)
@@ -83,12 +91,24 @@ export async function POST(
   }
 
   const level = await getLevelForTaskItem(taskItem)
-  const taskData = await readTaskData(taskItem)
-  const promptHistory = await readPromptHistory(taskId)
+  const taskData = await readTaskData(taskItem, labContext)
   const [productionPrompt, levelDidacticPrompt] = await Promise.all([
     readPrompt("production", "iterate-component"),
     readLevelDidacticPrompt(level.promptKey),
   ])
+
+  let imageBase64List: string[]
+  try {
+    imageBase64List = await Promise.all(
+      promptImages.map(async (image) => {
+        const imagePath = path.join(appConfig.tasksRoot, taskId, `${image.id}.png`)
+        const buf = await readFile(imagePath)
+        return buf.toString("base64")
+      }),
+    )
+  } catch {
+    return Response.json({ ok: false, error: "Не найдены обязательные картинки текущего уровня" }, { status: 404 })
+  }
 
   const selectedFiles = selectedFileIds.map((fileId) => {
     const file = editableById.get(fileId)
@@ -99,19 +119,13 @@ export async function POST(
     }
   })
 
-  const historyText = promptHistory.length
-    ? promptHistory
-        .map((entry, index) => {
-          const files = entry.selectedFileIds.length ? entry.selectedFileIds.join(", ") : "все файлы"
-          return `${index + 1}. [${entry.createdAt}] Файлы: ${files}\n${entry.text}`
-        })
-        .join("\n\n")
-    : "Истории уточнений пока нет."
-
-  const fileList = editableFiles.map((file) => ({ id: file.id, fileName: file.fileName }))
   const selectedFilesText = selectedFiles
     .map((file) => `FILE ${file.id} (${file.fileName})\n\`\`\`tsx\n${file.content}\n\`\`\``)
     .join("\n\n")
+
+  const imagesText = promptImages
+    .map((image) => `- ${image.id}.png — ${image.width}x${image.height}`)
+    .join("\n")
 
   const instruction = `
 ${productionPrompt}
@@ -124,11 +138,8 @@ ${levelDidacticPrompt}
 ТЕКУЩИЙ УТОЧНЯЮЩИЙ ПРОМПТ ПОЛЬЗОВАТЕЛЯ:
 ${promptText}
 
-ИСТОРИЯ ПРЕДЫДУЩИХ ПРОМПТОВ ПО ЭТОМУ ЗАДАНИЮ:
-${historyText}
-
-ДОСТУПНЫЕ fileId:
-${JSON.stringify(fileList, null, 2)}
+КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
+${imagesText}
 
 В КОНТЕКСТ ЭТОЙ ИТЕРАЦИИ ВКЛЮЧЕНЫ ТОЛЬКО СЛЕДУЮЩИЕ ФАЙЛЫ:
 ${selectedFilesText}
@@ -139,6 +150,7 @@ ${selectedFilesText}
   try {
     llmCall = await runStructuredLlmRequest({
       instruction,
+      imageBase64List,
       schemaName: "desengine_iterate_component_files",
       schema: {
         type: "object",
@@ -201,7 +213,8 @@ ${selectedFilesText}
 
   const progressUpdate = await registerPromptForCurrentLevel(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)
-  const nextTaskData = await readTaskData({ id: taskId })
+  const nextLabContext = nextTaskItem ? await getTaskLabContext(nextTaskItem) : null
+  const nextTaskData = await readTaskData({ id: taskId }, nextLabContext)
   return Response.json({
     ok: true,
     taskData: nextTaskData,

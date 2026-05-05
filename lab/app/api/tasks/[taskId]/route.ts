@@ -1,5 +1,6 @@
 import {
   getLevelForTaskItem,
+  getTaskLabContext,
   getTaskListItemById,
   isTaskStarted,
   readTaskData,
@@ -20,8 +21,9 @@ export async function GET(
   }
 
   const started = await isTaskStarted(taskId)
+  const labContext = await getTaskLabContext(taskItem)
   const taskData = started
-    ? await readTaskData(taskItem)
+    ? await readTaskData(taskItem, labContext)
     : {
         taskId,
         contentByFileId: {},
@@ -35,6 +37,7 @@ export async function GET(
           totalTokens: null,
           callsWithoutProviderMetrics: 0,
         },
+        labContext,
       }
   const level = await getLevelForTaskItem(taskItem)
 

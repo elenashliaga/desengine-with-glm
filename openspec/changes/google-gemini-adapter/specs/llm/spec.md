@@ -6,7 +6,6 @@
 
 Поддерживаются как минимум следующие режимы:
 - OpenAI по ключу;
-- Ollama по URL;
 - Google Gemini.
 
 #### Scenario: Конфигурация выбрала Google Gemini
