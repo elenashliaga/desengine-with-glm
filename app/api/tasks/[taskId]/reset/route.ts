@@ -1,4 +1,5 @@
 import {
+  getTaskLabContext,
   getTaskListItemById,
   resetTask,
 } from "@/lib/server"
@@ -18,11 +19,29 @@ export async function POST(
   }
 
   await resetTask(taskId)
-
   const nextTaskItem = await getTaskListItemById(taskId)
+  const labContext = nextTaskItem ? await getTaskLabContext(nextTaskItem) : null
 
   return Response.json({
     ok: true,
     taskItem: nextTaskItem,
+    taskData: nextTaskItem
+      ? {
+          taskId,
+          contentByFileId: {},
+          promptHistory: [],
+          llmUsageSummary: {
+            totalCalls: 0,
+            teachingCostCents: 0,
+            providersUsed: [],
+            inputTokens: null,
+            outputTokens: null,
+            totalTokens: null,
+            callsWithoutProviderMetrics: 0,
+          },
+          labContext,
+        }
+      : null,
+    started: false,
   })
 }

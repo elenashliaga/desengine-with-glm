@@ -1,5 +1,4 @@
-import { access, readFile, writeFile } from "node:fs/promises"
-import path from "node:path"
+import { readFile, writeFile } from "node:fs/promises"
 
 import { appConfig } from "./config.server"
 import { getLevelEditableWorkbenchFiles } from "./task-workbench.server"
@@ -9,8 +8,14 @@ import {
   type TaskData,
   type TaskLlmUsageSummary,
 } from "./types"
+import {
+  ensureParentDir,
+  getUserTaskFilePath,
+  migrateLegacyTaskStateIfNeeded,
+  pathExists,
+  promptHistoryFileName,
+} from "./user-state.server"
 
-const promptHistoryFileName = "prompt-history.json"
 const teachingCostPerIterationCents = 3
 
 function buildTaskLlmUsageSummary(promptHistory: PromptHistoryEntry[]): TaskLlmUsageSummary {
@@ -64,6 +69,8 @@ export async function readTaskData(
   task: { id: string },
   labContext: TaskLabContext | null = null,
 ): Promise<TaskData> {
+  await migrateLegacyTaskStateIfNeeded(task.id)
+
   const levelEditableFileIds = labContext
     ? new Set(getLevelEditableWorkbenchFiles(labContext.editableFileIds).map((file) => file.id))
     : null
@@ -86,11 +93,7 @@ export async function readTaskData(
     // по пути прочитать контент
     // и вернуть пару «id файла, контент»
     textFiles.map(async (file) => {
-      const filePath = path.join(
-        appConfig.tasksRoot,
-        task.id,
-        file.fileName
-      )
+      const filePath = getUserTaskFilePath(task.id, file.fileName)
 
       const content = await readFile(filePath, "utf-8").catch(() => "")
 
@@ -113,20 +116,16 @@ export async function isTaskStarted(taskId: string): Promise<boolean> {
   const componentFile = appConfig.taskWorkbenchFiles.find((f) => f.id === "component")
   if (!componentFile) return false
 
-  const filePath = path.join(appConfig.tasksRoot, taskId, componentFile.fileName)
-  try {
-    await access(filePath)
-    return true
-  } catch {
-    return false
-  }
+  await migrateLegacyTaskStateIfNeeded(taskId)
+  return pathExists(getUserTaskFilePath(taskId, componentFile.fileName))
 }
 
 function getPromptHistoryPath(taskId: string) {
-  return path.join(appConfig.tasksRoot, taskId, promptHistoryFileName)
+  return getUserTaskFilePath(taskId, promptHistoryFileName)
 }
 
 export async function readPromptHistory(taskId: string): Promise<PromptHistoryEntry[]> {
+  await migrateLegacyTaskStateIfNeeded(taskId)
   const filePath = getPromptHistoryPath(taskId)
 
   try {
@@ -153,5 +152,7 @@ export async function readPromptHistory(taskId: string): Promise<PromptHistoryEn
 export async function appendPromptHistory(taskId: string, entry: PromptHistoryEntry) {
   const history = await readPromptHistory(taskId)
   history.push(entry)
-  await writeFile(getPromptHistoryPath(taskId), JSON.stringify(history, null, 2), "utf-8")
+  const filePath = getPromptHistoryPath(taskId)
+  await ensureParentDir(filePath)
+  await writeFile(filePath, JSON.stringify(history, null, 2), "utf-8")
 }

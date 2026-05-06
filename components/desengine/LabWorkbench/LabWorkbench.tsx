@@ -133,16 +133,30 @@ function LabWorkbench({
         setResetPending(true);
         setResetError("");
 
-        const res = await fetch(`/api/tasks/${taskItem.id}/reset`, { method: "POST" });
-        const data = await res.json().catch(() => null);
+        try {
+            const res = await fetch(`/api/tasks/${taskItem.id}/reset`, { method: "POST" });
+            const data = await res.json().catch(() => null);
 
-        if (!res.ok || !data?.ok) {
+            if (!res.ok || !data?.ok) {
+                setResetPending(false);
+                setResetError(data?.error || "Не удалось сбросить задачу");
+                return;
+            }
+
+            if (data.taskItem) {
+                onTaskItemChange(data.taskItem);
+            }
+            if (data.taskData) {
+                onTaskDataChange(data.taskData);
+            }
+            onStartedChange(false);
+            onTransition(null);
+            onScreenChange("component");
             setResetPending(false);
-            setResetError(data?.error || "Не удалось сбросить задачу");
-            return;
+        } catch {
+            setResetPending(false);
+            setResetError("Не удалось сбросить задачу");
         }
-
-        window.location.reload();
     }
 
     return (

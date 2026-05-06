@@ -1,6 +1,7 @@
 {
-    "tasksRoot"      : "tasks",
-    "userProgressFile": "env/user-progress.json",
+    "taskCatalogRoot": "tasks",
+    "userRoot"       : "user",
+    "userProgressFile": "user/user-progress.json",
     "taskConfigFile" : "config.json",
     "taskImageFile"  : "image.png",
     "llm" : {

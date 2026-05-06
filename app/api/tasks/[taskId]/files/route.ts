@@ -1,12 +1,11 @@
 import { writeFile } from "node:fs/promises"
-import path from "node:path"
 
 import {
-  appConfig,
   getLevelEditableWorkbenchFileMap,
   getTaskLabContext,
   getTaskListItemById,
 } from "@/lib/server"
+import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/user-state.server"
 
 type Params = { taskId: string }
 
@@ -37,6 +36,7 @@ export async function POST(
 
   const errors: Array<{ fileId: string; error: string }> = []
   let written = 0
+  await ensureUserTaskDir(taskId)
 
   for (const update of updates) {
     if (!update || typeof update.fileId !== "string") continue
@@ -45,7 +45,7 @@ export async function POST(
     if (!fileName) continue
     if (fileName.toLowerCase().endsWith(".png")) continue
 
-    const filePath = path.join(appConfig.tasksRoot, taskId, fileName)
+    const filePath = getUserTaskFilePath(taskId, fileName)
     try {
       await writeFile(filePath, update.content ?? "", "utf-8")
       written += 1

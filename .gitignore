@@ -19,6 +19,8 @@
 
 # production
 /build
+/user/
+/env/.user-state-migrated.json
 
 # misc
 .DS_Store

@@ -1,18 +1,19 @@
 import "server-only"
 
-import { access, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import { readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "./config.server"
 import { readLevelCommonExplanation } from "./prompts.server"
+import { isTaskStarted, readPromptHistory } from "./repository"
 import {
   LevelsCatalogSchema,
   TaskConfigSchema,
   UserProgressStoreSchema,
-  type PromptHistoryEntry,
   type LevelConfig,
   type LevelOverview,
   type LevelOverviewTaskItem,
+  type PromptHistoryEntry,
   type TaskLabContext,
   type TaskConfig,
   type TaskListItem,
@@ -21,6 +22,14 @@ import {
   type TaskTransition,
   type UserProgressStore,
 } from "./types"
+import {
+  cleanupLegacyTaskStateOnReset,
+  defaultUserProgressStore,
+  ensureUserProgressStorage,
+  getTaskCatalogFilePath,
+  migrateLegacyUserProgressIfNeeded,
+  removeUserTaskDir,
+} from "./user-state.server"
 
 type CompletionReason = "manual" | "prompt_limit"
 
@@ -33,10 +42,6 @@ type TaskCatalogItem = {
 type TaskProgressMutationResult = {
   summary: TaskProgressSummary
   transition: TaskTransition | null
-}
-
-function defaultUserProgressStore(): UserProgressStore {
-  return { tasks: {} }
 }
 
 async function readLevelsCatalogRaw() {
@@ -66,6 +71,8 @@ async function readLevelsCatalogRaw() {
 }
 
 async function readUserProgressStore() {
+  await migrateLegacyUserProgressIfNeeded()
+
   try {
     const raw = await readFile(appConfig.userProgressFile, "utf-8")
     return UserProgressStoreSchema.parse(JSON.parse(raw))
@@ -75,37 +82,14 @@ async function readUserProgressStore() {
 }
 
 async function writeUserProgressStore(store: UserProgressStore) {
+  await ensureUserProgressStorage()
   await writeFile(appConfig.userProgressFile, JSON.stringify(store, null, 2), "utf-8")
 }
 
 async function readTaskConfig(taskId: string): Promise<TaskConfig> {
-  const configPath = path.join(appConfig.tasksRoot, taskId, appConfig.taskConfigFile)
+  const configPath = getTaskCatalogFilePath(taskId, appConfig.taskConfigFile)
   const rawTaskConfig = await readFile(configPath, "utf-8")
   return TaskConfigSchema.parse(JSON.parse(rawTaskConfig))
-}
-
-async function readTaskPromptHistory(taskId: string): Promise<PromptHistoryEntry[]> {
-  const filePath = path.join(appConfig.tasksRoot, taskId, "prompt-history.json")
-
-  try {
-    const raw = await readFile(filePath, "utf-8")
-    const parsed = JSON.parse(raw)
-
-    if (!Array.isArray(parsed)) return []
-
-    return parsed.filter((entry): entry is PromptHistoryEntry => {
-      return (
-        entry &&
-        typeof entry.text === "string" &&
-        typeof entry.createdAt === "string" &&
-        Array.isArray(entry.selectedFileIds) &&
-        (typeof entry.levelNumber === "number" || typeof entry.levelNumber === "undefined") &&
-        entry.selectedFileIds.every((item: unknown) => typeof item === "string")
-      )
-    })
-  } catch {
-    return []
-  }
 }
 
 function buildInitialTaskProgress(maxLevel: number): TaskProgress {
@@ -359,18 +343,13 @@ function buildPassedTaskItem(taskItem: TaskListItem, nextUnlockedLevel: number |
 }
 
 async function readTaskCatalog(): Promise<TaskCatalogItem[]> {
-  const entries = await readdir(appConfig.tasksRoot, { withFileTypes: true })
+  const entries = await readdir(appConfig.taskCatalogRoot, { withFileTypes: true })
   const taskDirs = entries.filter((entry) => entry.isDirectory())
-  const componentFile = appConfig.taskWorkbenchFiles.find((file) => file.id === "component")
 
   const tasks = await Promise.all(
     taskDirs.map(async (entry) => {
       const config = await readTaskConfig(entry.name)
-      const started = componentFile
-        ? await access(path.join(appConfig.tasksRoot, entry.name, componentFile.fileName))
-            .then(() => true)
-            .catch(() => false)
-        : false
+      const started = await isTaskStarted(entry.name)
 
       return {
         id: entry.name,
@@ -485,7 +464,7 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
     getLevelsCatalog(),
     readUserProgressStore(),
     readTaskConfig(taskId),
-    readTaskPromptHistory(taskId),
+    readPromptHistory(taskId),
   ])
 
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
@@ -563,7 +542,7 @@ export async function markTaskLevelInProgress(taskId: string) {
     getLevelsCatalog(),
     readUserProgressStore(),
     readTaskConfig(taskId),
-    readTaskPromptHistory(taskId),
+    readPromptHistory(taskId),
   ])
 
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
@@ -589,7 +568,7 @@ export async function markCurrentTaskLevelInitialized(taskId: string) {
     getLevelsCatalog(),
     readUserProgressStore(),
     readTaskConfig(taskId),
-    readTaskPromptHistory(taskId),
+    readPromptHistory(taskId),
   ])
 
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
@@ -622,7 +601,7 @@ export async function registerPromptForCurrentLevel(taskId: string): Promise<Tas
     getLevelsCatalog(),
     readUserProgressStore(),
     readTaskConfig(taskId),
-    readTaskPromptHistory(taskId),
+    readPromptHistory(taskId),
   ])
 
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
@@ -680,7 +659,7 @@ export async function completeCurrentTaskLevel(
     getLevelsCatalog(),
     readUserProgressStore(),
     readTaskConfig(taskId),
-    readTaskPromptHistory(taskId),
+    readPromptHistory(taskId),
   ])
 
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
@@ -722,29 +701,10 @@ export async function completeCurrentTaskLevel(
 }
 
 export async function resetTask(taskId: string) {
-  const [store, taskConfig] = await Promise.all([
-    readUserProgressStore(),
-    readTaskConfig(taskId),
-  ])
+  const store = await readUserProgressStore()
 
-  const taskDir = path.join(appConfig.tasksRoot, taskId)
-  const keepFiles = new Set<string>([
-    appConfig.taskConfigFile,
-    ...Object.keys(taskConfig.images).map((imageId) => `${imageId}.png`),
-  ])
-
-  const entries = await readdir(taskDir, { withFileTypes: true })
-
-  await Promise.all(
-    entries.map(async (entry) => {
-      if (keepFiles.has(entry.name)) return
-
-      await rm(path.join(taskDir, entry.name), {
-        recursive: true,
-        force: true,
-      })
-    }),
-  )
+  await removeUserTaskDir(taskId)
+  await cleanupLegacyTaskStateOnReset(taskId)
 
   if (store.tasks[taskId]) {
     delete store.tasks[taskId]

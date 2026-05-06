@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises"
-import path from "node:path"
 
-import { appConfig } from "@/lib/server"
+import { getTaskCatalogFilePath } from "@/lib/user-state.server"
 
 type Params = { taskId: string; imageId: string }
 
@@ -10,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<Params> },
 ) {
   const { taskId, imageId } = await params
-  const imagePath = path.join(appConfig.tasksRoot, taskId, `${imageId}.png`)
+  const imagePath = getTaskCatalogFilePath(taskId, `${imageId}.png`)
 
   try {
     const buf = await readFile(imagePath)

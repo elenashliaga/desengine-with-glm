@@ -1,8 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises"
-import path from "node:path"
 
 import {
-  appConfig,
   cleanupForbiddenWorkbenchFiles,
   filterWorkbenchPayloadByAllowlist,
   getLevelForTaskItem,
@@ -16,6 +14,11 @@ import {
 } from "@/lib/server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
 import { readLevelDidacticPrompt, readLevelInitPrompt, readPrompt } from "@/lib/prompts.server"
+import {
+  ensureUserTaskDir,
+  getTaskCatalogFilePath,
+  getUserTaskFilePath,
+} from "@/lib/user-state.server"
 
 type Params = { taskId: string }
 
@@ -76,7 +79,7 @@ export async function POST(
   try {
     imageBase64List = await Promise.all(
       promptImages.map(async (image) => {
-        const imagePath = path.join(appConfig.tasksRoot, taskId, `${image.id}.png`)
+        const imagePath = getTaskCatalogFilePath(taskId, `${image.id}.png`)
         const buf = await readFile(imagePath)
         return buf.toString("base64")
       }),
@@ -237,9 +240,10 @@ ${allowedFilesText}
 
   const writtenFiles: string[] = []
   const filteredPayload = filterWorkbenchPayloadByAllowlist(payload, labContext.editableFileIds)
+  await ensureUserTaskDir(taskId)
 
   for (const entry of filteredPayload.allowedEntries) {
-    const filePath = path.join(appConfig.tasksRoot, taskId, entry.fileName)
+    const filePath = getUserTaskFilePath(taskId, entry.fileName)
     await writeFile(filePath, String(entry.content ?? ""), "utf-8")
     writtenFiles.push(filePath)
   }

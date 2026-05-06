@@ -1,9 +1,8 @@
 import { readFile } from "node:fs/promises"
-import path from "node:path"
 
 import ts from "typescript"
 
-import { appConfig } from "@/lib/server"
+import { getUserTaskFilePath } from "@/lib/user-state.server"
 
 type Params = { taskId: string }
 
@@ -169,11 +168,10 @@ export async function GET(
 ) {
   const { taskId } = await params
 
-  const baseDir = path.join(appConfig.tasksRoot, taskId)
-  const componentPath = path.join(baseDir, "Component.tsx")
-  const stylesPath = path.join(baseDir, "styles.ts")
-  const mockPath = path.join(baseDir, "mock.ts")
-  const propsPath = path.join(baseDir, "props.ts")
+  const componentPath = getUserTaskFilePath(taskId, "Component.tsx")
+  const stylesPath = getUserTaskFilePath(taskId, "styles.ts")
+  const mockPath = getUserTaskFilePath(taskId, "mock.ts")
+  const propsPath = getUserTaskFilePath(taskId, "props.ts")
 
   const [componentRaw, stylesRaw, mockRaw, propsRaw] = await Promise.all([
     readFile(componentPath, "utf-8"),
