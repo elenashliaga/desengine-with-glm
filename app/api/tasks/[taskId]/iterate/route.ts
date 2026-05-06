@@ -4,8 +4,11 @@ import path from "node:path"
 import {
   appendPromptHistory,
   appConfig,
+  cleanupForbiddenWorkbenchFiles,
+  filterWorkbenchPayloadByAllowlist,
   getLevelForTaskItem,
   getTaskLabContext,
+  getLevelEditableWorkbenchFiles,
   getTaskListItemById,
   isTaskStarted,
   readTaskData,
@@ -21,7 +24,7 @@ type Body = {
   selectedFileIds?: string[]
 }
 
-type FilesPayload = Record<"component" | "stories" | "styles" | "mock" | "props", string | null>
+type FilesPayload = Record<string, string | null>
 
 function extractJson(text: string): unknown {
   const trimmed = (text || "").trim()
@@ -68,14 +71,13 @@ export async function POST(
   }
 
   const labContext = await getTaskLabContext(taskItem)
+  const cleanupBeforeIteration = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
   const promptImages = labContext.images.filter((image) => image.show)
   if (promptImages.length === 0) {
     return Response.json({ ok: false, error: "Для уровня не настроены картинки для LLM-контекста" }, { status: 400 })
   }
 
-  const editableFiles = appConfig.taskWorkbenchFiles.filter(
-    (file) => file.edit === true && labContext.editableFileIds.includes(file.id),
-  )
+  const editableFiles = getLevelEditableWorkbenchFiles(labContext.editableFileIds)
   const editableById = new Map(editableFiles.map((file) => [file.id, file] as const))
 
   const requestedFileIds = Array.isArray(body?.selectedFileIds)
@@ -126,13 +128,21 @@ export async function POST(
   const imagesText = promptImages
     .map((image) => `- ${image.id}.png — ${image.width}x${image.height}`)
     .join("\n")
+  const allowedFilesText = editableFiles
+    .map((file) => `- ${file.id} — ${file.fileName}`)
+    .join("\n")
 
   const instruction = `
 ${productionPrompt}
 
 ${levelDidacticPrompt}
 
-Верни JSON со всеми ключами "component", "stories", "styles", "mock", "props".
+## Разрешённые файлы
+${allowedFilesText}
+
+Верни JSON только с ключами из этого списка:
+${allowedFilesText}
+
 Если какой-то файл не нужно менять, верни для него null.
 
 ТЕКУЩИЙ УТОЧНЯЮЩИЙ ПРОМПТ ПОЛЬЗОВАТЕЛЯ:
@@ -155,14 +165,10 @@ ${selectedFilesText}
       schema: {
         type: "object",
         additionalProperties: false,
-        required: ["component", "stories", "styles", "mock", "props"],
-        properties: {
-          component: { type: ["string", "null"] },
-          stories: { type: ["string", "null"] },
-          styles: { type: ["string", "null"] },
-          mock: { type: ["string", "null"] },
-          props: { type: ["string", "null"] },
-        },
+        required: editableFiles.map((file) => file.id),
+        properties: Object.fromEntries(
+          editableFiles.map((file) => [file.id, { type: ["string", "null"] }]),
+        ),
       },
     })
     outputText = llmCall.outputText
@@ -186,17 +192,18 @@ ${selectedFilesText}
     )
   }
 
-  const editable = new Map(editableFiles.map((file) => [file.id, file.fileName] as const))
   const changedFileIds: string[] = []
+  const filteredPayload = filterWorkbenchPayloadByAllowlist(payload, labContext.editableFileIds)
 
-  for (const [fileId, content] of Object.entries(payload)) {
-    const fileName = editable.get(fileId)
-    if (!fileName || typeof content !== "string") continue
+  for (const entry of filteredPayload.allowedEntries) {
+    if (typeof entry.content !== "string") continue
 
-    const filePath = path.join(appConfig.tasksRoot, taskId, fileName)
-    await writeFile(filePath, content, "utf-8")
-    changedFileIds.push(fileId)
+    const filePath = path.join(appConfig.tasksRoot, taskId, entry.fileName)
+    await writeFile(filePath, entry.content, "utf-8")
+    changedFileIds.push(entry.fileId)
   }
+
+  const cleanupAfterIteration = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
 
   await appendPromptHistory(taskId, {
     text: promptText,
@@ -210,6 +217,15 @@ ${selectedFilesText}
       metrics: llmCall.metrics,
     },
   })
+
+  if (filteredPayload.ignoredFileIds.length > 0 || cleanupBeforeIteration.deletedFileIds.length > 0 || cleanupAfterIteration.deletedFileIds.length > 0) {
+    console.log("[desengine][task-iterate] allowlist_enforced", {
+      taskId,
+      ignoredFileIds: filteredPayload.ignoredFileIds,
+      deletedBeforeIterationFileIds: cleanupBeforeIteration.deletedFileIds,
+      deletedAfterIterationFileIds: cleanupAfterIteration.deletedFileIds,
+    })
+  }
 
   const progressUpdate = await registerPromptForCurrentLevel(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)

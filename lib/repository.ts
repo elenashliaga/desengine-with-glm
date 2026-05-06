@@ -2,6 +2,7 @@ import { access, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "./config.server"
+import { getLevelEditableWorkbenchFiles } from "./task-workbench.server"
 import {
   type TaskLabContext,
   type PromptHistoryEntry,
@@ -63,9 +64,21 @@ export async function readTaskData(
   task: { id: string },
   labContext: TaskLabContext | null = null,
 ): Promise<TaskData> {
+  const levelEditableFileIds = labContext
+    ? new Set(getLevelEditableWorkbenchFiles(labContext.editableFileIds).map((file) => file.id))
+    : null
+
   const textFiles = appConfig.taskWorkbenchFiles.filter((file) => {
     // На MVP не читаем бинарные файлы (PNG).
-    return !file.fileName.toLowerCase().endsWith(".png")
+    if (file.fileName.toLowerCase().endsWith(".png")) {
+      return false
+    }
+
+    if (!file.edit || !levelEditableFileIds) {
+      return true
+    }
+
+    return levelEditableFileIds.has(file.id)
   })
 
   const entries = await Promise.all(

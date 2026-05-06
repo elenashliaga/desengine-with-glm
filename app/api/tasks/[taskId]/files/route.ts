@@ -1,7 +1,12 @@
 import { writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig, getTaskLabContext, getTaskListItemById } from "@/lib/server"
+import {
+  appConfig,
+  getLevelEditableWorkbenchFileMap,
+  getTaskLabContext,
+  getTaskListItemById,
+} from "@/lib/server"
 
 type Params = { taskId: string }
 
@@ -28,11 +33,7 @@ export async function POST(
 
   const updates = Array.isArray(body?.updates) ? body.updates : []
 
-  const editable = new Map(
-    appConfig.taskWorkbenchFiles
-      .filter((f) => f.edit === true && labContext.editableFileIds.includes(f.id))
-      .map((f) => [f.id, f.fileName] as const),
-  )
+  const editable = getLevelEditableWorkbenchFileMap(labContext.editableFileIds)
 
   const errors: Array<{ fileId: string; error: string }> = []
   let written = 0

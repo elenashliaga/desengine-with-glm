@@ -41,6 +41,7 @@ function LabWorkbench({
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const [saveError, setSaveError] = useState<string>("");
     const [startStatus, setStartStatus] = useState<"" | "starting">("");
+    const [startError, setStartError] = useState("");
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
     const [resetPending, setResetPending] = useState(false);
@@ -97,6 +98,7 @@ function LabWorkbench({
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data?.ok) {
+            setStartError(data?.error || "Не удалось запустить задачу");
             setStartStatus("");
             return;
         }
@@ -205,6 +207,12 @@ function LabWorkbench({
               onStart={handleStart}
               startStatus={startStatus}
             />
+
+            {startError && (
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                    {startError}
+                </pre>
+            )}
 
             {taskData.labContext && (
                 <div className="rounded-md border p-4 text-sm">

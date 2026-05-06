@@ -573,13 +573,13 @@
       },
       "updatedAt": "2026-05-06T09:26:08.622Z"
     },
-    "oncor-left-panel-item": {
+    "dipole-checkbox": {
       "currentLevel": 1,
       "levels": {
         "1": {
           "status": "in_progress",
-          "promptsUsed": 0,
-          "initializedAt": "2026-05-06T10:52:27.724Z"
+          "promptsUsed": 4,
+          "initializedAt": "2026-05-06T11:29:11.908Z"
         },
         "2": {
           "status": "available",
@@ -658,7 +658,7 @@
           "promptsUsed": 0
         }
       },
-      "updatedAt": "2026-05-06T10:52:27.724Z"
+      "updatedAt": "2026-05-06T11:45:30.191Z"
     }
   }
 }

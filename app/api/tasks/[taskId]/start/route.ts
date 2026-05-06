@@ -3,7 +3,10 @@ import path from "node:path"
 
 import {
   appConfig,
+  cleanupForbiddenWorkbenchFiles,
+  filterWorkbenchPayloadByAllowlist,
   getLevelForTaskItem,
+  getLevelEditableWorkbenchFiles,
   getTaskLabContext,
   getTaskListItemById,
   isTaskStarted,
@@ -46,8 +49,18 @@ export async function POST(
   const level = await getLevelForTaskItem(taskItem)
   const labContext = await getTaskLabContext(taskItem)
   const already = await isTaskStarted(taskId)
+  const levelEditableFiles = getLevelEditableWorkbenchFiles(labContext.editableFileIds)
 
   if (already && taskItem.progress.currentLevelInitialized) {
+    const cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
+    if (cleanup.deletedFileIds.length > 0) {
+      console.log("[desengine][task-start] forbidden_files_deleted", {
+        taskId,
+        deletedFileIds: cleanup.deletedFileIds,
+        deletedFilePaths: cleanup.deletedFilePaths,
+      })
+    }
+
     const progress = await markTaskLevelInProgress(taskId)
     const taskData = await readTaskData(taskItem, labContext)
     return Response.json({ ok: true, taskData, taskItem: { ...taskItem, progress }, level })
@@ -84,8 +97,11 @@ export async function POST(
     readTaskData(taskItem, labContext),
   ])
 
-  const outputFiles = appConfig.taskWorkbenchFiles.filter((f) => f.edit === true)
+  const outputFiles = levelEditableFiles
   const fileList = outputFiles.map((f) => ({ id: f.id, fileName: f.fileName }))
+  const allowedFilesText = fileList
+    .map((file) => `- ${file.id} — ${file.fileName}`)
+    .join("\n")
   const filesText = outputFiles
     .map((file) => {
       const content = taskData.contentByFileId[file.id] ?? ""
@@ -115,16 +131,19 @@ ${labContext.taskExplanation}
 
 ЗАДАНИЕ:
 Это инициирующий запуск нового уровня для уже существующей задачи.
-Посмотри на картинки текущего уровня и на все текущие файлы задачи.
+Посмотри на картинки текущего уровня и на все разрешённые рабочие файлы задачи.
 Подготовь компонент к работе на уровне ${level.number}, сохранив полезные наработки и обновив реализацию там, где это требуется новой дидактикой уровня.
 
 КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
 ${imagesText}
 
-Верни полный набор файлов по ключам:
-${JSON.stringify(fileList, null, 2)}
+## Разрешённые файлы
+${allowedFilesText}
 
-ТЕКУЩЕЕ СОСТОЯНИЕ ВСЕХ ФАЙЛОВ:
+Верни полный набор файлов по ключам:
+${allowedFilesText}
+
+ТЕКУЩЕЕ СОСТОЯНИЕ РАЗРЕШЁННЫХ РАБОЧИХ ФАЙЛОВ:
 ${filesText}
 `.trim()
     : `
@@ -148,8 +167,11 @@ ${labContext.taskExplanation}
 КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
 ${imagesText}
 
+## Разрешённые файлы
+${allowedFilesText}
+
 Ключи результата соответствуют fileId из списка:
-${JSON.stringify(fileList, null, 2)}
+${allowedFilesText}
 `.trim()
 
   let outputText = ""
@@ -162,14 +184,10 @@ ${JSON.stringify(fileList, null, 2)}
       schema: {
         type: "object",
         additionalProperties: false,
-        required: ["component", "stories", "styles", "mock", "props"],
-        properties: {
-          component: { type: "string" },
-          stories: { type: "string" },
-          styles: { type: "string" },
-          mock: { type: "string" },
-          props: { type: "string" },
-        },
+        required: outputFiles.map((file) => file.id),
+        properties: Object.fromEntries(
+          outputFiles.map((file) => [file.id, { type: "string" }]),
+        ),
       },
     })
     outputText = result.outputText
@@ -217,17 +235,29 @@ ${JSON.stringify(fileList, null, 2)}
     )
   }
 
-  const editable = new Map(
-    outputFiles.map((f) => [f.id, f.fileName] as const),
-  )
   const writtenFiles: string[] = []
+  const filteredPayload = filterWorkbenchPayloadByAllowlist(payload, labContext.editableFileIds)
 
-  for (const [fileId, content] of Object.entries(payload)) {
-    const fileName = editable.get(fileId)
-    if (!fileName) continue
-    const filePath = path.join(appConfig.tasksRoot, taskId, fileName)
-    await writeFile(filePath, String(content ?? ""), "utf-8")
+  for (const entry of filteredPayload.allowedEntries) {
+    const filePath = path.join(appConfig.tasksRoot, taskId, entry.fileName)
+    await writeFile(filePath, String(entry.content ?? ""), "utf-8")
     writtenFiles.push(filePath)
+  }
+
+  if (filteredPayload.ignoredFileIds.length > 0) {
+    console.log("[desengine][task-start] forbidden_payload_ignored", {
+      taskId,
+      ignoredFileIds: filteredPayload.ignoredFileIds,
+    })
+  }
+
+  const cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
+  if (cleanup.deletedFileIds.length > 0) {
+    console.log("[desengine][task-start] forbidden_files_deleted", {
+      taskId,
+      deletedFileIds: cleanup.deletedFileIds,
+      deletedFilePaths: cleanup.deletedFilePaths,
+    })
   }
 
   console.log("[desengine][task-start] files_written", {
@@ -243,6 +273,8 @@ ${JSON.stringify(fileList, null, 2)}
   console.log("[desengine][task-start] success", {
     taskId,
     writtenFileCount: writtenFiles.length,
+    ignoredFileIds: filteredPayload.ignoredFileIds,
+    deletedFileIds: cleanup.deletedFileIds,
     durationMs: Date.now() - startedAt,
   })
   return Response.json({

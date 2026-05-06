@@ -8,6 +8,12 @@ import {
   readTaskData,
 } from "./repository"
 import {
+  cleanupForbiddenWorkbenchFiles,
+  filterWorkbenchPayloadByAllowlist,
+  getLevelEditableWorkbenchFileMap,
+  getLevelEditableWorkbenchFiles,
+} from "./task-workbench.server"
+import {
   completeCurrentTaskLevel,
   getAllLevelOverviews,
   getLevelById,
@@ -27,12 +33,16 @@ import {
 export {
   appConfig,
   appendPromptHistory,
+  cleanupForbiddenWorkbenchFiles,
   completeCurrentTaskLevel,
+  filterWorkbenchPayloadByAllowlist,
   getAllLevelOverviews,
   getLevelById,
   getLevelForTaskItem,
   getLevelOverview,
   getLevelsCatalog,
+  getLevelEditableWorkbenchFileMap,
+  getLevelEditableWorkbenchFiles,
   getTaskLabContext,
   getTaskListItemById,
   getTaskListItemsWithProgress as getTaskListItems,
