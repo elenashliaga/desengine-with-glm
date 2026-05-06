@@ -54,18 +54,18 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
   }
 
   return (
-    <section className="mt-6 rounded-[24px] border border-black/10 bg-white/75 p-5 shadow-[0_8px_30px_rgba(20,18,14,0.04)]">
+    <section className="tool-panel mt-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold text-black">Обновить onboarding</h2>
-          <p className="max-w-2xl text-sm leading-6 text-black/60">
+          <h2 className="font-semibold text-black">Обновить onboarding</h2>
+          <p className="max-w-2xl text-black/60">
             Эта кнопка вручную заново загружает локальный `/onboarding` из внешнего репозитория,
             указанного в `DESENGINE_ONBOARDING_REPO_URL`.
           </p>
         </div>
 
         <Button
-          className="inline-flex min-w-[220px] items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:bg-black/20"
+          className="min-w-[220px]"
           disabled={!canUpdate || isPending}
           onClick={handleUpdate}
           size="lg"
@@ -75,17 +75,17 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
       </div>
 
       {!canUpdate ? (
-        <p className="mt-4 text-sm leading-6 text-amber-700">
+        <p className="tool-notice-warning mt-4">
           Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`.
         </p>
       ) : null}
 
       {state.kind === "success" ? (
-        <p className="mt-4 text-sm leading-6 text-emerald-700">{state.message}</p>
+        <p className="tool-notice-success mt-4">{state.message}</p>
       ) : null}
 
       {state.kind === "error" ? (
-        <p className="mt-4 text-sm leading-6 text-red-700">{state.message}</p>
+        <p className="tool-notice-error mt-4">{state.message}</p>
       ) : null}
     </section>
   )

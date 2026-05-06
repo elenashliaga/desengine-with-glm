@@ -96,34 +96,30 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen max-w-6xl px-6 py-10">
-        <section className="w-full rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f6f2ea_52%,#ece6da_100%)] p-6 shadow-[0_20px_80px_rgba(28,24,19,0.08)] md:p-8">
-          <div className="flex flex-col gap-4 border-b border-black/10 pb-5 md:flex-row md:items-end md:justify-between">
-            <div className="space-y-3">
-              <div className="inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-black/60">
-                desengine
-              </div>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-[-0.04em] text-black md:text-4xl">
-                  Стартовая страница задач
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-black/65 md:text-base">
+    <main className="tool-shell-page">
+      <div className="tool-shell-frame">
+        <section className="tool-shell-surface">
+          <div className="tool-shell-header">
+            <div className="tool-shell-header-copy">
+              <div className="tool-eyebrow">desengine</div>
+              <div className="tool-shell-title-group">
+                <h1 className="tool-page-title">Стартовая страница задач</h1>
+                <p className="tool-page-description">
                   Здесь видны все задачи, их текущий уровень и быстрые действия для старта, продолжения и сброса.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black/70">
+            <div className="tool-meta-panel">
               <div>Всего задач: {initialTasks.length}</div>
               <div className="mt-2 flex flex-wrap gap-3">
-                <Link className="underline underline-offset-4" href={createLevelsPath()}>
+                <Link className="tool-link" href={createLevelsPath()}>
                   Уровни
                 </Link>
-                <Link className="underline underline-offset-4" href={createConfigPath()}>
+                <Link className="tool-link" href={createConfigPath()}>
                   Конфиг
                 </Link>
-                <Link className="underline underline-offset-4" href={createHelpPath()}>
+                <Link className="tool-link" href={createHelpPath()}>
                   Помощь
                 </Link>
               </div>
@@ -131,9 +127,7 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
           </div>
 
           {error ? (
-            <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </p>
+            <p className="tool-notice-error mt-5">{error}</p>
           ) : null}
 
           <div className="mt-6 space-y-3">
@@ -143,23 +137,23 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
               return (
                 <article
                   key={task.id}
-                  className="rounded-2xl border border-black/10 bg-white/80 px-4 py-4 shadow-[0_10px_30px_rgba(20,18,14,0.04)]"
+                  className="tool-card-compact"
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="min-w-0 space-y-1">
                       <Link
                         href={createTaskHref(task.id)}
-                        className="inline-flex min-w-0 items-center text-base font-semibold text-black transition-opacity hover:opacity-70"
+                        className="inline-flex min-w-0 items-center font-semibold text-black transition-opacity hover:opacity-70"
                       >
                         <span className="truncate">{task.id}</span>
                       </Link>
-                      <p className="text-sm text-black/55">{getStatusText(task)}</p>
+                      <p className="text-black/55">{getStatusText(task)}</p>
                     </div>
 
                     <div className="flex flex-col gap-3 lg:min-w-[34rem] lg:flex-row lg:items-center lg:justify-end">
                       <div className="flex flex-wrap items-center gap-2">
                         {task.started ? (
-                          <span className="inline-flex h-7 items-center rounded-full border border-black/10 bg-[#f5efe2] px-3 text-xs font-medium text-black/75">
+                          <span className="inline-flex h-7 items-center rounded-full border border-black/10 bg-[#f5efe2] px-3 font-medium text-black/75">
                             Уровень {task.progress.currentLevel}
                           </span>
                         ) : (
@@ -168,14 +162,18 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                             size="sm"
                             disabled={isPending}
                             onClick={() => void handleStart(task.id)}
-                            className="rounded-full bg-black px-3 text-white hover:bg-black/85"
                           >
                             {isPending ? "Запуск…" : "Начать"}
                           </Button>
                         )}
 
-                        <Button asChild variant="outline" size="sm" className="rounded-full">
-                          <Link href={createTaskHref(task.id)}>Продолжить</Link>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(createTaskHref(task.id))}
+                        >
+                          Продолжить
                         </Button>
                       </div>
 
@@ -186,14 +184,14 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                             style={{ width: getIndicatorWidth(task) }}
                           />
                         </div>
-                        <span className="w-14 text-right text-xs text-black/45">
+                        <span className="w-14 text-right text-black/45">
                           {task.started ? `${task.progress.currentLevel}/${task.progress.maxLevel}` : `0/${task.progress.maxLevel}`}
                         </span>
                       </div>
 
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button type="button" variant="outline" size="sm" className="rounded-full" disabled={isPending}>
+                          <Button type="button" variant="outline" size="sm" disabled={isPending}>
                             Сбросить задачу
                           </Button>
                         </AlertDialogTrigger>

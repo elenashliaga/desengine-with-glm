@@ -19,7 +19,7 @@ function ImageCard({
         <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
                 <p className="font-medium">{image.id}.png</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground">
                     {image.width}x{image.height}
                 </p>
             </div>

@@ -37,7 +37,7 @@ export function LevelTaskCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="font-medium">{task.id}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground">
               Текущий уровень задачи: {task.progress.currentLevel} из {task.maxLevel}
             </p>
           </div>
@@ -47,7 +47,7 @@ export function LevelTaskCard({
             </Button>
           ) : (
             <Link
-              className="text-sm underline underline-offset-4"
+              className="tool-link"
               href={createTaskPath(task.id)}
             >
               Открыть задачу
@@ -57,7 +57,7 @@ export function LevelTaskCard({
       ) : (
         <>
           <p className="font-medium">{task.id}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground">
             {renderTaskMeta(task)}
           </p>
         </>

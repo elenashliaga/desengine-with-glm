@@ -86,17 +86,17 @@ function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRender
                       onStarted={onStart}
                     />
                     {startStatus === "starting" && (
-                        <p className="text-sm text-muted-foreground">Генерация файлов…</p>
+                        <p className="text-muted-foreground">Генерация файлов…</p>
                     )}
                 </div>
             ) : (
                 <div className="rounded-md border bg-background p-3 min-h-32">
                     {error ? (
-                        <pre className="text-sm text-destructive whitespace-pre-wrap">{error}</pre>
+                        <pre className="text-destructive whitespace-pre-wrap">{error}</pre>
                     ) : Component ? (
                         <Component {...props} />
                     ) : (
-                        <p className="text-sm text-muted-foreground">Загрузка рендера…</p>
+                        <p className="text-muted-foreground">Загрузка рендера…</p>
                     )}
                 </div>
             )}

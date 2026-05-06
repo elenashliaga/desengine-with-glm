@@ -1,0 +1,120 @@
+@reference "./globals.css";
+
+@utility tool-shell-page {
+  @apply min-h-screen;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-ui), "Segoe UI", "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+}
+
+@utility tool-shell-frame {
+  @apply mx-auto flex min-h-screen max-w-6xl px-6 py-10;
+}
+
+@utility tool-shell-frame-center {
+  @apply mx-auto flex min-h-screen max-w-6xl items-center px-6 py-12;
+}
+
+@utility tool-shell-surface {
+  @apply w-full rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f6f2ea_52%,#ece6da_100%)] p-6 shadow-[0_20px_80px_rgba(28,24,19,0.08)] md:p-8;
+}
+
+@utility tool-shell-surface-split {
+  @apply grid w-full gap-8 rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f4f1ea_48%,#ece6da_100%)] p-8 shadow-[0_20px_80px_rgba(28,24,19,0.08)] xl:grid-cols-[1.05fr_0.95fr] xl:p-10;
+}
+
+@utility tool-shell-header {
+  @apply flex flex-col gap-4 border-b border-black/10 pb-5 md:flex-row md:items-end md:justify-between;
+}
+
+@utility tool-shell-header-copy {
+  @apply space-y-3;
+}
+
+@utility tool-shell-title-group {
+  @apply space-y-2;
+}
+
+@utility tool-eyebrow {
+  @apply inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 font-medium uppercase text-black/60;
+}
+
+@utility tool-page-title {
+  @apply font-semibold text-black;
+}
+
+@utility tool-page-description {
+  @apply max-w-3xl text-black/65;
+}
+
+@utility tool-link {
+  @apply underline underline-offset-4 transition-opacity hover:opacity-70;
+}
+
+@utility tool-link-inline {
+  @apply inline-flex font-medium underline underline-offset-4 transition-opacity hover:opacity-70;
+}
+
+@utility tool-link-row {
+  @apply flex flex-wrap gap-3 text-black/70;
+}
+
+@utility tool-meta-panel {
+  @apply rounded-2xl border border-black/10 bg-white/70 px-4 py-3 text-black/70;
+}
+
+@utility tool-card {
+  @apply rounded-[22px] border border-black/10 bg-white/80 p-5 shadow-[0_10px_30px_rgba(20,18,14,0.04)];
+}
+
+@utility tool-card-compact {
+  @apply rounded-2xl border border-black/10 bg-white/80 px-4 py-4 shadow-[0_10px_30px_rgba(20,18,14,0.04)];
+}
+
+@utility tool-panel {
+  @apply rounded-[24px] border border-black/10 bg-white/75 p-5 shadow-[0_8px_30px_rgba(20,18,14,0.04)];
+}
+
+@utility tool-panel-strong {
+  @apply rounded-[24px] border border-black/10 bg-white p-6 shadow-[0_16px_50px_rgba(20,18,14,0.08)];
+}
+
+@utility tool-subcard {
+  @apply rounded-2xl border border-black/10 bg-white/80 p-4;
+}
+
+@utility tool-section-card {
+  @apply rounded-md border border-black/10 bg-white/70 p-6;
+}
+
+@utility tool-section-subcard {
+  @apply space-y-3 rounded-md border border-black/10 bg-white/90 p-4;
+}
+
+@utility tool-notice-error {
+  @apply rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-700;
+}
+
+@utility tool-notice-warning {
+  @apply rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-amber-800;
+}
+
+@utility tool-notice-success {
+  @apply rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700;
+}
+
+@utility tool-status-grid {
+  @apply grid gap-3 md:grid-cols-2;
+}
+
+@utility tool-status-card {
+  @apply rounded-[22px] border border-black/10 bg-white/78 p-4 shadow-[0_8px_30px_rgba(20,18,14,0.04)];
+}
+
+@utility tool-status-panel {
+  @apply rounded-[24px] border border-black/10 bg-white/75 p-5;
+}
+
+@utility tool-status-step {
+  @apply rounded-2xl border border-black/10 bg-[#f8f4ec] px-4 py-3 text-black/70;
+}

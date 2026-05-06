@@ -48,13 +48,11 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-12">
-        <section className="grid w-full gap-8 rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f4f1ea_48%,#ece6da_100%)] p-8 shadow-[0_20px_80px_rgba(28,24,19,0.08)] xl:grid-cols-[1.05fr_0.95fr] xl:p-10">
+    <main className="tool-shell-page">
+      <div className="tool-shell-frame-center">
+        <section className="tool-shell-surface-split">
           <div>
-            <div className="inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-black/60">
-              desengine lab
-            </div>
+            <div className="tool-eyebrow">desengine lab</div>
 
             <div className="mt-7">
               <SystemStatusPanel
@@ -66,16 +64,16 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-black/10 bg-white p-6 shadow-[0_16px_50px_rgba(20,18,14,0.08)]">
+          <div className="tool-panel-strong">
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-black">Допуск в лабораторию</h2>
-              <p className="text-sm leading-6 text-black/60">
+              <h2 className="font-semibold text-black">Допуск в лабораторию</h2>
+              <p className="text-black/60">
                 После успешной проверки откроется защищённая часть desengine со списком задач и API лаборатории.
               </p>
             </div>
 
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-              <label className="grid gap-2 text-sm text-black/75">
+              <label className="grid gap-2 text-black/75">
                 Email
                 <Input
                   type="email"
@@ -85,18 +83,16 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   disabled={isPending || !configured}
-                  className="h-11 rounded-xl border-black/10 bg-[#f7f4ee] px-3 text-sm text-black"
+                  className="h-11 rounded-xl border-black/10 bg-[#f7f4ee] px-3 text-black"
                 />
               </label>
 
               {error && (
-                <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {error}
-                </p>
+                <p className="tool-notice-error">{error}</p>
               )}
 
               {!configured && (
-                <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                <p className="tool-notice-warning">
                   Проверка доступа пока не настроена. Сначала администратор должен задать
                   `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `config.txt`.
                 </p>
@@ -106,20 +102,20 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
                 type="submit"
                 size="lg"
                 disabled={isPending || !configured}
-                className="h-11 w-full rounded-xl bg-black text-sm text-white hover:bg-black/85"
+                className="h-11"
               >
                 {isPending ? "Проверяем доступ…" : "Открыть защищённую лабораторию"}
               </Button>
             </form>
 
-            <div className="mt-4 grid gap-3 text-sm text-black/70 md:grid-cols-3">
-              <div className="rounded-2xl border border-black/10 bg-white/80 p-4">
+            <div className="mt-4 grid gap-3 text-black/70 md:grid-cols-3">
+              <div className="tool-subcard">
                 После допуска приложение возвращает пользователя на целевой path без `?next=...`.
               </div>
-              <div className="rounded-2xl border border-black/10 bg-white/80 p-4">
+              <div className="tool-subcard">
                 Допуск действует только для текущего открытия приложения.
               </div>
-              <div className="rounded-2xl border border-black/10 bg-white/80 p-4">
+              <div className="tool-subcard">
                 Проверка допуска не подтверждает владение почтовым ящиком.
               </div>
             </div>

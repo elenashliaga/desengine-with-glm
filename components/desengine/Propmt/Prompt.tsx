@@ -86,18 +86,18 @@ function Prompt({
                 <PromptControls disabled={!started || !taskItem.progress.currentLevelInitialized} pending={pending} onRun={handleRun} />
             </div>
 
-            {status && <p className="text-sm text-muted-foreground">{status}</p>}
-            {error && <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">{error}</pre>}
-            <p className="text-sm text-muted-foreground">
+            {status && <p className="text-muted-foreground">{status}</p>}
+            {error && <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">{error}</pre>}
+            <p className="text-muted-foreground">
                 Осталось промптов на этом уровне: {Math.max(taskItem.progress.promptsLimit - taskItem.progress.promptsUsed, 0)}
             </p>
             {!taskItem.progress.currentLevelInitialized && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                     Система сначала выполняет скрытый инициирующий запуск этого уровня. Уточняющие промпты станут доступны после него.
                 </p>
             )}
 
-            <div className="rounded-md border p-3 text-sm">
+            <div className="rounded-md border p-3">
                 <p>
                     <strong>Учебная стоимость:</strong> {taskData.llmUsageSummary.teachingCostCents} центов.
                 </p>
@@ -123,13 +123,13 @@ function Prompt({
             </div>
 
             <div className="space-y-2">
-                <p className="text-sm font-medium">История уточнений</p>
+                <p className="font-medium">История уточнений</p>
                 {taskData.promptHistory.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Пока пусто</p>
+                    <p className="text-muted-foreground">Пока пусто</p>
                 ) : (
                     <div className="space-y-2">
                         {taskData.promptHistory.map((entry) => (
-                            <div key={`${entry.createdAt}-${entry.text}`} className="rounded-md border p-3 text-sm">
+                            <div key={`${entry.createdAt}-${entry.text}`} className="rounded-md border p-3">
                                 <p className="text-muted-foreground">{entry.createdAt}</p>
                                 <p className="text-muted-foreground">
                                   Уровень: {entry.levelNumber ?? "не указан"}

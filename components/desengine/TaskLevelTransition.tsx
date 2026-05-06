@@ -21,15 +21,15 @@ export function TaskLevelTransition({
   return (
     <section className="space-y-4 rounded-md border p-6">
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground">
           Уровень {transition.fromLevel.number} завершён
         </p>
-        <h1 className="text-2xl font-semibold">
+        <h1 className="font-semibold">
           {hasNextLevel
             ? `Задача ${transition.taskId} готова к переходу на ${transition.toLevel?.title}`
             : `Задача ${transition.taskId} завершена на последнем уровне`}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground">
           Причина завершения: {transition.reason === "manual" ? "пользователь завершил уровень" : "исчерпан лимит промптов"}.
         </p>
       </div>

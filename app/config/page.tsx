@@ -9,17 +9,17 @@ export default async function ConfigPage() {
   const status = await getSystemStatusModel()
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen max-w-6xl px-6 py-10">
-        <section className="w-full rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f6f2ea_52%,#ece6da_100%)] p-6 shadow-[0_20px_80px_rgba(28,24,19,0.08)] md:p-8">
-          <div className="flex flex-wrap items-center gap-3 border-b border-black/10 pb-5 text-sm text-black/60">
-            <Link className="underline underline-offset-4" href={createTasksPath()}>
+    <main className="tool-shell-page">
+      <div className="tool-shell-frame">
+        <section className="tool-shell-surface">
+          <div className="flex flex-wrap items-center gap-3 border-b border-black/10 pb-5 text-black/60">
+            <Link className="tool-link" href={createTasksPath()}>
               К задачам
             </Link>
-            <Link className="underline underline-offset-4" href={createAuthPath()}>
+            <Link className="tool-link" href={createAuthPath()}>
               Страница допуска
             </Link>
-            <Link className="underline underline-offset-4" href={createHelpPath()}>
+            <Link className="tool-link" href={createHelpPath()}>
               Помощь
             </Link>
           </div>

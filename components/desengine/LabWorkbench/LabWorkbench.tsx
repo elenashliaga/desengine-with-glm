@@ -164,10 +164,10 @@ function LabWorkbench({
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p>Рабочий стол</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground">
                         Задача: <code>{taskItem.id}</code>
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground">
                         Уровень {taskItem.progress.currentLevel} из {taskItem.maxLevel}. Промптов: {taskItem.progress.promptsUsed} / {taskItem.progress.promptsLimit}.
                     </p>
                 </div>
@@ -223,13 +223,13 @@ function LabWorkbench({
             />
 
             {startError && (
-                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
                     {startError}
                 </pre>
             )}
 
             {taskData.labContext && (
-                <div className="rounded-md border p-4 text-sm">
+                <div className="rounded-md border p-4">
                     <p className="font-medium">Пояснение уровня</p>
                     <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
                         {taskData.labContext.commonExplanation}
@@ -248,12 +248,12 @@ function LabWorkbench({
                             {saveStatus === "saving" ? "Сохранение…" : "Сохранить"}
                         </Button>
                         {saveStatus === "saved" && (
-                            <span className="text-sm text-muted-foreground">Сохранено</span>
+                            <span className="text-muted-foreground">Сохранено</span>
                         )}
                     </div>
 
                     {saveStatus === "error" && (
-                        <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                        <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
                             {saveError}
                         </pre>
                     )}
@@ -279,13 +279,13 @@ function LabWorkbench({
             )}
 
             {completeError && (
-                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
                     {completeError}
                 </pre>
             )}
 
             {resetError && (
-                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
                     {resetError}
                 </pre>
             )}

@@ -20,18 +20,18 @@ export function LevelOverview({
   onNavigateLevel,
 }: LevelOverviewProps) {
   return (
-    <section className="space-y-6 rounded-md border p-6">
+    <section className="tool-section-card space-y-6">
       <div className="flex items-center justify-between gap-3">
         <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Экран уровня</p>
-          <h1 className="text-2xl font-semibold">{overview.level.title}</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground">Экран уровня</p>
+          <h1 className="font-semibold">{overview.level.title}</h1>
+          <p className="text-muted-foreground">
             Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
           </p>
-          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="max-w-3xl text-muted-foreground">
             {overview.level.description}
           </p>
-          <Link className="inline-block text-sm underline underline-offset-4" href={createLevelsPath()}>
+          <Link className="tool-link-inline" href={createLevelsPath()}>
             Открыть все уровни
           </Link>
         </div>
@@ -55,10 +55,10 @@ export function LevelOverview({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="space-y-3 rounded-md border p-4">
-          <h2 className="text-lg font-medium">Можно решать сейчас</h2>
+        <section className="tool-section-subcard">
+          <h2 className="font-medium">Можно решать сейчас</h2>
           {overview.availableTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">На этом уровне сейчас нет доступных задач.</p>
+            <p className="text-muted-foreground">На этом уровне сейчас нет доступных задач.</p>
           ) : (
             <div className="space-y-3">
               {overview.availableTasks.map((task) => (
@@ -74,10 +74,10 @@ export function LevelOverview({
           )}
         </section>
 
-        <section className="space-y-3 rounded-md border p-4">
-          <h2 className="text-lg font-medium">Этот уровень уже пройден</h2>
+        <section className="tool-section-subcard">
+          <h2 className="font-medium">Этот уровень уже пройден</h2>
           {overview.passedTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Пока ни одна задача не ушла дальше этого уровня.</p>
+            <p className="text-muted-foreground">Пока ни одна задача не ушла дальше этого уровня.</p>
           ) : (
             <div className="space-y-3">
               {overview.passedTasks.map((task) => (

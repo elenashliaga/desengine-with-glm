@@ -54,7 +54,7 @@ function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChan
 
   if (codeFiles.length === 0) {
     return (
-      <div className={`${BaseStyles.frameRow} h-96 items-center justify-center text-sm text-muted-foreground`}>
+      <div className={`${BaseStyles.frameRow} h-96 items-center justify-center text-muted-foreground`}>
         Для этого уровня пока нет доступных файлов для редактирования.
       </div>
     );

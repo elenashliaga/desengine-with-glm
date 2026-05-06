@@ -31,17 +31,13 @@ const helpCards = [
 
 export default function HelpPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen max-w-6xl px-6 py-10">
-        <section className="w-full rounded-[28px] border border-black/10 bg-[linear-gradient(145deg,#fff_0%,#f6f2ea_52%,#ece6da_100%)] p-6 shadow-[0_20px_80px_rgba(28,24,19,0.08)] md:p-8">
+    <main className="tool-shell-page">
+      <div className="tool-shell-frame">
+        <section className="tool-shell-surface">
           <div className="space-y-3 border-b border-black/10 pb-5">
-            <div className="inline-flex rounded-full border border-black/10 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-black/60">
-              desengine help
-            </div>
-            <h1 className="text-3xl font-semibold tracking-[-0.04em] text-black md:text-4xl">
-              Краткая карта пользовательского контура
-            </h1>
-            <p className="max-w-3xl text-sm leading-6 text-black/65 md:text-base">
+            <div className="tool-eyebrow">desengine help</div>
+            <h1 className="tool-page-title">Краткая карта пользовательского контура</h1>
+            <p className="tool-page-description">
               Эта страница закрепляет основные entry points продукта и помогает быстро понять, куда идти за задачами,
               уровнями, допуском и диагностикой.
             </p>
@@ -49,13 +45,10 @@ export default function HelpPage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {helpCards.map((card) => (
-              <article
-                key={card.href}
-                className="rounded-[22px] border border-black/10 bg-white/80 p-5 shadow-[0_10px_30px_rgba(20,18,14,0.04)]"
-              >
-                <h2 className="text-lg font-semibold text-black">{card.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-black/65">{card.text}</p>
-                <Link className="mt-4 inline-flex text-sm font-medium underline underline-offset-4" href={card.href}>
+              <article key={card.href} className="tool-card">
+                <h2 className="font-semibold text-black">{card.title}</h2>
+                <p className="mt-2 text-black/65">{card.text}</p>
+                <Link className="tool-link-inline mt-4" href={card.href}>
                   {card.label}
                 </Link>
               </article>

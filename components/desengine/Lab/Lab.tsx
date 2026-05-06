@@ -138,7 +138,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     return (
         <main>
             {status && (
-                <p className="text-sm text-muted-foreground">{status}</p>
+                <p className="text-muted-foreground">{status}</p>
             )}
 
             {screen.type === "level" ? (
