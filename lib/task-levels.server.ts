@@ -23,11 +23,9 @@ import {
   type UserProgressStore,
 } from "./types"
 import {
-  cleanupLegacyTaskStateOnReset,
   defaultUserProgressStore,
   ensureUserProgressStorage,
   getTaskCatalogFilePath,
-  migrateLegacyUserProgressIfNeeded,
   removeUserTaskDir,
 } from "./user-state.server"
 
@@ -45,7 +43,7 @@ type TaskProgressMutationResult = {
 }
 
 async function readLevelsCatalogRaw() {
-  const levelsRoot = path.join(process.cwd(), "levels")
+  const levelsRoot = appConfig.levelsCatalogRoot
   const entries = await readdir(levelsRoot, { withFileTypes: true })
   const levelDirs = entries
     .filter((entry) => entry.isDirectory())
@@ -71,8 +69,6 @@ async function readLevelsCatalogRaw() {
 }
 
 async function readUserProgressStore() {
-  await migrateLegacyUserProgressIfNeeded()
-
   try {
     const raw = await readFile(appConfig.userProgressFile, "utf-8")
     return UserProgressStoreSchema.parse(JSON.parse(raw))
@@ -704,7 +700,6 @@ export async function resetTask(taskId: string) {
   const store = await readUserProgressStore()
 
   await removeUserTaskDir(taskId)
-  await cleanupLegacyTaskStateOnReset(taskId)
 
   if (store.tasks[taskId]) {
     delete store.tasks[taskId]

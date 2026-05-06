@@ -11,7 +11,11 @@ const parsed = AppConfigSchema.parse(JSON.parse(raw))
 // Нормализация путей для project data и user state.
 const appConfig: AppConfig = {
   ...parsed,
+  onboardingRoot: path.resolve(process.cwd(), parsed.onboardingRoot),
+  levelsCatalogRoot: path.resolve(process.cwd(), parsed.levelsCatalogRoot),
   taskCatalogRoot: path.resolve(process.cwd(), parsed.taskCatalogRoot),
+  didacticPromptsRoot: path.resolve(process.cwd(), parsed.didacticPromptsRoot),
+  productionPromptsRoot: path.resolve(process.cwd(), parsed.productionPromptsRoot),
   userRoot: path.resolve(process.cwd(), parsed.userRoot),
   userProgressFile: path.resolve(process.cwd(), parsed.userProgressFile),
 }

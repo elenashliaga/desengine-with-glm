@@ -11,7 +11,6 @@ import {
 import {
   ensureParentDir,
   getUserTaskFilePath,
-  migrateLegacyTaskStateIfNeeded,
   pathExists,
   promptHistoryFileName,
 } from "./user-state.server"
@@ -69,8 +68,6 @@ export async function readTaskData(
   task: { id: string },
   labContext: TaskLabContext | null = null,
 ): Promise<TaskData> {
-  await migrateLegacyTaskStateIfNeeded(task.id)
-
   const levelEditableFileIds = labContext
     ? new Set(getLevelEditableWorkbenchFiles(labContext.editableFileIds).map((file) => file.id))
     : null
@@ -116,7 +113,6 @@ export async function isTaskStarted(taskId: string): Promise<boolean> {
   const componentFile = appConfig.taskWorkbenchFiles.find((f) => f.id === "component")
   if (!componentFile) return false
 
-  await migrateLegacyTaskStateIfNeeded(taskId)
   return pathExists(getUserTaskFilePath(taskId, componentFile.fileName))
 }
 
@@ -125,7 +121,6 @@ function getPromptHistoryPath(taskId: string) {
 }
 
 export async function readPromptHistory(taskId: string): Promise<PromptHistoryEntry[]> {
-  await migrateLegacyTaskStateIfNeeded(taskId)
   const filePath = getPromptHistoryPath(taskId)
 
   try {

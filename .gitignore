@@ -20,7 +20,8 @@
 # production
 /build
 /user/
-/env/.user-state-migrated.json
+/onboarding/
+/onboarding.backup-*
 
 # misc
 .DS_Store

@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { OnboardingUpdateCard } from "@/components/desengine/OnboardingUpdateCard"
 import { SystemStatusPanel } from "@/components/desengine/SystemStatusPanel"
 import { createAuthPath, createHelpPath, createTasksPath } from "@/lib/navigation"
 import { getSystemStatusModel } from "@/lib/system-status.server"
@@ -28,9 +29,11 @@ export default async function ConfigPage() {
               statusItems={status.items}
               instructions={status.instructions}
               title="Конфигурация и статусы подключения"
-              description="Здесь собрана текущая диагностика локального конфига, OpenAI API, allowlist и пользовательского допуска."
+              description="Здесь собрана текущая диагностика локального конфига, OpenAI API, allowlist, onboarding-контента и пользовательского допуска."
             />
           </div>
+
+          <OnboardingUpdateCard canUpdate={status.onboardingRepoConfigured} />
         </section>
       </div>
     </main>

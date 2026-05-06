@@ -1,5 +1,9 @@
 {
-    "taskCatalogRoot": "tasks",
+    "onboardingRoot" : "onboarding",
+    "levelsCatalogRoot": "onboarding/levels",
+    "taskCatalogRoot": "onboarding/tasks",
+    "didacticPromptsRoot": "onboarding/prompts/didactic",
+    "productionPromptsRoot": "prompts/production",
     "userRoot"       : "user",
     "userProgressFile": "user/user-progress.json",
     "taskConfigFile" : "config.json",

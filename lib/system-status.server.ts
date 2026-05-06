@@ -1,7 +1,11 @@
 import "server-only"
 
+import { access, readdir } from "node:fs/promises"
+import path from "node:path"
+
 import { getLlmStatus } from "@/lib/llm.server"
 import { getAccessControlConfig, hasAccessSession } from "@/lib/access-control.server"
+import { appConfig } from "@/lib/config.server"
 import localConfig from "@/lib/local-config.cjs"
 
 localConfig.loadLocalConfig()
@@ -15,6 +19,8 @@ type SystemStatusItem = {
     | "openai-network"
     | "allowlist-config"
     | "allowlist-network"
+    | "onboarding-config"
+    | "onboarding-content"
     | "access-session"
   label: string
   tone: SystemStatusTone
@@ -34,6 +40,7 @@ type SystemStatusModel = {
   instructions: SystemInstruction[]
   allowlistConfigured: boolean
   hasAccess: boolean
+  onboardingRepoConfigured: boolean
   readyForProtectedLab: boolean
 }
 
@@ -93,10 +100,89 @@ async function fetchReachability(
   }
 }
 
+async function getOnboardingContentStatus() {
+  const missing: string[] = []
+  const expectedDirs = [
+    appConfig.onboardingRoot,
+    appConfig.levelsCatalogRoot,
+    appConfig.taskCatalogRoot,
+    appConfig.didacticPromptsRoot,
+    path.join(appConfig.didacticPromptsRoot, "levels"),
+    appConfig.productionPromptsRoot,
+  ]
+
+  for (const root of expectedDirs) {
+    try {
+      await readdir(root)
+    } catch {
+      missing.push(path.relative(process.cwd(), root) || root)
+    }
+  }
+
+  if (missing.length > 0) {
+    return {
+      tone: "blocked" as const,
+      summary: "Onboarding-контент недоступен",
+      detail: `Не найдены обязательные каталоги: ${missing.join(", ")}.`,
+      missing,
+    }
+  }
+
+  const [levelEntries, taskEntries] = await Promise.all([
+    readdir(appConfig.levelsCatalogRoot, { withFileTypes: true }),
+    readdir(appConfig.taskCatalogRoot, { withFileTypes: true }),
+  ])
+
+  if (!levelEntries.some((entry) => entry.isDirectory())) {
+    return {
+      tone: "blocked" as const,
+      summary: "Onboarding-контент неполон",
+      detail: "В `/onboarding/levels` не найдено ни одного каталога уровня.",
+      missing: ["onboarding/levels/*"],
+    }
+  }
+
+  if (!taskEntries.some((entry) => entry.isDirectory())) {
+    return {
+      tone: "blocked" as const,
+      summary: "Onboarding-контент неполон",
+      detail: "В `/onboarding/tasks` не найдено ни одного каталога задачи.",
+      missing: ["onboarding/tasks/*"],
+    }
+  }
+
+  const requiredFiles = [
+    path.join(appConfig.didacticPromptsRoot, "start-component.md"),
+    path.join(appConfig.productionPromptsRoot, "start-component.md"),
+    path.join(appConfig.productionPromptsRoot, "iterate-component.md"),
+  ]
+
+  for (const filePath of requiredFiles) {
+    try {
+      await access(filePath)
+    } catch {
+      return {
+        tone: "blocked" as const,
+        summary: "Onboarding-контент неполон",
+        detail: `Не найден обязательный файл: ${path.relative(process.cwd(), filePath)}.`,
+        missing: [path.relative(process.cwd(), filePath)],
+      }
+    }
+  }
+
+  return {
+    tone: "ready" as const,
+    summary: "Onboarding-контент найден",
+    detail: "Обязательные каталоги /onboarding доступны для чтения.",
+    missing,
+  }
+}
+
 export async function getSystemStatusModel(): Promise<SystemStatusModel> {
-  const [llmStatus, accessState] = await Promise.all([
+  const [llmStatus, accessState, onboardingContent] = await Promise.all([
     getLlmStatus(),
     hasAccessSession(),
+    getOnboardingContentStatus(),
   ])
   const accessConfig = getAccessControlConfig()
   const localConfigState = localConfig.getLocalConfigState()
@@ -206,6 +292,44 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     })
   }
 
+  const onboardingRepoUrl = process.env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
+
+  items.push({
+    id: "onboarding-config",
+    label: "Onboarding-репозиторий",
+    tone: onboardingRepoUrl ? "ready" : "blocked",
+    summary: onboardingRepoUrl ? "URL onboarding-репозитория задан" : "URL onboarding-репозитория не задан",
+    detail: onboardingRepoUrl
+      ? `Используется значение DESENGINE_ONBOARDING_REPO_URL: ${onboardingRepoUrl}.`
+      : "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, чтобы система знала канонический источник onboarding-контента.",
+  })
+
+  if (!onboardingRepoUrl) {
+    instructions.push({
+      id: "onboarding-config",
+      actor: "Администратор",
+      text: "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, чтобы зафиксировать внешний источник onboarding-контента.",
+    })
+  }
+
+  items.push({
+    id: "onboarding-content",
+    label: "Onboarding-контент",
+    tone: onboardingContent.tone,
+    summary: onboardingContent.summary,
+    detail: onboardingContent.detail,
+  })
+
+  if (onboardingContent.missing.length > 0) {
+    instructions.push({
+      id: "onboarding-content",
+      actor: "Администратор",
+      text: onboardingRepoUrl
+        ? "Используйте кнопку `Обновить onboarding` на `/config`, чтобы заново загрузить локальный каталог `/onboarding`."
+        : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, затем используйте кнопку `Обновить onboarding` на `/config`.",
+    })
+  }
+
   if (accessConfig.isConfigured) {
     const allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
       method: "HEAD",
@@ -270,6 +394,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     instructions,
     allowlistConfigured: accessConfig.isConfigured,
     hasAccess: accessState,
+    onboardingRepoConfigured: Boolean(onboardingRepoUrl),
     readyForProtectedLab: accessState,
   }
 }

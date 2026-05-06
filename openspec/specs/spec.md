@@ -14,6 +14,7 @@
 - Навигация: см. `openspec/specs/navigation/spec.md`.
 - Контроль доступа: см. `openspec/specs/access-control/spec.md`.
 - Уровни задач: см. `openspec/specs/task-levels/spec.md`.
+- Onboarding-репозиторий: см. `openspec/specs/onboarding-repo/spec.md`.
 - Набор файлов компонента: см. `openspec/specs/component-file-set/spec.md`.
 - Итерация (LLM‑запуск): см. `openspec/specs/iteration/spec.md`.
 - Слепок (публичная публикация): см. `openspec/specs/snapshot/spec.md`.

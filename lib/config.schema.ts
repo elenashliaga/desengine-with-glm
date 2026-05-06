@@ -5,8 +5,12 @@ const LlmProviderSchema = z.enum(["openai"])
 // Схема конфигурации приложения (env/config.json)
 const AppConfigSchema = z
   .object({
+    onboardingRoot: z.string().optional(),
+    levelsCatalogRoot: z.string().optional(),
     taskCatalogRoot: z.string().optional(),
     tasksRoot: z.string().optional(),
+    didacticPromptsRoot: z.string().optional(),
+    productionPromptsRoot: z.string().optional(),
     userRoot: z.string().optional(),
     userProgressFile: z.string().optional(),
     taskConfigFile: z.string(),
@@ -36,12 +40,20 @@ const AppConfigSchema = z
     }
   })
   .transform((value) => {
-    const taskCatalogRoot = value.taskCatalogRoot ?? value.tasksRoot ?? "tasks"
+    const onboardingRoot = value.onboardingRoot ?? "onboarding"
+    const taskCatalogRoot = value.taskCatalogRoot ?? value.tasksRoot ?? `${onboardingRoot}/tasks`
+    const levelsCatalogRoot = value.levelsCatalogRoot ?? `${onboardingRoot}/levels`
+    const didacticPromptsRoot = value.didacticPromptsRoot ?? `${onboardingRoot}/prompts/didactic`
+    const productionPromptsRoot = value.productionPromptsRoot ?? "prompts/production"
     const userRoot = value.userRoot ?? "user"
 
     return {
       ...value,
+      onboardingRoot,
+      levelsCatalogRoot,
       taskCatalogRoot,
+      didacticPromptsRoot,
+      productionPromptsRoot,
       userRoot,
       userProgressFile: value.userProgressFile ?? `${userRoot}/user-progress.json`,
     }

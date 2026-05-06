@@ -3,7 +3,7 @@ import "server-only"
 import { access, rm } from "node:fs/promises"
 
 import { appConfig } from "./config.server"
-import { getUserTaskFilePath, migrateLegacyTaskStateIfNeeded } from "./user-state.server"
+import { getUserTaskFilePath } from "./user-state.server"
 
 type WorkbenchFile = (typeof appConfig.taskWorkbenchFiles)[number]
 
@@ -67,8 +67,6 @@ export async function cleanupForbiddenWorkbenchFiles(
   taskId: string,
   editableFileIds: string[],
 ) {
-  await migrateLegacyTaskStateIfNeeded(taskId)
-
   const allowlist = normalizeEditableFileAllowlist(editableFileIds)
   const deletedFileIds: string[] = []
   const deletedFilePaths: string[] = []
