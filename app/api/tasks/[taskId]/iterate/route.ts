@@ -12,6 +12,7 @@ import {
   readTaskData,
   registerPromptForCurrentLevel,
 } from "@/lib/server"
+import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
 import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
 import {
@@ -19,6 +20,7 @@ import {
   getTaskCatalogFilePath,
   getUserTaskFilePath,
 } from "@/lib/user-state.server"
+import { validateGeneratedFilesPayload } from "@/lib/workbench-output.server"
 
 type Params = { taskId: string }
 
@@ -185,6 +187,12 @@ ${selectedFilesText}
     const parsed = extractJson(outputText)
     if (!parsed || typeof parsed !== "object") throw new Error("Ответ не является JSON-объектом")
     payload = parsed as FilesPayload
+    validateGeneratedFilesPayload(
+      payload,
+      editableFiles.map((file) => ({ id: file.id, fileName: file.fileName })),
+      appConfig.taskWorkbenchFiles,
+      { allowNull: true },
+    )
   } catch (error) {
     return Response.json(
       {

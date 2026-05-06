@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @source "../tasks";
+@source "../user";
 
 :root {
   --background: 0 0% 100%;

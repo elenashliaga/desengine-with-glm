@@ -12,6 +12,7 @@ import {
   markTaskLevelInProgress,
   readTaskData,
 } from "@/lib/server"
+import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
 import { readLevelDidacticPrompt, readLevelInitPrompt, readPrompt } from "@/lib/prompts.server"
 import {
@@ -19,6 +20,7 @@ import {
   getTaskCatalogFilePath,
   getUserTaskFilePath,
 } from "@/lib/user-state.server"
+import { validateGeneratedFilesPayload } from "@/lib/workbench-output.server"
 
 type Params = { taskId: string }
 
@@ -146,6 +148,9 @@ ${allowedFilesText}
 Верни полный набор файлов по ключам:
 ${allowedFilesText}
 
+Значение каждого ключа должно быть полным текстовым содержимым соответствующего файла.
+Нельзя возвращать имя файла, fileId, короткую заглушку или пояснение вместо кода.
+
 ТЕКУЩЕЕ СОСТОЯНИЕ РАЗРЕШЁННЫХ РАБОЧИХ ФАЙЛОВ:
 ${filesText}
 `.trim()
@@ -175,6 +180,9 @@ ${allowedFilesText}
 
 Ключи результата соответствуют fileId из списка:
 ${allowedFilesText}
+
+Значение каждого ключа должно быть полным текстовым содержимым соответствующего файла.
+Нельзя возвращать имя файла, fileId, короткую заглушку или пояснение вместо кода.
 `.trim()
 
   let outputText = ""
@@ -217,6 +225,7 @@ ${allowedFilesText}
     const parsed = extractJson(outputText)
     if (!parsed || typeof parsed !== "object") throw new Error("Ответ не является JSON-объектом")
     payload = parsed as FilesPayload
+    validateGeneratedFilesPayload(payload, fileList, appConfig.taskWorkbenchFiles)
   } catch (error) {
     console.error("[desengine][task-start] parse_failed", {
       taskId,
