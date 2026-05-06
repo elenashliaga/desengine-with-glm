@@ -1,91 +1,21 @@
-import { useState } from "react";
-import { PromptText } from "./PromptText";
-import { PromptControls } from "./PromptControls";
-import { BaseProps, BaseStyles } from "../Base";
-import type { TaskData, TaskListItem, TaskTransition } from "@/lib/types";
+import { BaseProps } from "../Base";
+import type { TaskData, TaskListItem } from "@/lib/types";
 
 type PromptProps = BaseProps & {
-    taskId: string;
     taskItem: TaskListItem;
     taskData: TaskData;
-    started: boolean;
-    onTaskItemChange: (next: TaskListItem | null) => void;
-    onTaskDataChange: (next: TaskData) => void;
-    onTransition: (transition: TaskTransition | null) => void;
-    onIterationApplied: () => void;
+    status?: string;
+    error?: string;
 }
 
 function Prompt({
-    taskId,
     taskItem,
     taskData,
-    started,
-    onTaskItemChange,
-    onTaskDataChange,
-    onTransition,
-    onIterationApplied,
+    status = "",
+    error = "",
 }: PromptProps) {
-    const [promptText, setPromptText] = useState("");
-    const [status, setStatus] = useState("");
-    const [error, setError] = useState("");
-    const [pending, setPending] = useState(false);
-
-    async function handleRun() {
-        setStatus("");
-        setError("");
-
-        if (!started) {
-            setError("Сначала запустите задачу");
-            return;
-        }
-
-        if (!taskItem.progress.currentLevelInitialized) {
-            setError("Сначала дождитесь инициирующего запуска текущего уровня");
-            return;
-        }
-
-        if (!promptText.trim()) {
-            setError("Введите уточняющий промпт");
-            return;
-        }
-
-        setPending(true);
-
-        const res = await fetch(`/api/tasks/${taskId}/iterate`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                prompt: promptText,
-            }),
-        });
-
-        const data = await res.json().catch(() => null);
-        setPending(false);
-
-        if (!res.ok || !data?.ok) {
-            setError(data?.error || "Ошибка запуска итерации");
-            return;
-        }
-
-        onTaskItemChange(data.taskItem ?? null);
-        onTaskDataChange(data.taskData);
-        onTransition(data.transition ?? null);
-        onIterationApplied();
-        setPromptText("");
-        setStatus("Уточнение применено");
-    }
-
     return (
         <div className="space-y-3">
-            <div className={`${BaseStyles.frameRow} flex-col gap-3`}>
-                <PromptText
-                  value={promptText}
-                  disabled={!started || pending || !taskItem.progress.currentLevelInitialized}
-                  onChange={setPromptText}
-                />
-                <PromptControls disabled={!started || !taskItem.progress.currentLevelInitialized} pending={pending} onRun={handleRun} />
-            </div>
-
             {status && <p className="text-muted-foreground">{status}</p>}
             {error && <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">{error}</pre>}
             <p className="text-muted-foreground">
@@ -156,6 +86,6 @@ function Prompt({
 }
 
 export {
- Prompt,
+    Prompt,
     type PromptProps
 }

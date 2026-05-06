@@ -59,13 +59,9 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   args: {
     title: 'Task',
-    taskId: 'task-1',
     taskItem,
     taskData,
-    started: true,
-    onTaskItemChange: () => undefined,
-    onTaskDataChange: () => undefined,
-    onTransition: () => undefined,
-    onIterationApplied: () => undefined,
+    status: 'Уточнение применено',
+    error: '',
   },
 };
