@@ -59,14 +59,10 @@ allowlist/
 DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
 ```
 
-Или:
-
-```bash
-node tools/generate-allowlist-marker.mjs user@example.com --salt=...
-```
-
 3. Создай на статическом хостинге пустой файл с этим именем.
 4. Убедись, что URL `<DESENGINE_ALLOWLIST_BASE_URL>/<marker>` возвращает `200`.
+
+Каноническая инструкция по admin tools собрана в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
 
 ## Как удалить email из allowlist
 

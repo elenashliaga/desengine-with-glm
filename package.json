@@ -8,8 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "smoke": "node scripts/smoke-local-install.mjs",
+    "smoke": "node tools/smoke-local-install.mjs",
     "allowlist:marker": "node tools/generate-allowlist-marker.mjs",
+    "admin:tasks:configs": "node tools/generate-task-configs.mjs",
+    "admin:tasks:import": "node tools/import-task-assets.mjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

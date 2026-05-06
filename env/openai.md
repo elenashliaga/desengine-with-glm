@@ -24,3 +24,4 @@ DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 `DESENGINE_OPENAI_MODEL` уже предзаполнен типовым значением, поэтому обычно достаточно заменить только `OPENAI_API_KEY`.
 
 Для доступа по email см. [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1).
+Админские команды сопровождения и smoke-check собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).

@@ -38,13 +38,16 @@ Onboarding-контент runtime читает из каталога `/onboardin
 npm run build
 npm run smoke
 npm run allowlist:marker -- user@example.com
+npm run admin:tasks:configs
+npm run admin:tasks:import -- --variants-root=... --base-root=...
 ```
 
-`npm run build` проверяет production-сборку. `npm run smoke` делает базовую preflight-проверку env и build.
+`npm run build` проверяет production-сборку. `npm run smoke` делает базовую preflight-проверку env и build. Полный канонический каталог админских утилит и команд собран в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
 
 ## Документация
 
 - Локальная установка: [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1)
+- Админские утилиты: [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1)
 - Настройка OpenAI: [env/openai.md](/Users/op/dev/sobakapav/desengine/env/openai.md:1)
 - Настройка allowlist: [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1)
 - Platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)

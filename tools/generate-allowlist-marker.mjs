@@ -12,12 +12,17 @@ function normalizeEmail(email) {
 
 function printUsage() {
   console.error("Использование:")
-  console.error("  node tools/generate-allowlist-marker.mjs user@example.com")
-  console.error("  DESENGINE_ALLOWLIST_SALT=... node tools/generate-allowlist-marker.mjs user@example.com")
-  console.error("  node tools/generate-allowlist-marker.mjs user@example.com --salt=my-secret-salt")
+  console.error("  npm run allowlist:marker -- user@example.com")
+  console.error("  DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com")
+  console.error("  npm run allowlist:marker -- user@example.com --salt=my-secret-salt")
 }
 
 const args = process.argv.slice(2)
+if (args.includes("--help") || args.includes("-h")) {
+  printUsage()
+  process.exit(0)
+}
+
 const emailArg = args.find((arg) => !arg.startsWith("--")) || ""
 const saltArg = args.find((arg) => arg.startsWith("--salt="))
 const salt = saltArg ? saltArg.slice("--salt=".length) : process.env.DESENGINE_ALLOWLIST_SALT || ""
