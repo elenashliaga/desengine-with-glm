@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-ROOT_DIR="/Users/op/dev/olgapavlova/desengine/lab/tasks"
+ROOT_DIR="/Users/op/dev/olgapavlova/desengine/tasks"
 
 TEMPLATE="config.tmpl"
 

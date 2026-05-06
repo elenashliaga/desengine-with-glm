@@ -5,34 +5,33 @@
 ## Быстрый старт
 
 1. Установите обычный `Node.js` вместе с `npm`.
-2. Пройдите локальную установку по [INSTALL.md](/Users/op/dev/olgapavlova/desengine/INSTALL.md:1).
+2. Пройдите локальную установку по [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1).
 3. Откройте [http://localhost:3000](http://localhost:3000).
 
-До допуска вы увидите только страницу состояния системы. Список задач и рабочая часть лаборатории откроются после успешной allowlist-проверки по email.
+До допуска по allowlist приложение показывает только страницу состояния системы. Даже без `OPENAI_API_KEY` оболочка откроется, но рабочие LLM-сценарии останутся недоступны.
 
-Локальная конфигурация запуска хранится в `lab/config.txt`, а шаблон лежит в `lab/config-example.txt`.
+Локальная конфигурация запуска хранится в `config.txt`, а шаблон лежит в `config-example.txt`.
 
-## Что видит пользователь
+## Пользовательский поток
 
-- Корневой маршрут `/` всегда открывает страницу состояния.
-- Если `OPENAI_API_KEY` не задан, пользователь всё равно может открыть оболочку и увидеть диагностику.
-- Без `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` лаборатория не выдаёт допуск в защищённую часть.
-- Даже при полной LLM-конфигурации пользователь не попадает в задачи без email из allowlist.
+- Пользователь открывает только браузер.
+- На `/` он видит статусы системы и инструкции.
+- Список задач открывается только после успешной allowlist-проверки по email.
+- На стартовой странице и внутри самой задачи доступен reset: он удаляет рабочие файлы и историю уточнений, после чего задача снова считается не начатой.
 
 ## Админские команды
 
 ```bash
 npm run build
 npm run smoke
+npm run allowlist:marker -- user@example.com
 ```
 
-- `npm run build` проверяет production-сборку.
-- `npm run smoke` делает базовую preflight-проверку env и build.
+`npm run build` проверяет production-сборку. `npm run smoke` делает базовую preflight-проверку env и build.
 
 ## Документация
 
-- Локальная установка: [INSTALL.md](/Users/op/dev/olgapavlova/desengine/INSTALL.md:1)
-- Пользовательский и локальный запуск: [lab/README.md](/Users/op/dev/olgapavlova/desengine/lab/README.md:1)
-- Настройка OpenAI: [lab/env/openai.md](/Users/op/dev/olgapavlova/desengine/lab/env/openai.md:1)
-- Настройка allowlist: [lab/env/access-control.md](/Users/op/dev/olgapavlova/desengine/lab/env/access-control.md:1)
-- Platform notes: [docs/platform-notes.md](/Users/op/dev/olgapavlova/desengine/docs/platform-notes.md:1)
+- Локальная установка: [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1)
+- Настройка OpenAI: [env/openai.md](/Users/op/dev/sobakapav/desengine/env/openai.md:1)
+- Настройка allowlist: [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1)
+- Platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)

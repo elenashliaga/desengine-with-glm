@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SRC_DIR="/Users/op/Library/CloudStorage/Dropbox/! I N B O X/versions"    # каталог с исходными png
-OUT_DIR="/Users/op/dev/olgapavlova/desengine/lab/tasks"    # каталог, где создаются подкаталоги <name>/
+OUT_DIR="/Users/op/dev/olgapavlova/desengine/tasks"    # каталог, где создаются подкаталоги <name>/
 BASE_DIR="/Users/op/Library/CloudStorage/Dropbox/! I N B O X/base"   # каталог с файлами *-base.png
 
 find "$SRC_DIR" -type f -name "*.png" -print0 |

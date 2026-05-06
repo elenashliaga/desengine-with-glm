@@ -6,11 +6,10 @@ import { promisify } from "node:util"
 
 const execFileAsync = promisify(execFile)
 const require = createRequire(import.meta.url)
-const { getLocalConfigPath, getLocalConfigState, readLocalConfig } = require("../lab/lib/local-config.cjs")
+const { getLocalConfigPath, getLocalConfigState, readLocalConfig } = require("../lib/local-config.cjs")
 const rootDir = process.cwd()
-const labDir = path.join(rootDir, "lab")
-const envPath = getLocalConfigPath(labDir)
-const nextCliPath = path.join(labDir, "node_modules", "next", "dist", "bin", "next")
+const envPath = getLocalConfigPath(rootDir)
+const nextCliPath = path.join(rootDir, "node_modules", "next", "dist", "bin", "next")
 
 function getNodeVersionStatus() {
   const [major] = process.versions.node.split(".").map(Number)
@@ -35,11 +34,21 @@ function createCheck(id, ok, summary, detail) {
 }
 
 function normalizeBuildFailureDetail(output) {
+  if (output.includes("@next/swc-darwin-arm64") || output.includes('Failed to get registry from "npm"')) {
+    return [
+      "Не найден подходящий нативный пакет `@next/swc` для текущей платформы.",
+      "Судя по всему, локальные зависимости были установлены под другую архитектуру или без доступного `npm` в PATH.",
+      "Переустановите зависимости в корне репозитория в рабочем shell с `npm`, затем повторите build.",
+      "",
+      output,
+    ].join("\n")
+  }
+
   if (output.includes("lightningcss.darwin-arm64.node")) {
     return [
       "Не найден нативный бинарник `lightningcss` для текущей платформы.",
-      "Похоже, зависимости в `lab/node_modules` были установлены не на этой машине или не под эту архитектуру.",
-      "Переустановите зависимости в `lab`, затем повторите build.",
+      "Похоже, зависимости в `node_modules` были установлены не на этой машине или не под эту архитектуру.",
+      "Переустановите зависимости в корне репозитория, затем повторите build.",
       "",
       output,
     ].join("\n")
@@ -54,13 +63,13 @@ async function runBuildCheck() {
       "production-build",
       false,
       "Не найден локальный Next.js CLI",
-      "Установите зависимости в `lab`, затем повторите smoke-check.",
+      "Установите зависимости в корне репозитория, затем повторите smoke-check.",
     )
   }
 
   try {
     await execFileAsync(process.execPath, [nextCliPath, "build"], {
-      cwd: labDir,
+      cwd: rootDir,
       maxBuffer: 10 * 1024 * 1024,
     })
 
@@ -82,7 +91,7 @@ async function runBuildCheck() {
 }
 
 async function main() {
-  const localConfigState = getLocalConfigState(labDir)
+  const localConfigState = getLocalConfigState(rootDir)
   const fileEnv = readLocalConfig(envPath)
   const env = { ...fileEnv, ...process.env }
   const checks = []
@@ -94,10 +103,10 @@ async function main() {
     createCheck(
       "env-file",
       localConfigState.hasConfig,
-      localConfigState.hasConfig ? "Файл lab/config.txt найден" : "Файл lab/config.txt не найден",
+      localConfigState.hasConfig ? "Файл config.txt найден" : "Файл config.txt не найден",
       localConfigState.hasConfig
         ? "Локальная конфигурация присутствует."
-        : "Создайте `lab/config.txt` на основе `lab/config-example.txt`.",
+        : "Создайте `config.txt` на основе `config-example.txt`.",
     ),
   )
 
@@ -106,11 +115,11 @@ async function main() {
       "legacy-env-file",
       !localConfigState.hasLegacyEnv,
       localConfigState.hasLegacyEnv
-        ? "Обнаружен устаревший файл lab/.env.local"
-        : "Устаревший lab/.env.local не найден",
+        ? "Обнаружен устаревший файл .env.local"
+        : "Устаревший .env.local не найден",
       localConfigState.hasLegacyEnv
-        ? "Перенесите значения в `lab/config.txt` и удалите `lab/.env.local`, иначе настройки будут двусмысленными."
-        : "Локальная конфигурация использует только `lab/config.txt`.",
+        ? "Перенесите значения в `config.txt` и удалите `.env.local`, иначе настройки будут двусмысленными."
+        : "Локальная конфигурация использует только `config.txt`.",
     ),
   )
 

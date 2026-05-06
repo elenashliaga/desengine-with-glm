@@ -18,6 +18,7 @@
 - Пользователь и прогресс: см. `openspec/specs/user-progress/spec.md`.
 - Подключение LLM: см. `openspec/specs/llm/spec.md`.
 - Локальный endpoint LLM: см. `openspec/specs/llm-endpoint/spec.md`.
+- Внешний локальный онбординг: см. `openspec/specs/external-local-onboarding/spec.md`.
 
 ## Термины (кратко)
 

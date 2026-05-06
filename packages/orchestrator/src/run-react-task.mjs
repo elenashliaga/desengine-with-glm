@@ -129,16 +129,16 @@ code = normalizeComponent(code);
 const props = extractPropsFromCode(code);
 const propsJson = JSON.stringify(props, null, 2);
 
-  const labRoot = path.resolve("../../lab");
+  const appRoot = path.resolve("../..");
 
   fs.writeFileSync(
-    path.join(labRoot, "generated", "Generated.tsx"),
+    path.join(appRoot, "generated", "Generated.tsx"),
     code,
     "utf-8"
   );
 
   fs.writeFileSync(
-    path.join(labRoot, "generated", "props.json"),
+    path.join(appRoot, "generated", "props.json"),
     propsJson,
     "utf-8"
   );

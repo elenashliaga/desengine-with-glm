@@ -11,7 +11,7 @@
 
 ## Как задать
 
-Переименуй [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1) в `lab/config.txt` и проверь значения блока доступа по email:
+Переименуй [config-example.txt](/Users/op/dev/sobakapav/desengine/config-example.txt:1) в `config.txt` и проверь значения блока доступа по email:
 
 ```bash
 DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
@@ -56,14 +56,12 @@ allowlist/
 2. Сгенерируй имя маркера:
 
 ```bash
-cd lab
 DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
 ```
 
 Или:
 
 ```bash
-cd lab
 node tools/generate-allowlist-marker.mjs user@example.com --salt=...
 ```
 

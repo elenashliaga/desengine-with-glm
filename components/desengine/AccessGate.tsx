@@ -190,7 +190,7 @@ function AccessGate({ configured, nextPath, statusItems, instructions }: AccessG
               {!configured && (
                 <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                   Проверка доступа пока не настроена. Сначала администратор должен задать
-                  `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/config.txt`.
+                  `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `config.txt`.
                 </p>
               )}
 

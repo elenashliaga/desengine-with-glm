@@ -108,28 +108,28 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     label: "Локальный конфиг",
     tone: localConfigState.hasLegacyEnv ? "warning" : localConfigState.hasConfig ? "ready" : "blocked",
     summary: localConfigState.hasLegacyEnv
-      ? "Обнаружен устаревший lab/.env.local"
+      ? "Обнаружен устаревший .env.local"
       : localConfigState.hasConfig
-        ? "lab/config.txt найден"
-        : "lab/config.txt не найден",
+        ? "config.txt найден"
+        : "config.txt не найден",
     detail: localConfigState.hasLegacyEnv
-      ? "Используйте только `lab/config.txt`. Старый `.env.local` создаёт двусмысленность и может незаметно переопределять настройки."
+      ? "Используйте только `config.txt`. Старый `.env.local` создаёт двусмысленность и может незаметно переопределять настройки."
       : localConfigState.hasConfig
-        ? "Локальная конфигурация лежит в каноническом файле `lab/config.txt`."
-        : "Создайте `lab/config.txt` на основе `lab/config-example.txt`.",
+        ? "Локальная конфигурация лежит в каноническом файле `config.txt`."
+        : "Создайте `config.txt` на основе `config-example.txt`.",
   })
 
   if (localConfigState.hasLegacyEnv) {
     instructions.push({
       id: "local-config-file",
       actor: "Администратор",
-      text: "Перенесите рабочие значения в `lab/config.txt` и удалите `lab/.env.local`, чтобы лаборатория использовала один канонический конфиг.",
+      text: "Перенесите рабочие значения в `config.txt` и удалите `.env.local`, чтобы лаборатория использовала один канонический конфиг.",
     })
   } else if (!localConfigState.hasConfig) {
     instructions.push({
       id: "local-config-file",
       actor: "Администратор",
-      text: "Создайте `lab/config.txt` на основе `lab/config-example.txt`, чтобы лаборатория получила локальные настройки.",
+      text: "Создайте `config.txt` на основе `config-example.txt`, чтобы лаборатория получила локальные настройки.",
     })
   }
 
@@ -145,7 +145,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     instructions.push({
       id: "openai-config",
       actor: "Администратор",
-      text: "Добавьте `OPENAI_API_KEY` в `lab/config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
+      text: "Добавьте `OPENAI_API_KEY` в `config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
     })
   }
 
@@ -195,7 +195,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     summary: accessConfig.isConfigured ? "Allowlist настроен" : "Allowlist не настроен",
     detail: accessConfig.isConfigured
       ? "Базовый URL и salt заданы."
-      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/config.txt`.",
+      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `config.txt`.",
   })
 
   if (!accessConfig.isConfigured) {

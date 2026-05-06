@@ -20,7 +20,7 @@ const taskPath = path.resolve("tasks", taskFile);
 const systemPrompt = fs.readFileSync(systemPromptPath, "utf-8");
 const task = fs.readFileSync(taskPath, "utf-8");
 
-const targetPath = "../../lab/generated/Generated.tsx";
+const targetPath = "../../generated/Generated.tsx";
 
 const prompt = `${systemPrompt}
 

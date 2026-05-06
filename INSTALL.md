@@ -38,12 +38,12 @@ npm -v
 Из корня репозитория выполните:
 
 ```bash
-npm --prefix lab install
+npm install
 ```
 
 ## 3. Создайте локальную конфигурацию
 
-Переименуйте [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1) в `lab/config.txt`.
+Переименуйте [config-example.txt](/Users/op/dev/sobakapav/desengine/config-example.txt:1) в `config.txt`.
 
 Это можно сделать любым привычным способом:
 
@@ -64,8 +64,8 @@ DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 
 Подробности:
 
-- OpenAI: [lab/env/openai.md](/Users/op/dev/olgapavlova/desengine/lab/env/openai.md:1)
-- allowlist: [lab/env/access-control.md](/Users/op/dev/olgapavlova/desengine/lab/env/access-control.md:1)
+- OpenAI: [env/openai.md](/Users/op/dev/sobakapav/desengine/env/openai.md:1)
+- allowlist: [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1)
 
 ## 4. Запустите приложение
 
@@ -106,7 +106,7 @@ npm run smoke
 1. Открыть этот файл и пройти установку строго по инструкции, не подглядывая в другие документы.
 2. Самостоятельно проверить, есть ли у него `node` и `npm`.
 3. Установить зависимости проекта.
-4. Переименовать `lab/config-example.txt` в `lab/config.txt`.
+4. Переименовать `config-example.txt` в `config.txt`.
 5. Заполнить обязательные переменные окружения.
 6. Запустить приложение.
 7. Открыть приложение в браузере.
