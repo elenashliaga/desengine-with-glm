@@ -1,6 +1,7 @@
 import "server-only"
 
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import localConfig from "@/lib/local-config.cjs"
 
 import {
@@ -11,6 +12,9 @@ import {
   normalizeEmail,
   verifyAccessSessionValue,
 } from "@/lib/access-control"
+import { createAuthPath, createTasksPath, sanitizeReturnPath } from "@/lib/navigation"
+
+const ACCESS_RETURN_PATH_COOKIE_NAME = "desengine-return-path"
 
 localConfig.loadLocalConfig()
 
@@ -87,9 +91,49 @@ async function createAccessCookieValue(email: string): Promise<string> {
   return createAccessSessionValue(email, salt)
 }
 
+async function setReturnPathCookie(pathname: string) {
+  const safePath = sanitizeReturnPath(pathname)
+  const cookieStore = await cookies()
+
+  if (!safePath) {
+    cookieStore.delete(ACCESS_RETURN_PATH_COOKIE_NAME)
+    return
+  }
+
+  cookieStore.set(ACCESS_RETURN_PATH_COOKIE_NAME, safePath, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+  })
+}
+
+async function consumeReturnPathCookie() {
+  const cookieStore = await cookies()
+  const rawValue = cookieStore.get(ACCESS_RETURN_PATH_COOKIE_NAME)?.value
+  const safePath = sanitizeReturnPath(rawValue)
+
+  cookieStore.delete(ACCESS_RETURN_PATH_COOKIE_NAME)
+
+  return safePath ?? createTasksPath()
+}
+
+async function requireAccessOrRedirect(pathname: string) {
+  if (await hasAccessSession()) {
+    return
+  }
+
+  await setReturnPathCookie(pathname)
+  redirect(createAuthPath())
+}
+
 export {
+  ACCESS_RETURN_PATH_COOKIE_NAME,
+  consumeReturnPathCookie,
   createAccessCookieValue,
   getAccessControlConfig,
   hasAccessSession,
+  requireAccessOrRedirect,
+  setReturnPathCookie,
   verifyAllowlistAccess,
 }

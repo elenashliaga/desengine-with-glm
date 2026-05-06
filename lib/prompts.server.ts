@@ -13,7 +13,12 @@ export async function readPrompt(kind: PromptKind, name: PromptName) {
 
 export async function readLevelDidacticPrompt(promptKey: string) {
   const filePath = path.join(process.cwd(), "prompts", "didactic", "levels", `${promptKey}.md`)
-  return readFile(filePath, "utf-8")
+
+  try {
+    return await readFile(filePath, "utf-8")
+  } catch {
+    return ""
+  }
 }
 
 export async function readLevelInitPrompt(levelId: string, fallbackPromptKey?: string) {

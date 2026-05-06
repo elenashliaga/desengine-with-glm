@@ -7,7 +7,7 @@ import React from "react";
 
 type PreviewComponent = React.ComponentType<Record<string, unknown>>;
 
-function OutRender({ task, started, reloadKey, onStart, startStatus, startError }: OutRenderProps) {
+function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRenderProps) {
     const [error, setError] = useState<string>("");
     const [Component, setComponent] = useState<PreviewComponent | null>(null);
     const [props, setProps] = useState<Record<string, unknown>>({});
@@ -87,11 +87,6 @@ function OutRender({ task, started, reloadKey, onStart, startStatus, startError 
                     />
                     {startStatus === "starting" && (
                         <p className="text-sm text-muted-foreground">Генерация файлов…</p>
-                    )}
-                    {startStatus === "error" && (
-                        <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
-                            {startError}
-                        </pre>
                     )}
                 </div>
             ) : (

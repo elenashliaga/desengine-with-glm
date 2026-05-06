@@ -11,7 +11,6 @@ import {
   TabsContent,
 } from "@/components/ui/tabs";
 import { TabsStyles } from "./styles"
-import { useState } from "react";
 import { taskWorkbenchFiles } from "@/lib/client";
 
 function Code({ id, taskData, onTaskDataChange }: CodeProps & { id: string }) {
@@ -47,10 +46,11 @@ function CodeTab({ title, file }: { title: string; file: string }) {
   );
 }
 
-function CodeTabs({ taskData, onTaskDataChange } : CodeProps) {
-  const [tab, setTab] = useState("component");
+function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChange } : CodeProps) {
   const editableFileIds = taskData.labContext?.editableFileIds ?? [];
   const codeFiles = taskWorkbenchFiles.filter((f) => f.edit === true && editableFileIds.includes(f.id));
+  const fallbackTab = codeFiles[0]?.id ?? "component"
+  const tab = codeFiles.some((file) => file.id === activeFileId) ? activeFileId : fallbackTab
 
   if (codeFiles.length === 0) {
     return (
@@ -62,9 +62,8 @@ function CodeTabs({ taskData, onTaskDataChange } : CodeProps) {
 
   return (
     <Tabs
-      defaultValue={codeFiles[0]?.id}
       value={tab}
-      onValueChange={setTab}
+      onValueChange={(nextValue) => onActiveFileIdChange?.(nextValue)}
       className={`${BaseStyles.frameRow} h-96`}
     >
       <div className="flex-6 p-0 gap-0">
@@ -94,8 +93,15 @@ function CodeTabs({ taskData, onTaskDataChange } : CodeProps) {
   );
 }
 
-function CodeList({ taskData, onTaskDataChange } : CodeProps) {
-  return (<CodeTabs taskData={taskData} onTaskDataChange={onTaskDataChange} />);
+function CodeList({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChange } : CodeProps) {
+  return (
+    <CodeTabs
+      taskData={taskData}
+      onTaskDataChange={onTaskDataChange}
+      activeFileId={activeFileId}
+      onActiveFileIdChange={onActiveFileIdChange}
+    />
+  );
 }
 
 export {

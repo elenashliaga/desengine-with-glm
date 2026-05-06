@@ -5,8 +5,7 @@ type OutRenderProps = BaseProps & {
     started: boolean;
     reloadKey: number;
     onStart: () => void;
-    startStatus: "" | "starting" | "error";
-    startError: string;
+    startStatus: "" | "starting";
 }
 
 export { type OutRenderProps }

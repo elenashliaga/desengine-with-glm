@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { createLevelsPath } from "@/lib/navigation";
 import type { LevelOverview as LevelOverviewData } from "@/lib/types";
 import { LevelTaskCard } from "./LevelTaskCard";
 
@@ -30,7 +31,7 @@ export function LevelOverview({
           <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
             {overview.level.description}
           </p>
-          <Link className="inline-block text-sm underline underline-offset-4" href="/lab/levels">
+          <Link className="inline-block text-sm underline underline-offset-4" href={createLevelsPath()}>
             Открыть все уровни
           </Link>
         </div>

@@ -265,17 +265,25 @@ function normalizeEditableFileIds(level: LevelConfig) {
   return level.editableFileIds.filter((fileId) => knownFileIds.has(fileId))
 }
 
+function resolveTaskExplanation(
+  levelNumber: number,
+  levelTaskNotes: Record<string, string>,
+) {
+  const directNote = levelTaskNotes[String(levelNumber)]
+
+  if (directNote) {
+    return directNote
+  }
+  return ""
+}
+
 async function buildTaskLabContext(
   taskId: string,
   level: LevelConfig,
   taskConfig: TaskConfig,
 ): Promise<TaskLabContext> {
   const levelTaskNotes = taskConfig.levelTaskNotes as Record<string, string>
-  const taskExplanation = levelTaskNotes[String(level.number)]
-
-  if (!taskExplanation) {
-    throw new Error(`Для уровня ${level.number} у задачи "${taskId}" отсутствует levelTaskNotes`)
-  }
+  const taskExplanation = resolveTaskExplanation(level.number, levelTaskNotes)
 
   const commonExplanation = await readLevelCommonExplanation(
     level.id,
@@ -470,6 +478,59 @@ export async function getTaskListItemById(taskId: string) {
 export async function getLevelForTaskItem(taskItem: TaskListItem) {
   const levels = await getLevelsCatalog()
   return requireLevel(levels, taskItem.progress.currentLevel)
+}
+
+export async function getTaskPendingTransition(taskId: string): Promise<TaskTransition | null> {
+  const [levels, store, taskConfig, promptHistory] = await Promise.all([
+    getLevelsCatalog(),
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+    readTaskPromptHistory(taskId),
+  ])
+
+  const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
+  reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
+
+  const currentLevelNumber = taskProgress.currentLevel
+  const currentLevelProgress = taskProgress.levels[String(currentLevelNumber)]
+
+  if (currentLevelProgress?.status === "completed" && currentLevelNumber === taskConfig.maxLevel) {
+    return buildTransition(
+      levels,
+      taskId,
+      currentLevelNumber,
+      null,
+      currentLevelProgress.completionReason ?? "prompt_limit",
+    )
+  }
+
+  if (currentLevelNumber <= 1) {
+    return null
+  }
+
+  if (
+    currentLevelProgress?.promptsUsed > 0
+    || Boolean(currentLevelProgress?.initializedAt)
+    || currentLevelProgress?.status === "in_progress"
+    || currentLevelProgress?.status === "completed"
+  ) {
+    return null
+  }
+
+  const previousLevelNumber = currentLevelNumber - 1
+  const previousLevelProgress = taskProgress.levels[String(previousLevelNumber)]
+
+  if (!previousLevelProgress || previousLevelProgress.status !== "completed") {
+    return null
+  }
+
+  return buildTransition(
+    levels,
+    taskId,
+    previousLevelNumber,
+    currentLevelNumber,
+    previousLevelProgress.completionReason ?? "prompt_limit",
+  )
 }
 
 export async function getTaskLabContext(taskItem: TaskListItem) {

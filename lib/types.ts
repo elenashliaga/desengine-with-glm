@@ -221,7 +221,7 @@ export type LevelOverview = {
 
 export type LabScreenState =
   | { type: "level" }
-  | { type: "task" }
+  | { type: "task"; screen: string }
   | { type: "transition"; transition: TaskTransition }
 
 export type TaskTransition = {

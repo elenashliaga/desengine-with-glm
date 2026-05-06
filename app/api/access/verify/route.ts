@@ -1,7 +1,11 @@
 import { cookies } from "next/headers"
 
 import { ACCESS_COOKIE_NAME, isPlausibleEmail, normalizeEmail } from "@/lib/access-control"
-import { createAccessCookieValue, verifyAllowlistAccess } from "@/lib/access-control.server"
+import {
+  consumeReturnPathCookie,
+  createAccessCookieValue,
+  verifyAllowlistAccess,
+} from "@/lib/access-control.server"
 
 type Body = {
   email?: string
@@ -32,6 +36,7 @@ export async function POST(request: Request) {
 
   const cookieStore = await cookies()
   const cookieValue = await createAccessCookieValue(normalizedEmail)
+  const redirectTo = await consumeReturnPathCookie()
 
   cookieStore.set(ACCESS_COOKIE_NAME, cookieValue, {
     httpOnly: true,
@@ -40,5 +45,5 @@ export async function POST(request: Request) {
     path: "/",
   })
 
-  return Response.json({ ok: true })
+  return Response.json({ ok: true, redirectTo })
 }

@@ -1,41 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LabWorkbench } from "../LabWorkbench";
 import { LevelOverview } from "../LevelOverview";
 import { TaskLevelTransition } from "../TaskLevelTransition";
 import { LabProps } from "./props"
 import type { LabScreenState, LevelOverview as LevelOverviewData, TaskListItem, TaskTransition } from "@/lib/types";
+import { createLevelsPath, createTaskNextPath, createTaskPath } from "@/lib/navigation";
 
 function createLevelHref(levelId?: string | null) {
-    if (!levelId) return "/lab";
-    return `/lab?screen=level&levelId=${encodeURIComponent(levelId)}`;
+    return createLevelsPath(levelId);
 }
 
-function createTaskHref(taskId: string) {
-    return `/lab?screen=task&taskId=${encodeURIComponent(taskId)}`;
+function createTaskHref(taskId: string, screen?: string | null) {
+    return createTaskPath(taskId, screen);
 }
 
 function createTransitionHref(transition: TaskTransition) {
-    const params = new URLSearchParams({
-        screen: "transition",
-        taskId: transition.taskId,
-        fromLevelId: transition.fromLevel.id,
-        reason: transition.reason,
-    });
-
-    if (transition.toLevel) {
-        params.set("toLevelId", transition.toLevel.id);
-    }
-
-    return `/lab?${params.toString()}`;
-}
-
-function pushLocalUrl(href: string) {
-    window.history.pushState(null, "", href);
+    return createTaskNextPath(transition.taskId);
 }
 
 function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabProps) {
+    const router = useRouter();
     const [screen, setScreen] = useState<LabScreenState>(initScreen);
     const [levelOverview, setLevelOverview] = useState<LevelOverviewData>(initLevelOverview);
     const [taskItem, setTaskItem] = useState(initTaskItem);
@@ -50,7 +37,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data?.ok) {
-            setStatus(data?.error || "Ошибка инициирующего запуска уровня");
+            setStatus("");
             return false;
         }
 
@@ -81,7 +68,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     async function handleTaskOpen(taskId: string) {
         setStatus("Загрузка задания…");
-        pushLocalUrl(createTaskHref(taskId));
+        router.push(createTaskHref(taskId));
 
         const res = await fetch(`/api/tasks/${taskId}`, { method: "GET" });
         const data = await res.json();
@@ -94,7 +81,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         setTaskItem(data.taskItem);
         setTaskData(data.taskData);
         setStarted(Boolean(data.started));
-        setScreen({ type: "task" });
+        setScreen({ type: "task", screen: "component" });
         setStatus("");
 
         if (data.taskItem && Boolean(data.started) && !data.taskItem.progress.currentLevelInitialized) {
@@ -103,14 +90,14 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     }
 
     async function handleNavigateLevel(levelId: string) {
-        pushLocalUrl(createLevelHref(levelId));
+        router.push(createLevelHref(levelId));
         setScreen({ type: "level" });
         setStatus("");
         void loadLevelOverview(levelId, { silent: true });
     }
 
     async function handleReturnToLevelList(levelId?: string) {
-        pushLocalUrl(createLevelHref(levelId));
+        router.push(createLevelHref(levelId));
         setScreen({ type: "level" });
         setStatus("");
         void loadLevelOverview(levelId, { silent: true });
@@ -123,8 +110,14 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     function handleTransition(transition: TaskTransition | null) {
         if (!transition) return;
-        pushLocalUrl(createTransitionHref(transition));
+        router.push(createTransitionHref(transition));
         setScreen({ type: "transition", transition });
+    }
+
+    function handleScreenChange(nextScreen: string) {
+        if (!taskItem) return;
+        router.push(createTaskHref(taskItem.id, nextScreen));
+        setScreen({ type: "task", screen: nextScreen });
     }
 
     useEffect(() => {
@@ -162,8 +155,8 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     transition={screen.transition}
                     pending={status.length > 0}
                     onContinue={() => {
-                        pushLocalUrl(createTaskHref(screen.transition.taskId));
-                        setScreen({ type: "task" });
+                        router.push(createTaskHref(screen.transition.taskId));
+                        setScreen({ type: "task", screen: "component" });
                     }}
                     onBackToLevelList={() => handleReturnToLevelList(screen.transition.toLevel?.id)}
                 />
@@ -179,6 +172,8 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     onStartedChange={setStarted}
                     onBackToLevelList={() => handleReturnToLevelList(taskItem.progress.currentLevelId)}
                     onTransition={handleTransition}
+                    activeScreen={screen.screen}
+                    onScreenChange={handleScreenChange}
                 />
             ) : null}
         </main>

@@ -1,12 +1,6 @@
-import {
-  getLevelById,
-  getLevelOverview,
-  getTaskLabContext,
-  getTaskListItemById,
-  readTaskData,
-} from "@/lib/server"
-import { Lab } from "@/components/desengine/Lab"
-import type { LabScreenState } from "@/lib/types"
+import { redirect } from "next/navigation"
+
+import { createLevelsPath, createTaskNextPath, createTaskPath, createTasksPath } from "@/lib/navigation"
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
@@ -23,50 +17,26 @@ export default async function Page({
 }: {
   searchParams: SearchParams
 }) {
-    const resolvedSearchParams = await searchParams
-    const screenParam = getSearchParam(resolvedSearchParams, "screen")
-    const levelIdParam = getSearchParam(resolvedSearchParams, "levelId")
-    const taskIdParam = getSearchParam(resolvedSearchParams, "taskId")
-    const fromLevelIdParam = getSearchParam(resolvedSearchParams, "fromLevelId")
-    const toLevelIdParam = getSearchParam(resolvedSearchParams, "toLevelId")
-    const reasonParam = getSearchParam(resolvedSearchParams, "reason")
+  const resolvedSearchParams = await searchParams
+  const screenParam = getSearchParam(resolvedSearchParams, "screen")
+  const levelIdParam = getSearchParam(resolvedSearchParams, "levelId")
+  const taskIdParam = getSearchParam(resolvedSearchParams, "taskId")
 
-    const initLevelOverview = await getLevelOverview(levelIdParam)
-    const initTaskItem = taskIdParam ? await getTaskListItemById(taskIdParam) : null
-    const initTaskLabContext = initTaskItem ? await getTaskLabContext(initTaskItem) : null
-    const initTaskData = initTaskItem ? await readTaskData(initTaskItem, initTaskLabContext) : null
+  if (screenParam === "task" && taskIdParam) {
+    redirect(createTaskPath(taskIdParam))
+  }
 
-    let initScreen: LabScreenState = { type: "level" }
+  if (screenParam === "transition" && taskIdParam) {
+    redirect(createTaskNextPath(taskIdParam))
+  }
 
-    if (screenParam === "task" && initTaskItem && initTaskData) {
-      initScreen = { type: "task" }
-    }
+  if (screenParam === "level" && levelIdParam) {
+    redirect(createLevelsPath(levelIdParam))
+  }
 
-    if (screenParam === "transition" && taskIdParam && fromLevelIdParam) {
-      const [fromLevel, toLevel] = await Promise.all([
-        getLevelById(fromLevelIdParam),
-        toLevelIdParam ? getLevelById(toLevelIdParam) : Promise.resolve(null),
-      ])
+  if (screenParam === "level") {
+    redirect(createLevelsPath())
+  }
 
-      if (fromLevel && (reasonParam === "manual" || reasonParam === "prompt_limit")) {
-        initScreen = {
-          type: "transition",
-          transition: {
-            taskId: taskIdParam,
-            fromLevel,
-            toLevel,
-            reason: reasonParam,
-          },
-        }
-      }
-    }
-
-    return (
-        <Lab
-            initLevelOverview={initLevelOverview}
-            initScreen={initScreen}
-            initTaskItem={initTaskItem}
-            initTaskData={initTaskData}
-        />
-    );
+  redirect(createTasksPath())
 }

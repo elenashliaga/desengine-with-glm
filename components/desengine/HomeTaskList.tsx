@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { createConfigPath, createHelpPath, createLevelsPath, createTaskPath } from "@/lib/navigation"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +24,7 @@ type HomeTaskListProps = {
 }
 
 function createTaskHref(taskId: string) {
-  return `/lab?screen=task&taskId=${encodeURIComponent(taskId)}`
+  return createTaskPath(taskId)
 }
 
 function getIndicatorWidth(task: TaskListItem) {
@@ -114,7 +115,18 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
             </div>
 
             <div className="rounded-2xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black/70">
-              Всего задач: {initialTasks.length}
+              <div>Всего задач: {initialTasks.length}</div>
+              <div className="mt-2 flex flex-wrap gap-3">
+                <Link className="underline underline-offset-4" href={createLevelsPath()}>
+                  Уровни
+                </Link>
+                <Link className="underline underline-offset-4" href={createConfigPath()}>
+                  Конфиг
+                </Link>
+                <Link className="underline underline-offset-4" href={createHelpPath()}>
+                  Помощь
+                </Link>
+              </div>
             </div>
           </div>
 

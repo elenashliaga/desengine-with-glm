@@ -389,100 +389,197 @@
       },
       "updatedAt": "2026-05-05T14:27:02.291Z"
     },
-    "mp-inspector-mobile-status": {
-      "currentLevel": 1,
-      "levels": {
-        "1": {
-          "status": "in_progress",
-          "promptsUsed": 0,
-          "initializedAt": "2026-05-06T08:30:31.294Z"
-        },
-        "2": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "3": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "4": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "5": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "6": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "7": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "8": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "9": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "10": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "11": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "12": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "13": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "14": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "15": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "16": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "17": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "18": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "19": {
-          "status": "available",
-          "promptsUsed": 0
-        },
-        "20": {
-          "status": "available",
-          "promptsUsed": 0
-        }
-      },
-      "updatedAt": "2026-05-06T08:30:31.294Z"
-    },
     "dipole-button": {
+      "currentLevel": 4,
+      "levels": {
+        "1": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "initializedAt": "2026-05-06T08:32:54.768Z",
+          "completedAt": "2026-05-06T09:29:24.898Z",
+          "completionReason": "manual"
+        },
+        "2": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "initializedAt": "2026-05-06T09:29:28.647Z",
+          "completedAt": "2026-05-06T09:29:28.841Z",
+          "completionReason": "manual"
+        },
+        "3": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "completedAt": "2026-05-06T09:29:32.869Z",
+          "completionReason": "manual"
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-06T09:29:32.869Z"
+    },
+    "easy-buy-app-input": {
+      "currentLevel": 2,
+      "levels": {
+        "1": {
+          "status": "completed",
+          "promptsUsed": 10,
+          "initializedAt": "2026-05-06T09:19:41.813Z",
+          "completedAt": "2026-05-06T09:25:56.871Z",
+          "completionReason": "manual"
+        },
+        "2": {
+          "status": "in_progress",
+          "promptsUsed": 0,
+          "initializedAt": "2026-05-06T09:26:08.622Z"
+        },
+        "3": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "4": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "5": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "6": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "7": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "8": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "9": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "10": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "11": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "12": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "13": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "14": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "15": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "16": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "17": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "18": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "19": {
+          "status": "available",
+          "promptsUsed": 0
+        },
+        "20": {
+          "status": "available",
+          "promptsUsed": 0
+        }
+      },
+      "updatedAt": "2026-05-06T09:26:08.622Z"
+    },
+    "oncor-left-panel-item": {
       "currentLevel": 1,
       "levels": {
         "1": {
           "status": "in_progress",
           "promptsUsed": 0,
-          "initializedAt": "2026-05-06T08:32:54.768Z"
+          "initializedAt": "2026-05-06T10:52:27.724Z"
         },
         "2": {
           "status": "available",
@@ -561,7 +658,7 @@
           "promptsUsed": 0
         }
       },
-      "updatedAt": "2026-05-06T08:32:54.768Z"
+      "updatedAt": "2026-05-06T10:52:27.724Z"
     }
   }
 }

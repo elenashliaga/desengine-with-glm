@@ -35,11 +35,12 @@ function LabWorkbench({
     onStartedChange,
     onBackToLevelList,
     onTransition,
+    activeScreen,
+    onScreenChange,
 }: LabWorkbenchProps) {
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const [saveError, setSaveError] = useState<string>("");
-    const [startStatus, setStartStatus] = useState<"" | "starting" | "error">("");
-    const [startError, setStartError] = useState<string>("");
+    const [startStatus, setStartStatus] = useState<"" | "starting">("");
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
     const [resetPending, setResetPending] = useState(false);
@@ -96,9 +97,7 @@ function LabWorkbench({
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data?.ok) {
-            const debug = data?.debug ? `\n\nDEBUG:\n${JSON.stringify(data.debug, null, 2)}` : "";
-            setStartError((data?.error || "Ошибка старта задачи") + debug);
-            setStartStatus("error");
+            setStartStatus("");
             return;
         }
 
@@ -205,7 +204,6 @@ function LabWorkbench({
               reloadKey={previewVersion}
               onStart={handleStart}
               startStatus={startStatus}
-              startError={startError}
             />
 
             {taskData.labContext && (
@@ -238,7 +236,12 @@ function LabWorkbench({
                         </pre>
                     )}
 
-                    <CodeList taskData={taskData} onTaskDataChange={onTaskDataChange} />
+                    <CodeList
+                      taskData={taskData}
+                      onTaskDataChange={onTaskDataChange}
+                      activeFileId={activeScreen}
+                      onActiveFileIdChange={onScreenChange}
+                    />
                     <Prompt
                       key={taskItem.id}
                       taskId={taskItem.id}

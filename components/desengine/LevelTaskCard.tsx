@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { createTaskPath } from "@/lib/navigation";
 import type { LevelOverviewTaskItem } from "@/lib/types";
 
 type LevelTaskCardProps = {
@@ -47,7 +48,7 @@ export function LevelTaskCard({
           ) : (
             <Link
               className="text-sm underline underline-offset-4"
-              href={`/lab?screen=task&taskId=${encodeURIComponent(task.id)}`}
+              href={createTaskPath(task.id)}
             >
               Открыть задачу
             </Link>

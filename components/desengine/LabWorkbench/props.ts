@@ -10,6 +10,8 @@ type LabWorkbenchProps = BaseProps & {
     onStartedChange: (next: boolean) => void;
     onBackToLevelList: () => void;
     onTransition: (transition: TaskTransition | null) => void;
+    activeScreen: string;
+    onScreenChange: (screen: string) => void;
 }
 
 export { type LabWorkbenchProps }
