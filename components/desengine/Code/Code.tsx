@@ -1,8 +1,8 @@
 "use client";
 
-import { Textarea } from "@/components/ui/textarea";
 import { CodeProps } from "./props";
 import { BaseStyles } from "../Base";
+import { MonacoCodeEditor } from "./MonacoCodeEditor";
 
 import {
   Tabs,
@@ -15,25 +15,30 @@ import { taskWorkbenchFiles } from "@/lib/client";
 
 function Code({ id, taskData, onTaskDataChange }: CodeProps & { id: string }) {
   if (!id) return null;
+  const currentFile = taskWorkbenchFiles.find((file) => file.id === id);
+
+  if (!currentFile) {
+    return null;
+  }
+
   return (
-      <div className="w-full h-full p-0 gap-0">
-          <Textarea
-            id={id}
-            placeholder={id} 
-            className="w-full h-full p-0 gap-0"
-            value={taskData.contentByFileId[id] ?? ""}
-            onChange={(event) => {
-              if (!onTaskDataChange) return;
-              onTaskDataChange({
-                ...taskData,
-                contentByFileId: {
-                  ...taskData.contentByFileId,
-                  [id]: event.target.value,
-                },
-              });
-            }}
-          />
-      </div>
+    <div className="h-full w-full overflow-hidden rounded-md border border-white/10 bg-[#111111]">
+      <MonacoCodeEditor
+        fileId={id}
+        fileName={currentFile.fileName}
+        value={taskData.contentByFileId[id] ?? ""}
+        onChange={(nextValue) => {
+          if (!onTaskDataChange) return;
+          onTaskDataChange({
+            ...taskData,
+            contentByFileId: {
+              ...taskData.contentByFileId,
+              [id]: nextValue,
+            },
+          });
+        }}
+      />
+    </div>
   );
 }
 
