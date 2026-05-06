@@ -24,8 +24,8 @@ Onboarding-контент runtime читает из каталога `/onboardin
 
 ## Project Data и User State
 
-- Канонические onboarding-данные читаются из `/onboarding`: `levels/`, `tasks/**/{config.json,base.png,variants.png}`, `prompts/didactic/`.
-- Корневые `levels/`, `tasks/` и `prompts/didactic/` больше не считаются runtime-источником onboarding-контента.
+- Канонические onboarding-данные читаются из `/onboarding`: `onboarding/levels/**`, `onboarding/tasks/**/{config.json,base.png,variants.png}`, `onboarding/prompts/didactic/**`.
+- Корневые `levels/`, `tasks/` и `prompts/didactic/` не должны использоваться и подлежат удалению как legacy-каталоги.
 - Ручное обновление локального `/onboarding` выполняется через кнопку `Обновить onboarding` на `/config`.
 - Весь локальный прогресс пользователя, рабочие файлы задач и prompt-history живут в `user/`.
 - Обычное обновление проекта из Git не должно затрагивать `user/`.

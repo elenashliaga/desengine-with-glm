@@ -33,11 +33,11 @@
 ### Requirement: В onboarding-репозиторий входят уровни, задачи и didactic-prompts
 
 Система SHALL относить к onboarding-репозиторию:
-- `levels/**`
-- `tasks/**/config.json`
-- `tasks/**/base.png`
-- `tasks/**/variants.png`
-- `prompts/didactic/**`
+- `onboarding/levels/**`
+- `onboarding/tasks/**/config.json`
+- `onboarding/tasks/**/base.png`
+- `onboarding/tasks/**/variants.png`
+- `onboarding/prompts/didactic/**`
 
 #### Scenario: Система читает onboarding-уровень
 - **WHEN** системе нужны уровни и их onboarding-материалы
@@ -64,7 +64,7 @@
 Система SHALL не считать рабочие исходники компонента и историю уточнений частью onboarding-репозитория.
 
 #### Scenario: Система определяет состав versioned onboarding-контента задачи
-- **WHEN** в `tasks/**` встречаются `Component.tsx`, `Component.stories.*`, `styles.ts`, `mock.ts`, `props.ts` или `prompt-history.json`
+- **WHEN** рядом с `onboarding/tasks/**` появляются `Component.tsx`, `Component.stories.*`, `styles.ts`, `mock.ts`, `props.ts` или `prompt-history.json`
 - **THEN** они не считаются частью onboarding-контента
 - **AND** трактуются как legacy-артефакты, подлежащие удалению из versioned task-каталога
 
@@ -75,6 +75,7 @@
 #### Scenario: В старых корневых каталогах ещё лежат onboarding-файлы
 - **WHEN** рядом с `/onboarding` в корне репозитория всё ещё существуют `levels/**`, `tasks/**` или `prompts/didactic/**`
 - **THEN** система не использует их как runtime-источник onboarding-данных
+- **AND** такие legacy-каталоги должны быть удалены из репозитория
 
 ### Requirement: Недоступность onboarding-контента показывается явно
 

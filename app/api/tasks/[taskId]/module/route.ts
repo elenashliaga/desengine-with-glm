@@ -117,6 +117,90 @@ function buildClientRuntimeModule(files: {
   propsJs: string
 }) {
   return `
+const __DESENGINE_BUILTINS__ = {
+  "@/components/shadcn/ui": (() => {
+    const Button = ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children);
+    const Input = (props) => React.createElement("input", props);
+    const Textarea = (props) => React.createElement("textarea", props);
+    const Checkbox = ({ checked, defaultChecked, ...props }) =>
+      React.createElement("input", {
+        type: "checkbox",
+        checked,
+        defaultChecked,
+        ...props,
+      });
+    const Label = ({ children, ...props }) => React.createElement("label", props, children);
+    const Badge = ({ children, ...props }) => React.createElement("span", props, children);
+    const Card = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardHeader = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardTitle = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardDescription = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardContent = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardFooter = ({ children, ...props }) => React.createElement("div", props, children);
+
+    return {
+      Button,
+      Input,
+      Textarea,
+      Checkbox,
+      Label,
+      Badge,
+      Card,
+      CardHeader,
+      CardTitle,
+      CardDescription,
+      CardContent,
+      CardFooter,
+    };
+  })(),
+  "@/components/ui/button": (() => {
+    const Button = ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children);
+    return { Button };
+  })(),
+  "@/components/ui/input": (() => {
+    const Input = (props) => React.createElement("input", props);
+    return { Input };
+  })(),
+  "@/components/ui/textarea": (() => {
+    const Textarea = (props) => React.createElement("textarea", props);
+    return { Textarea };
+  })(),
+  "@/components/ui/checkbox": (() => {
+    const Checkbox = ({ checked, defaultChecked, ...props }) =>
+      React.createElement("input", {
+        type: "checkbox",
+        checked,
+        defaultChecked,
+        ...props,
+      });
+    return { Checkbox };
+  })(),
+  "@/components/ui/label": (() => {
+    const Label = ({ children, ...props }) => React.createElement("label", props, children);
+    return { Label };
+  })(),
+  "@/components/ui/badge": (() => {
+    const Badge = ({ children, ...props }) => React.createElement("span", props, children);
+    return { Badge };
+  })(),
+  "@/components/ui/card": (() => {
+    const Card = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardHeader = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardTitle = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardDescription = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardContent = ({ children, ...props }) => React.createElement("div", props, children);
+    const CardFooter = ({ children, ...props }) => React.createElement("div", props, children);
+    return {
+      Card,
+      CardHeader,
+      CardTitle,
+      CardDescription,
+      CardContent,
+      CardFooter,
+    };
+  })(),
+};
+
 const __DESENGINE_MODULES__ = {
   "./Component": function(module, exports, require) {
 ${files.componentJs}
@@ -137,6 +221,10 @@ const __DESENGINE_CACHE__ = {};
 function __desengineLoad(specifier) {
   if (specifier === "react") {
     return { ...React, default: React };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(__DESENGINE_BUILTINS__, specifier)) {
+    return __DESENGINE_BUILTINS__[specifier];
   }
 
   if (specifier.endsWith(".css")) {

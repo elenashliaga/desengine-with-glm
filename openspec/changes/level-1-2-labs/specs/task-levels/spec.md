@@ -20,4 +20,4 @@
 
 #### Scenario: Пользователь открывает экран уровня
 - **WHEN** система показывает описание уровня
-- **THEN** она использует содержимое `levels/<levelId>/overview.md`
+- **THEN** она использует содержимое `onboarding/levels/<levelId>/overview.md`

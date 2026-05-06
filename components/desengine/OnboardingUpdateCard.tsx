@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
+import { Button } from "@/components/ui/button"
+
 type OnboardingUpdateCardProps = {
   canUpdate: boolean
 }
@@ -62,14 +64,14 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
           </p>
         </div>
 
-        <button
+        <Button
           className="inline-flex min-w-[220px] items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:bg-black/20"
           disabled={!canUpdate || isPending}
           onClick={handleUpdate}
-          type="button"
+          size="lg"
         >
           {isPending ? "Обновляем..." : "Обновить onboarding"}
-        </button>
+        </Button>
       </div>
 
       {!canUpdate ? (

@@ -1,3 +1,4 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { taskWorkbenchFiles } from "@/lib/client";
 
 type PromptFileProps = {
@@ -11,11 +12,10 @@ type PromptFileProps = {
 function PromptFile({ fileId, title, checked, disabled, onToggle }: PromptFileProps) {
     return (
         <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={checked}
             disabled={disabled}
-            onChange={(event) => onToggle(fileId, event.target.checked)}
+            onCheckedChange={(nextChecked) => onToggle(fileId, nextChecked === true)}
           />
           <code>{title}</code>
         </label>
