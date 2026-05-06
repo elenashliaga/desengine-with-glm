@@ -8,6 +8,17 @@ import { Prompt } from "../Propmt";
 import { CodeList } from "../Code";
 import { BaseStyles } from "../Base";
 import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { taskWorkbenchFiles } from "@/lib/client";
 
 type SaveErrorItem = {
@@ -31,16 +42,18 @@ function LabWorkbench({
     const [startError, setStartError] = useState<string>("");
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
+    const [resetPending, setResetPending] = useState(false);
+    const [resetError, setResetError] = useState("");
     const [previewVersion, setPreviewVersion] = useState(0);
-    const editableIds = taskData.labContext?.editableFileIds ?? [];
 
     const editableFileIds = useMemo(() => {
+        const editableIds = taskData.labContext?.editableFileIds ?? [];
         return new Set(
             taskWorkbenchFiles
                 .filter((f) => f.edit === true && editableIds.includes(f.id))
                 .map((f) => f.id)
         );
-    }, [editableIds]);
+    }, [taskData.labContext?.editableFileIds]);
 
     async function handleSave() {
         setSaveStatus("saving");
@@ -115,6 +128,22 @@ function LabWorkbench({
         onTransition(data.transition ?? null);
     }
 
+    async function handleReset() {
+        setResetPending(true);
+        setResetError("");
+
+        const res = await fetch(`/api/tasks/${taskItem.id}/reset`, { method: "POST" });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.ok) {
+            setResetPending(false);
+            setResetError(data?.error || "Не удалось сбросить задачу");
+            return;
+        }
+
+        window.location.reload();
+    }
+
     return (
         <div className={BaseStyles.frameCol}>
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -132,9 +161,36 @@ function LabWorkbench({
                     <Button variant="outline" onClick={onBackToLevelList}>
                         К списку задач уровня
                     </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                disabled={completePending || resetPending}
+                            >
+                                {resetPending ? "Сброс…" : "Сбросить задачу"}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent size="sm">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Сбросить задачу?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Будут удалены рабочие файлы и история уточнений. Задача снова станет не начатой.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                                <AlertDialogAction
+                                    variant="destructive"
+                                    onClick={() => void handleReset()}
+                                >
+                                    Подтвердить сброс
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     <Button
                         variant="secondary"
-                        disabled={completePending || taskItem.progress.currentLevelStatus === "completed"}
+                        disabled={completePending || resetPending || taskItem.progress.currentLevelStatus === "completed"}
                         onClick={handleComplete}
                     >
                         {completePending ? "Завершение…" : "Я закончил"}
@@ -200,6 +256,12 @@ function LabWorkbench({
             {completeError && (
                 <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
                     {completeError}
+                </pre>
+            )}
+
+            {resetError && (
+                <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive whitespace-pre-wrap">
+                    {resetError}
                 </pre>
             )}
         </div>

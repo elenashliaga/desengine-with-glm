@@ -182,7 +182,7 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button type="button" variant="outline" size="sm" className="rounded-full" disabled={isPending}>
-                            Сбросить
+                            Сбросить задачу
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent size="sm">
