@@ -3,9 +3,26 @@ const path = require("node:path")
 
 const LOCAL_CONFIG_FILENAME = "config.txt"
 const LOCAL_CONFIG_EXAMPLE_FILENAME = "config-example.txt"
+const LEGACY_LOCAL_ENV_FILENAME = ".env.local"
 
 function getLocalConfigPath(cwd = process.cwd()) {
   return path.join(cwd, LOCAL_CONFIG_FILENAME)
+}
+
+function getLegacyLocalEnvPath(cwd = process.cwd()) {
+  return path.join(cwd, LEGACY_LOCAL_ENV_FILENAME)
+}
+
+function getLocalConfigState(cwd = process.cwd()) {
+  const configPath = getLocalConfigPath(cwd)
+  const legacyEnvPath = getLegacyLocalEnvPath(cwd)
+
+  return {
+    configPath,
+    legacyEnvPath,
+    hasConfig: fs.existsSync(configPath),
+    hasLegacyEnv: fs.existsSync(legacyEnvPath),
+  }
 }
 
 function stripOptionalQuotes(value) {
@@ -99,8 +116,11 @@ function loadLocalConfig(options = {}) {
 }
 
 module.exports = {
+  LEGACY_LOCAL_ENV_FILENAME,
   LOCAL_CONFIG_EXAMPLE_FILENAME,
   LOCAL_CONFIG_FILENAME,
+  getLegacyLocalEnvPath,
+  getLocalConfigState,
   getLocalConfigPath,
   loadLocalConfig,
   parseLocalConfig,

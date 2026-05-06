@@ -45,7 +45,7 @@
 - **THEN** приложение проверяет маркеры по новому базовому URL без изменения кода
 
 #### Scenario: Конфигурация доступа задаётся через локальное окружение
-- **WHEN** оператор задаёт `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/.env.local`
+- **WHEN** оператор задаёт `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `lab/config.txt`
 - **THEN** приложение использует эти значения для проверки допуска
 
 ### Requirement: Семантика ответов allowlist-сервера фиксирована

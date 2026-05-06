@@ -22,6 +22,7 @@
 
 - Локальный конфиг: `lab/config.txt`
 - Шаблон конфига: [lab/config-example.txt](/Users/op/dev/sobakapav/desengine/lab/config-example.txt:1)
+- Legacy-путь `lab/.env.local` больше не используется и не должен лежать рядом с `config.txt`
 - OpenAI: `lab/env/openai.md`
 - Доступ по email через allowlist: `lab/env/access-control.md`
 

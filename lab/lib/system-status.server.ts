@@ -9,7 +9,13 @@ localConfig.loadLocalConfig()
 type SystemStatusTone = "ready" | "warning" | "blocked"
 
 type SystemStatusItem = {
-  id: "openai-config" | "openai-network" | "allowlist-config" | "allowlist-network" | "access-session"
+  id:
+    | "local-config-file"
+    | "openai-config"
+    | "openai-network"
+    | "allowlist-config"
+    | "allowlist-network"
+    | "access-session"
   label: string
   tone: SystemStatusTone
   summary: string
@@ -93,8 +99,39 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     hasAccessSession(),
   ])
   const accessConfig = getAccessControlConfig()
+  const localConfigState = localConfig.getLocalConfigState()
   const items: SystemStatusItem[] = []
   const instructions: SystemInstruction[] = []
+
+  items.push({
+    id: "local-config-file",
+    label: "Локальный конфиг",
+    tone: localConfigState.hasLegacyEnv ? "warning" : localConfigState.hasConfig ? "ready" : "blocked",
+    summary: localConfigState.hasLegacyEnv
+      ? "Обнаружен устаревший lab/.env.local"
+      : localConfigState.hasConfig
+        ? "lab/config.txt найден"
+        : "lab/config.txt не найден",
+    detail: localConfigState.hasLegacyEnv
+      ? "Используйте только `lab/config.txt`. Старый `.env.local` создаёт двусмысленность и может незаметно переопределять настройки."
+      : localConfigState.hasConfig
+        ? "Локальная конфигурация лежит в каноническом файле `lab/config.txt`."
+        : "Создайте `lab/config.txt` на основе `lab/config-example.txt`.",
+  })
+
+  if (localConfigState.hasLegacyEnv) {
+    instructions.push({
+      id: "local-config-file",
+      actor: "Администратор",
+      text: "Перенесите рабочие значения в `lab/config.txt` и удалите `lab/.env.local`, чтобы лаборатория использовала один канонический конфиг.",
+    })
+  } else if (!localConfigState.hasConfig) {
+    instructions.push({
+      id: "local-config-file",
+      actor: "Администратор",
+      text: "Создайте `lab/config.txt` на основе `lab/config-example.txt`, чтобы лаборатория получила локальные настройки.",
+    })
+  }
 
   items.push({
     id: "openai-config",

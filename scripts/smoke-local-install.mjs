@@ -6,7 +6,7 @@ import { promisify } from "node:util"
 
 const execFileAsync = promisify(execFile)
 const require = createRequire(import.meta.url)
-const { getLocalConfigPath, readLocalConfig } = require("../lab/lib/local-config.cjs")
+const { getLocalConfigPath, getLocalConfigState, readLocalConfig } = require("../lab/lib/local-config.cjs")
 const rootDir = process.cwd()
 const labDir = path.join(rootDir, "lab")
 const envPath = getLocalConfigPath(labDir)
@@ -82,6 +82,7 @@ async function runBuildCheck() {
 }
 
 async function main() {
+  const localConfigState = getLocalConfigState(labDir)
   const fileEnv = readLocalConfig(envPath)
   const env = { ...fileEnv, ...process.env }
   const checks = []
@@ -92,11 +93,24 @@ async function main() {
   checks.push(
     createCheck(
       "env-file",
-      fs.existsSync(envPath),
-      fs.existsSync(envPath) ? "Файл lab/config.txt найден" : "Файл lab/config.txt не найден",
-      fs.existsSync(envPath)
+      localConfigState.hasConfig,
+      localConfigState.hasConfig ? "Файл lab/config.txt найден" : "Файл lab/config.txt не найден",
+      localConfigState.hasConfig
         ? "Локальная конфигурация присутствует."
         : "Создайте `lab/config.txt` на основе `lab/config-example.txt`.",
+    ),
+  )
+
+  checks.push(
+    createCheck(
+      "legacy-env-file",
+      !localConfigState.hasLegacyEnv,
+      localConfigState.hasLegacyEnv
+        ? "Обнаружен устаревший файл lab/.env.local"
+        : "Устаревший lab/.env.local не найден",
+      localConfigState.hasLegacyEnv
+        ? "Перенесите значения в `lab/config.txt` и удалите `lab/.env.local`, иначе настройки будут двусмысленными."
+        : "Локальная конфигурация использует только `lab/config.txt`.",
     ),
   )
 
