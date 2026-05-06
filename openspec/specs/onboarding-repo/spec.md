@@ -37,7 +37,7 @@
 - `onboarding/tasks/**/config.json`
 - `onboarding/tasks/**/base.png`
 - `onboarding/tasks/**/variants.png`
-- `onboarding/prompts/didactic/**`
+- `onboarding/prompts/**`
 
 #### Scenario: Система читает onboarding-уровень
 - **WHEN** системе нужны уровни и их onboarding-материалы
@@ -53,7 +53,7 @@
 
 ### Requirement: Production-prompts не входят в onboarding-репозиторий
 
-Система SHALL не относить `prompts/production/**` к onboarding-репозиторию.
+Система SHALL не относить `prompts/**` к onboarding-репозиторию.
 
 #### Scenario: Система читает production-промпт
 - **WHEN** runtime нужен production-промпт
@@ -73,7 +73,7 @@
 Система SHALL читать onboarding-данные только из `/onboarding` и не использовать старые корневые каталоги как тихий запасной источник.
 
 #### Scenario: В старых корневых каталогах ещё лежат onboarding-файлы
-- **WHEN** рядом с `/onboarding` в корне репозитория всё ещё существуют `levels/**`, `tasks/**` или `prompts/didactic/**`
+- **WHEN** рядом с `/onboarding` в корне репозитория всё ещё существуют `levels/**`, `tasks/**` или legacy-пути старой схемы промптов
 - **THEN** система не использует их как runtime-источник onboarding-данных
 - **AND** такие legacy-каталоги должны быть удалены из репозитория
 

@@ -10,7 +10,9 @@
 
 ## Опциональное
 
-- `DESENGINE_OPENAI_MODEL` — модель для всей лаборатории (по умолчанию задаётся в коде).
+Нет.
+
+`DESENGINE_OPENAI_MODEL` — обязательная настройка модели для всей лаборатории. Она задаётся через `config.txt` и не имеет fallback в `env/config.json`.
 
 ## Как задать
 
@@ -21,7 +23,7 @@ OPENAI_API_KEY=...
 DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 ```
 
-`DESENGINE_OPENAI_MODEL` уже предзаполнен типовым значением, поэтому обычно достаточно заменить только `OPENAI_API_KEY`.
+`DESENGINE_OPENAI_MODEL` должен быть задан явно в `config.txt`.
 
 Для доступа по email см. [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1).
 Админские команды сопровождения и smoke-check собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).

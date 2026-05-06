@@ -2,17 +2,14 @@
     "onboardingRoot" : "onboarding",
     "levelsCatalogRoot": "onboarding/levels",
     "taskCatalogRoot": "onboarding/tasks",
-    "didacticPromptsRoot": "onboarding/prompts/didactic",
-    "productionPromptsRoot": "prompts/production",
+    "onboardingPromptsRoot": "onboarding/prompts",
+    "promptsRoot": "prompts",
     "userRoot"       : "user",
     "userProgressFile": "user/user-progress.json",
     "taskConfigFile" : "config.json",
     "taskImageFile"  : "image.png",
     "llm" : {
-        "provider": "openai",
-        "openai": {
-            "defaultModel": "gpt-4o-2024-08-06"
-        }
+        "provider": "openai"
     },
     "taskWorkbenchFiles" : [
         { "id" : "image",     "fileName" : "image.png",             "title": "",           "edit": false },

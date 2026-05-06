@@ -117,41 +117,50 @@ function buildClientRuntimeModule(files: {
   propsJs: string
 }) {
   return `
-const __DESENGINE_BUILTINS__ = {
-  "@/components/shadcn/ui": (() => {
-    const Button = ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children);
-    const Input = (props) => React.createElement("input", props);
-    const Textarea = (props) => React.createElement("textarea", props);
-    const Checkbox = ({ checked, defaultChecked, ...props }) =>
+const __DESENGINE_UI_BARREL__ = (() => {
+  const button = { Button: ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children) };
+  const input = { Input: (props) => React.createElement("input", props) };
+  const textarea = { Textarea: (props) => React.createElement("textarea", props) };
+  const checkbox = {
+    Checkbox: ({ checked, defaultChecked, ...props }) =>
       React.createElement("input", {
         type: "checkbox",
         checked,
         defaultChecked,
         ...props,
-      });
-    const Label = ({ children, ...props }) => React.createElement("label", props, children);
-    const Badge = ({ children, ...props }) => React.createElement("span", props, children);
-    const Card = ({ children, ...props }) => React.createElement("div", props, children);
-    const CardHeader = ({ children, ...props }) => React.createElement("div", props, children);
-    const CardTitle = ({ children, ...props }) => React.createElement("div", props, children);
-    const CardDescription = ({ children, ...props }) => React.createElement("div", props, children);
-    const CardContent = ({ children, ...props }) => React.createElement("div", props, children);
-    const CardFooter = ({ children, ...props }) => React.createElement("div", props, children);
+      }),
+  };
+  const label = { Label: ({ children, ...props }) => React.createElement("label", props, children) };
+  const badge = { Badge: ({ children, ...props }) => React.createElement("span", props, children) };
+  const card = {
+    Card: ({ children, ...props }) => React.createElement("div", props, children),
+    CardHeader: ({ children, ...props }) => React.createElement("div", props, children),
+    CardTitle: ({ children, ...props }) => React.createElement("div", props, children),
+    CardDescription: ({ children, ...props }) => React.createElement("div", props, children),
+    CardContent: ({ children, ...props }) => React.createElement("div", props, children),
+    CardFooter: ({ children, ...props }) => React.createElement("div", props, children),
+  };
 
-    return {
-      Button,
-      Input,
-      Textarea,
-      Checkbox,
-      Label,
-      Badge,
-      Card,
-      CardHeader,
-      CardTitle,
-      CardDescription,
-      CardContent,
-      CardFooter,
-    };
+  return {
+    ...button,
+    ...input,
+    ...textarea,
+    ...checkbox,
+    ...label,
+    ...badge,
+    ...card,
+  };
+})();
+
+const __DESENGINE_BUILTINS__ = {
+  "@/components/shadcn/ui": (() => {
+    return __DESENGINE_UI_BARREL__;
+  })(),
+  "@/components/ui": (() => {
+    return __DESENGINE_UI_BARREL__;
+  })(),
+  "@/components/ui/": (() => {
+    return __DESENGINE_UI_BARREL__;
   })(),
   "@/components/ui/button": (() => {
     const Button = ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children);

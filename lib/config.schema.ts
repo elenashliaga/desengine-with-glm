@@ -9,7 +9,9 @@ const AppConfigSchema = z
     levelsCatalogRoot: z.string().optional(),
     taskCatalogRoot: z.string().optional(),
     tasksRoot: z.string().optional(),
+    onboardingPromptsRoot: z.string().optional(),
     didacticPromptsRoot: z.string().optional(),
+    promptsRoot: z.string().optional(),
     productionPromptsRoot: z.string().optional(),
     userRoot: z.string().optional(),
     userProgressFile: z.string().optional(),
@@ -17,9 +19,6 @@ const AppConfigSchema = z
     taskImageFile: z.string(),
     llm: z.object({
       provider: LlmProviderSchema,
-      openai: z.object({
-        defaultModel: z.string().min(1),
-      }),
     }),
     taskWorkbenchFiles: z.array(
       z.object({
@@ -43,8 +42,9 @@ const AppConfigSchema = z
     const onboardingRoot = value.onboardingRoot ?? "onboarding"
     const taskCatalogRoot = value.taskCatalogRoot ?? value.tasksRoot ?? `${onboardingRoot}/tasks`
     const levelsCatalogRoot = value.levelsCatalogRoot ?? `${onboardingRoot}/levels`
-    const didacticPromptsRoot = value.didacticPromptsRoot ?? `${onboardingRoot}/prompts/didactic`
-    const productionPromptsRoot = value.productionPromptsRoot ?? "prompts/production"
+    const onboardingPromptsRoot =
+      value.onboardingPromptsRoot ?? value.didacticPromptsRoot ?? `${onboardingRoot}/prompts`
+    const promptsRoot = value.promptsRoot ?? value.productionPromptsRoot ?? "prompts"
     const userRoot = value.userRoot ?? "user"
 
     return {
@@ -52,8 +52,8 @@ const AppConfigSchema = z
       onboardingRoot,
       levelsCatalogRoot,
       taskCatalogRoot,
-      didacticPromptsRoot,
-      productionPromptsRoot,
+      onboardingPromptsRoot,
+      promptsRoot,
       userRoot,
       userProgressFile: value.userProgressFile ?? `${userRoot}/user-progress.json`,
     }

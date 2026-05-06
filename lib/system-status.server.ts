@@ -106,9 +106,9 @@ async function getOnboardingContentStatus() {
     appConfig.onboardingRoot,
     appConfig.levelsCatalogRoot,
     appConfig.taskCatalogRoot,
-    appConfig.didacticPromptsRoot,
-    path.join(appConfig.didacticPromptsRoot, "levels"),
-    appConfig.productionPromptsRoot,
+    appConfig.onboardingPromptsRoot,
+    path.join(appConfig.onboardingPromptsRoot, "levels"),
+    appConfig.promptsRoot,
   ]
 
   for (const root of expectedDirs) {
@@ -152,9 +152,9 @@ async function getOnboardingContentStatus() {
   }
 
   const requiredFiles = [
-    path.join(appConfig.didacticPromptsRoot, "start-component.md"),
-    path.join(appConfig.productionPromptsRoot, "start-component.md"),
-    path.join(appConfig.productionPromptsRoot, "iterate-component.md"),
+    path.join(appConfig.onboardingPromptsRoot, "default.md"),
+    path.join(appConfig.promptsRoot, "default.md"),
+    path.join(appConfig.promptsRoot, "iterate-component.md"),
   ]
 
   for (const filePath of requiredFiles) {

@@ -37,13 +37,13 @@ async function pathExists(targetPath: string) {
 async function validateOnboardingLayout(root: string): Promise<OnboardingLayoutStatus> {
   const levelsRoot = path.join(root, "levels")
   const tasksRoot = path.join(root, "tasks")
-  const didacticRoot = path.join(root, "prompts", "didactic")
+  const promptsRoot = path.join(root, "prompts")
   const requiredDirs = [
     root,
     levelsRoot,
     tasksRoot,
-    didacticRoot,
-    path.join(didacticRoot, "levels"),
+    promptsRoot,
+    path.join(promptsRoot, "levels"),
   ]
 
   for (const dir of requiredDirs) {
@@ -76,9 +76,7 @@ async function validateOnboardingLayout(root: string): Promise<OnboardingLayoutS
     }
   }
 
-  const requiredFiles = [
-    path.join(didacticRoot, "start-component.md"),
-  ]
+  const requiredFiles = [path.join(promptsRoot, "default.md")]
 
   for (const filePath of requiredFiles) {
     if (!(await pathExists(filePath))) {

@@ -26,7 +26,6 @@ type Params = { taskId: string }
 
 type Body = {
   prompt?: string
-  selectedFileIds?: string[]
 }
 
 type FilesPayload = Record<string, string | null>
@@ -83,26 +82,19 @@ export async function POST(
   }
 
   const editableFiles = getLevelEditableWorkbenchFiles(labContext.editableFileIds)
-  const editableById = new Map(editableFiles.map((file) => [file.id, file] as const))
-
-  const requestedFileIds = Array.isArray(body?.selectedFileIds)
-    ? body.selectedFileIds.filter((fileId): fileId is string => typeof fileId === "string")
-    : []
-
-  const selectedFileIds = requestedFileIds.length
-    ? requestedFileIds.filter((fileId) => editableById.has(fileId))
-    : editableFiles.map((file) => file.id)
-
-  if (selectedFileIds.length === 0) {
-    return Response.json({ ok: false, error: "Выберите хотя бы один файл для контекста" }, { status: 400 })
+  if (editableFiles.length === 0) {
+    return Response.json({ ok: false, error: "Для уровня не настроены доступные рабочие файлы" }, { status: 400 })
   }
 
   const level = await getLevelForTaskItem(taskItem)
   const taskData = await readTaskData(taskItem, labContext)
-  const [productionPrompt, levelDidacticPrompt] = await Promise.all([
-    readPrompt("production", "iterate-component"),
-    readLevelDidacticPrompt(level.promptKey),
-  ])
+  const [defaultProductionPrompt, iterateProductionPrompt, defaultDidacticPrompt, levelDidacticPrompt] =
+    await Promise.all([
+      readPrompt("production", "default"),
+      readPrompt("production", "iterate-component"),
+      readPrompt("didactic", "default"),
+      readLevelDidacticPrompt(level.promptKey),
+    ])
 
   let imageBase64List: string[]
   try {
@@ -117,12 +109,11 @@ export async function POST(
     return Response.json({ ok: false, error: "Не найдены обязательные картинки текущего уровня" }, { status: 404 })
   }
 
-  const selectedFiles = selectedFileIds.map((fileId) => {
-    const file = editableById.get(fileId)
+  const selectedFiles = editableFiles.map((file) => {
     return {
-      id: fileId,
-      fileName: file?.fileName || fileId,
-      content: taskData.contentByFileId[fileId] ?? "",
+      id: file.id,
+      fileName: file.fileName,
+      content: taskData.contentByFileId[file.id] ?? "",
     }
   })
 
@@ -138,9 +129,19 @@ export async function POST(
     .join("\n")
 
   const instruction = `
-${productionPrompt}
+${defaultProductionPrompt}
+
+${iterateProductionPrompt}
+
+${defaultDidacticPrompt}
 
 ${levelDidacticPrompt}
+
+ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
+${labContext.commonExplanation}
+
+УНИКАЛЬНОЕ ПОЯСНЕНИЕ ЭТОЙ ЗАДАЧИ:
+${labContext.taskExplanation}
 
 ## Разрешённые файлы
 ${allowedFilesText}
@@ -148,7 +149,11 @@ ${allowedFilesText}
 Верни JSON только с ключами из этого списка:
 ${allowedFilesText}
 
-Если какой-то файл не нужно менять, верни для него null.
+Для каждого ключа верни одно из двух:
+- полный текст файла, если его нужно изменить;
+- \`null\`, если этот файл менять не нужно.
+
+Если пользователь просит изменить компонент, не возвращай \`null\` для всех файлов, пока действительно не убедишься, что текущее состояние уже полностью удовлетворяет запросу.
 
 ТЕКУЩИЙ УТОЧНЯЮЩИЙ ПРОМПТ ПОЛЬЗОВАТЕЛЯ:
 ${promptText}
@@ -156,7 +161,7 @@ ${promptText}
 КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
 ${imagesText}
 
-В КОНТЕКСТ ЭТОЙ ИТЕРАЦИИ ВКЛЮЧЕНЫ ТОЛЬКО СЛЕДУЮЩИЕ ФАЙЛЫ:
+В КОНТЕКСТ ЭТОЙ ИТЕРАЦИИ ВКЛЮЧЕНЫ ВСЕ РАЗРЕШЁННЫЕ РАБОЧИЕ ФАЙЛЫ:
 ${selectedFilesText}
 `.trim()
 
@@ -220,7 +225,6 @@ ${selectedFilesText}
   await appendPromptHistory(taskId, {
     text: promptText,
     createdAt: new Date().toISOString(),
-    selectedFileIds,
     levelNumber: taskItem.progress.currentLevel,
     changedFileIds,
     llmCall: {

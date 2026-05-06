@@ -5,17 +5,17 @@ import path from "node:path"
 
 import { appConfig } from "./config.server"
 
-type PromptName = "start-component" | "iterate-component"
+type PromptName = "default" | "iterate-component" | "start-component"
 type PromptKind = "production" | "didactic"
 
 export async function readPrompt(kind: PromptKind, name: PromptName) {
-  const root = kind === "production" ? appConfig.productionPromptsRoot : appConfig.didacticPromptsRoot
+  const root = kind === "production" ? appConfig.promptsRoot : appConfig.onboardingPromptsRoot
   const filePath = path.join(root, `${name}.md`)
   return readFile(filePath, "utf-8")
 }
 
 export async function readLevelDidacticPrompt(promptKey: string) {
-  const filePath = path.join(appConfig.didacticPromptsRoot, "levels", `${promptKey}.md`)
+  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", `${promptKey}.md`)
 
   try {
     return await readFile(filePath, "utf-8")

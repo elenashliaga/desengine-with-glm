@@ -1,6 +1,5 @@
 import "server-only"
 
-import { appConfig } from "@/lib/config.server"
 import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "@/lib/llm.types"
 import localConfig from "@/lib/local-config.cjs"
 
@@ -36,7 +35,13 @@ function getLlmProvider(): LlmProvider {
 }
 
 function getOpenAIModel(): string {
-  return process.env.DESENGINE_OPENAI_MODEL || appConfig.llm.openai.defaultModel
+  const model = process.env.DESENGINE_OPENAI_MODEL?.trim()
+
+  if (!model) {
+    throw new LlmError("config", "Для режима OpenAI не настроен DESENGINE_OPENAI_MODEL")
+  }
+
+  return model
 }
 
 function getOutputTextFromOpenAI(data: unknown): string {
@@ -271,12 +276,14 @@ export async function getLlmStatus(): Promise<LlmStatus> {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Конфигурация OpenAI некорректна"
+    const configuredModel = process.env.DESENGINE_OPENAI_MODEL?.trim() || null
+
     return {
       provider,
       label: "OpenAI",
       ready: false,
       config: {
-        model: getOpenAIModel(),
+        model: configuredModel,
         hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
       },
       availability: {

@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { PromptFileList } from "./PromptFile";
+import { useState } from "react";
 import { PromptText } from "./PromptText";
 import { PromptControls } from "./PromptControls";
 import { BaseProps, BaseStyles } from "../Base";
@@ -31,23 +30,6 @@ function Prompt({
     const [error, setError] = useState("");
     const [pending, setPending] = useState(false);
 
-    const editableFileIds = taskData.labContext?.editableFileIds ?? []
-    const [selectedFileIds, setSelectedFileIds] = useState<string[]>(editableFileIds);
-
-    useEffect(() => {
-        setSelectedFileIds(editableFileIds);
-    }, [editableFileIds]);
-
-    function handleToggle(fileId: string, checked: boolean) {
-        setSelectedFileIds((current) => {
-            if (checked) {
-                return current.includes(fileId) ? current : [...current, fileId];
-            }
-
-            return current.filter((id) => id !== fileId);
-        });
-    }
-
     async function handleRun() {
         setStatus("");
         setError("");
@@ -74,7 +56,6 @@ function Prompt({
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
                 prompt: promptText,
-                selectedFileIds,
             }),
         });
 
@@ -96,17 +77,13 @@ function Prompt({
 
     return (
         <div className="space-y-3">
-            <div className={`${BaseStyles.frameRow} h-64`}>
-            <PromptText value={promptText} disabled={!started || pending || !taskItem.progress.currentLevelInitialized} onChange={setPromptText} />
-            <div className="flex flex-2 flex-col h-full">
-                <PromptFileList
-                  fileIds={editableFileIds}
-                  selectedFileIds={selectedFileIds}
+            <div className={`${BaseStyles.frameRow} flex-col gap-3`}>
+                <PromptText
+                  value={promptText}
                   disabled={!started || pending || !taskItem.progress.currentLevelInitialized}
-                  onToggle={handleToggle}
+                  onChange={setPromptText}
                 />
                 <PromptControls disabled={!started || !taskItem.progress.currentLevelInitialized} pending={pending} onRun={handleRun} />
-            </div>
             </div>
 
             {status && <p className="text-sm text-muted-foreground">{status}</p>}
@@ -158,9 +135,6 @@ function Prompt({
                                   Уровень: {entry.levelNumber ?? "не указан"}
                                 </p>
                                 <p className="whitespace-pre-wrap">{entry.text}</p>
-                                <p className="text-muted-foreground">
-                                  Файлы: {entry.selectedFileIds.length ? entry.selectedFileIds.join(", ") : "все"}
-                                </p>
                                 <p className="text-muted-foreground">
                                   Изменены: {entry.changedFileIds?.length ? entry.changedFileIds.join(", ") : "нет изменений"}
                                 </p>

@@ -95,8 +95,8 @@ export async function POST(
   }
 
   const [prod, did, levelDidactic, levelInitPrompt, taskData] = await Promise.all([
-    readPrompt("production", "start-component"),
-    readPrompt("didactic", "start-component"),
+    readPrompt("production", "default"),
+    readPrompt("didactic", "default"),
     readLevelDidacticPrompt(level.promptKey),
     readLevelInitPrompt(level.id, level.promptKey),
     readTaskData(taskItem, labContext),

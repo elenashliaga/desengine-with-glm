@@ -130,13 +130,19 @@ export async function readPromptHistory(taskId: string): Promise<PromptHistoryEn
     if (!Array.isArray(parsed)) return []
 
     return parsed.filter((entry): entry is PromptHistoryEntry => {
+      if (!entry || typeof entry !== "object") return false
+
+      const maybeLegacyEntry = entry as PromptHistoryEntry & { selectedFileIds?: unknown }
+      const hasLegacySelectedFileIds =
+        typeof maybeLegacyEntry.selectedFileIds === "undefined" ||
+        (Array.isArray(maybeLegacyEntry.selectedFileIds) &&
+          maybeLegacyEntry.selectedFileIds.every((item: unknown) => typeof item === "string"))
+
       return (
-        entry &&
-        typeof entry.text === "string" &&
-        typeof entry.createdAt === "string" &&
-        Array.isArray(entry.selectedFileIds) &&
-        (typeof entry.levelNumber === "number" || typeof entry.levelNumber === "undefined") &&
-        entry.selectedFileIds.every((item: unknown) => typeof item === "string")
+        typeof maybeLegacyEntry.text === "string" &&
+        typeof maybeLegacyEntry.createdAt === "string" &&
+        (typeof maybeLegacyEntry.levelNumber === "number" || typeof maybeLegacyEntry.levelNumber === "undefined") &&
+        hasLegacySelectedFileIds
       )
     })
   } catch {
