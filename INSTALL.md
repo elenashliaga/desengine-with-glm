@@ -11,7 +11,7 @@
 `desengine` работает с локальными файлами пользователя, поэтому запуск предполагается прямо на хост-машине, а не внутри изолированного контейнера.
 
 Проектные данные и пользовательское состояние разделены:
-- `/onboarding` содержит versioned onboarding-контент: уровни, task config, `base.png`, `variants.png` и didactic-промпты;
+- `/onboarding` содержит versioned onboarding-контент: открытые материалы уровней в `levels/**`, скрытые level prompts в `prompts/levels/**`, task config, `base.png` и `variants.png`;
 - `user/` содержит локальный прогресс, рабочие файлы задач и историю промптов.
 
 ## 1. Установите Node.js и npm

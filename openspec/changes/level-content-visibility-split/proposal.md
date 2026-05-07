@@ -7,7 +7,7 @@
 На практике это видно по тому, что:
 - `overview.md` уже играет роль открытого пользовательского описания уровня;
 - `init-prompt.md` лежит в той же папке уровня, хотя относится к скрытому prompt-контуру;
-- didactic prompt уже живёт отдельно в `onboarding/prompts/levels/`.
+- level-specific prompt для уточняющего запроса уже живёт отдельно в `onboarding/prompts/levels/`.
 
 Нужна более строгая и понятная граница: всё потенциально видимое пользователю остаётся в `levels/`, а все скрытые детали prompt-логики переходят в `prompts/`.
 
@@ -16,7 +16,7 @@
 - Фиксируем, что `onboarding/levels/<levelId>/` хранит только открытые level-материалы.
 - Фиксируем, что все level-specific prompt-материалы хранятся только в `onboarding/prompts/levels/<levelId>/`.
 - Фиксируем перенос `init-prompt.md` из `onboarding/levels/<levelId>/` в `onboarding/prompts/levels/<levelId>/init.md`.
-- Фиксируем, что didactic prompt тоже живёт в `onboarding/prompts/levels/<levelId>/didactic.md`.
+- Фиксируем, что prompt для уточняющего запроса живёт в `onboarding/prompts/levels/<levelId>/specify.md`.
 - Фиксируем упрощение контракта: отдельный `promptKey` больше не нужен, prompt-материалы определяются по самому `levelId`.
 
 ## Capabilities

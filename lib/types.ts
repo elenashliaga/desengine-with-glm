@@ -82,7 +82,6 @@ const LevelConfigSchema = z.object({
   number: z.number().int().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
-  promptKey: z.string().min(1),
   layoutKey: z.string().min(1),
   maxPromptsPerTask: z.number().int().min(1),
   labId: z.string().min(1).optional(),

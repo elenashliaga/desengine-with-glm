@@ -73,23 +73,22 @@
 
 Внутри папки уровня SHALL существовать как минимум:
 - `config.json` с компактным контрактом уровня;
-- `overview.md` с общим пояснением уровня;
-- `init-prompt.md` с initiator prompt уровня.
+- `overview.md` с общим пояснением уровня.
 
 #### Scenario: Система загружает данные уровня
 - **WHEN** система читает данные уровня `L`
 - **THEN** она читает `config.json` из папки этого уровня
 - **AND** читает общее пояснение из `overview.md`
-- **AND** читает initiator prompt из `init-prompt.md`
+- **AND** не читает hidden prompt-материалы из этой папки
 
 ### Requirement: JSON уровня не дублирует текстовые материалы
 
-Система SHALL не хранить в `config.json` уровня большое общее описание уровня и initiator prompt.
+Система SHALL не хранить в `config.json` уровня большое общее описание уровня и hidden level prompts.
 
 #### Scenario: Разработчик открывает config уровня
 - **WHEN** разработчик читает `onboarding/levels/<levelId>/config.json`
 - **THEN** он видит только компактный контракт уровня
-- **AND** не видит дублирования содержимого `overview.md` и `init-prompt.md`
+- **AND** не видит дублирования содержимого `overview.md` и hidden prompt-файлов вроде `init.md` и `specify.md`
 
 ### Requirement: Набор редактируемых файлов зависит от уровня
 

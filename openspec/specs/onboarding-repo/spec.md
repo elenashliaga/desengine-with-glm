@@ -30,7 +30,7 @@
 - **WHEN** система работает с onboarding-слоем
 - **THEN** она видит его как единый корень `/onboarding`
 
-### Requirement: В onboarding-репозиторий входят уровни, задачи и didactic-prompts
+### Requirement: В onboarding-репозиторий входят уровни, задачи и prompt-материалы onboarding-слоя
 
 Система SHALL относить к onboarding-репозиторию:
 - `onboarding/levels/**`
@@ -47,9 +47,30 @@
 - **WHEN** системе нужны `config.json`, `base.png` или `variants.png` задачи
 - **THEN** она рассматривает onboarding-репозиторий как источник этих данных
 
-#### Scenario: Система читает didactic-промпт
-- **WHEN** системе нужен didactic-промпт уровня или сценария
+#### Scenario: Система читает onboarding prompt
+- **WHEN** системе нужен onboarding-промпт уровня или сценария
 - **THEN** она рассматривает onboarding-репозиторий как источник этого промпта
+
+### Requirement: Открытый и скрытый контур уровня разделены по каталогам
+
+Система SHALL хранить открытые материалы уровня и hidden level prompts в разных каталогах onboarding-репозитория.
+
+#### Scenario: Система читает открытые данные уровня
+- **WHEN** системе нужны пользовательски видимые материалы уровня
+- **THEN** она читает их из `onboarding/levels/<levelId>/`
+
+#### Scenario: Система читает скрытые prompt-данные уровня
+- **WHEN** системе нужны hidden level prompts
+- **THEN** она читает их только из `onboarding/prompts/levels/<levelId>/`
+
+### Requirement: Папка уровня не хранит hidden prompt-файлы
+
+Система SHALL не хранить hidden prompt-материалы внутри `onboarding/levels/<levelId>/`.
+
+#### Scenario: Команда просматривает содержимое уровня
+- **WHEN** разработчик открывает `onboarding/levels/<levelId>/`
+- **THEN** он видит только открытые материалы уровня
+- **AND** не видит там init- или specify-prompt файлов
 
 ### Requirement: Production-prompts не входят в onboarding-репозиторий
 

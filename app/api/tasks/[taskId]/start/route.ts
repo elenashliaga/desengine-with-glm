@@ -14,7 +14,7 @@ import {
 } from "@/lib/server"
 import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
-import { readLevelDidacticPrompt, readLevelInitPrompt, readPrompt } from "@/lib/prompts.server"
+import { readLevelInitPrompt, readLevelSpecifyPrompt, readPrompt } from "@/lib/prompts.server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
@@ -127,11 +127,11 @@ export async function POST(
     return Response.json({ ok: false, error: "Не найдены обязательные картинки текущего уровня" }, { status: 404 })
   }
 
-  const [prod, did, levelDidactic, levelInitPrompt, taskData] = await Promise.all([
+  const [prod, did, levelSpecifyPrompt, levelInitPrompt, taskData] = await Promise.all([
     readPrompt("production", "default"),
     readPrompt("didactic", "default"),
-    readLevelDidacticPrompt(level.promptKey),
-    readLevelInitPrompt(level.id, level.promptKey),
+    readLevelSpecifyPrompt(level.id),
+    readLevelInitPrompt(level.id),
     readTaskData(taskItem, labContext),
   ])
 
@@ -157,7 +157,7 @@ ${prod}
 
 ${did}
 
-${levelDidactic}
+${levelSpecifyPrompt}
 
 ${levelInitPrompt}
 
@@ -192,7 +192,7 @@ ${prod}
 
 ${did}
 
-${levelDidactic}
+${levelSpecifyPrompt}
 
 ${levelInitPrompt}
 

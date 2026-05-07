@@ -14,7 +14,7 @@ import {
 } from "@/lib/server"
 import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
-import { readLevelDidacticPrompt, readPrompt } from "@/lib/prompts.server"
+import { readLevelSpecifyPrompt, readPrompt } from "@/lib/prompts.server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
@@ -88,12 +88,12 @@ export async function POST(
 
   const level = await getLevelForTaskItem(taskItem)
   const taskData = await readTaskData(taskItem, labContext)
-  const [defaultProductionPrompt, iterateProductionPrompt, defaultDidacticPrompt, levelDidacticPrompt] =
+  const [defaultProductionPrompt, iterateProductionPrompt, defaultDidacticPrompt, levelSpecifyPrompt] =
     await Promise.all([
       readPrompt("production", "default"),
       readPrompt("production", "iterate-component"),
       readPrompt("didactic", "default"),
-      readLevelDidacticPrompt(level.promptKey),
+      readLevelSpecifyPrompt(level.id),
     ])
 
   let imageBase64List: string[]
@@ -135,7 +135,7 @@ ${iterateProductionPrompt}
 
 ${defaultDidacticPrompt}
 
-${levelDidacticPrompt}
+${levelSpecifyPrompt}
 
 ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
 ${labContext.commonExplanation}
