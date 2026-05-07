@@ -1,0 +1,15 @@
+# Переименуйте этот файл в desengine.config.txt перед первым локальным запуском.
+# Пользовательский браузерный запуск всё равно откроет страницу состояния,
+# даже если часть переменных ниже ещё не задана.
+
+# LLM
+# OPENAI_API_KEY создаётся в OpenAI Platform на экране View API keys.
+OPENAI_API_KEY=
+DESENGINE_OPENAI_MODEL=gpt-4.1-nano
+
+# Доступ по email в рабочую часть лаборатории
+DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
+DESENGINE_ALLOWLIST_SALT=68vBN7EWDTDsMLzoTyOghApJ5zDBI/Mg1ZNGpbrxvIY=
+
+# Источник onboarding-контента
+DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git

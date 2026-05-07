@@ -1,6 +1,6 @@
-import rawConfig from "@/env/config.json"
+import { appConfigSource } from "./app-config.shared"
 
-const editableTaskScreens = rawConfig.taskWorkbenchFiles
+const editableTaskScreens = appConfigSource.taskWorkbenchFiles
   .filter((file) => file.edit)
   .map((file) => file.id)
 

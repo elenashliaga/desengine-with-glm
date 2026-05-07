@@ -37,7 +37,7 @@ async function verifyAllowlistAccess(email: string): Promise<{
     return {
       ok: false,
       reason: "misconfigured",
-      error: "Проверка доступа не настроена. Задайте DESENGINE_ALLOWLIST_BASE_URL и DESENGINE_ALLOWLIST_SALT в config.txt.",
+      error: "Проверка доступа не настроена. Задайте DESENGINE_ALLOWLIST_BASE_URL и DESENGINE_ALLOWLIST_SALT в desengine.config.txt.",
     }
   }
 

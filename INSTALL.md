@@ -47,7 +47,7 @@ npm install
 
 ## 3. Создайте локальную конфигурацию
 
-Переименуйте [config-example.txt](/Users/op/dev/sobakapav/desengine/config-example.txt:1) в `config.txt`.
+Переименуйте [desengine.config-example.txt](/Users/op/dev/sobakapav/desengine/desengine.config-example.txt:1) в `desengine.config.txt`.
 
 Это можно сделать любым привычным способом:
 
@@ -69,8 +69,8 @@ DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 
 Подробности:
 
-- OpenAI: [env/openai.md](/Users/op/dev/sobakapav/desengine/env/openai.md:1)
-- allowlist: [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1)
+- OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
+- allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
 
 ## 4. Запустите приложение
 
@@ -124,7 +124,7 @@ npm run smoke
 1. Открыть этот файл и пройти установку строго по инструкции, не подглядывая в другие документы.
 2. Самостоятельно проверить, есть ли у него `node` и `npm`.
 3. Установить зависимости проекта.
-4. Переименовать `config-example.txt` в `config.txt`.
+4. Переименовать `desengine.config-example.txt` в `desengine.config.txt`.
 5. Заполнить обязательные переменные окружения.
 6. Запустить приложение.
 7. Открыть приложение в браузере.
@@ -136,7 +136,7 @@ npm run smoke
 
 - на каком шаге человек остановился;
 - какие слова или термины пришлось объяснять отдельно;
-- понял ли человек разницу между установкой, настройкой `config.txt` и входом через allowlist;
+- понял ли человек разницу между установкой, настройкой `desengine.config.txt` и входом через allowlist;
 - смог ли он без подсказки открыть именно корневой маршрут `/`;
 - понял ли он, почему до допуска попадает на `/auth`, а не сразу в задачи;
 - пришлось ли ему чинить `node`, `npm` или shell вручную;

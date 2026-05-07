@@ -113,7 +113,7 @@ function buildBackupPath() {
 export async function updateOnboardingFromConfig(): Promise<OnboardingUpdateResult> {
   const repoUrl = getOnboardingRepoUrl()
   if (!repoUrl) {
-    throw new Error("Не задан `DESENGINE_ONBOARDING_REPO_URL` в config.txt.")
+    throw new Error("Не задан `DESENGINE_ONBOARDING_REPO_URL` в desengine.config.txt.")
   }
 
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "desengine-onboarding-"))

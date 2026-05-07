@@ -39,7 +39,7 @@
 
 Проверяет:
 - версию Node.js;
-- наличие `config.txt`;
+- наличие `desengine.config.txt`;
 - отсутствие устаревшего `.env.local`;
 - базовую конфигурацию `OPENAI_API_KEY` и allowlist;
 - production build проекта.

@@ -101,7 +101,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
               {!configured && (
                 <p className="tool-notice-warning">
                   Проверка доступа пока не настроена. Сначала администратор должен задать
-                  `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `config.txt`.
+                  `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `desengine.config.txt`.
                 </p>
               )}
 

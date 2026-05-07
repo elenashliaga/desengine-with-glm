@@ -10,7 +10,7 @@
 
 До допуска по allowlist приложение показывает только страницу состояния системы. Даже без `OPENAI_API_KEY` оболочка откроется, но рабочие LLM-сценарии останутся недоступны.
 
-Локальная конфигурация запуска хранится в `config.txt`, а шаблон лежит в `config-example.txt`.
+Локальная конфигурация запуска хранится в `desengine.config.txt`, а шаблон лежит в `desengine.config-example.txt`.
 Onboarding-контент runtime читает из каталога `/onboarding`, а адрес его внешнего репозитория задаётся через `DESENGINE_ONBOARDING_REPO_URL`.
 
 ## Пользовательский поток
@@ -48,6 +48,6 @@ npm run admin:tasks:import -- --variants-root=... --base-root=...
 
 - Локальная установка: [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1)
 - Админские утилиты: [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1)
-- Настройка OpenAI: [env/openai.md](/Users/op/dev/sobakapav/desengine/env/openai.md:1)
-- Настройка allowlist: [env/access-control.md](/Users/op/dev/sobakapav/desengine/env/access-control.md:1)
+- Настройка OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
+- Настройка allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
 - Platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)

@@ -103,10 +103,10 @@ async function main() {
     createCheck(
       "env-file",
       localConfigState.hasConfig,
-      localConfigState.hasConfig ? "Файл config.txt найден" : "Файл config.txt не найден",
+      localConfigState.hasConfig ? "Файл desengine.config.txt найден" : "Файл desengine.config.txt не найден",
       localConfigState.hasConfig
         ? "Локальная конфигурация присутствует."
-        : "Создайте `config.txt` на основе `config-example.txt`.",
+        : "Создайте `desengine.config.txt` на основе `desengine.config-example.txt`.",
     ),
   )
 
@@ -118,8 +118,8 @@ async function main() {
         ? "Обнаружен устаревший файл .env.local"
         : "Устаревший .env.local не найден",
       localConfigState.hasLegacyEnv
-        ? "Перенесите значения в `config.txt` и удалите `.env.local`, иначе настройки будут двусмысленными."
-        : "Локальная конфигурация использует только `config.txt`.",
+        ? "Перенесите значения в `desengine.config.txt` и удалите `.env.local`, иначе настройки будут двусмысленными."
+        : "Локальная конфигурация использует только `desengine.config.txt`.",
     ),
   )
 

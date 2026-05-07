@@ -76,7 +76,7 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
 
       {!canUpdate ? (
         <p className="tool-notice-warning mt-4">
-          Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`.
+          Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`.
         </p>
       ) : null}
 

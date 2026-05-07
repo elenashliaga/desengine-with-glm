@@ -2,7 +2,7 @@ import { z } from "zod"
 
 const LlmProviderSchema = z.enum(["openai"])
 
-// Схема конфигурации приложения (env/config.json)
+// Схема конфигурации приложения (desengine.config.json)
 const AppConfigSchema = z
   .object({
     onboardingRoot: z.string().optional(),

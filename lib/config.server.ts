@@ -3,10 +3,10 @@ import "server-only"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import rawConfig from "@/env/config.json"
+import { appConfigSource } from "./app-config.shared"
 import { AppConfigSchema, type AppConfig } from "./config.schema"
 
-const parsed = AppConfigSchema.parse(rawConfig)
+const parsed = AppConfigSchema.parse(appConfigSource)
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 
 // Нормализация путей для project data и user state.

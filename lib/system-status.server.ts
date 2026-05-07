@@ -198,26 +198,26 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     summary: localConfigState.hasLegacyEnv
       ? "Обнаружен устаревший .env.local"
       : localConfigState.hasConfig
-        ? "config.txt найден"
-        : "config.txt не найден",
+        ? "desengine.config.txt найден"
+        : "desengine.config.txt не найден",
     detail: localConfigState.hasLegacyEnv
-      ? "Используйте только `config.txt`. Старый `.env.local` создаёт двусмысленность и может незаметно переопределять настройки."
+      ? "Используйте только `desengine.config.txt`. Старый `.env.local` создаёт двусмысленность и может незаметно переопределять настройки."
       : localConfigState.hasConfig
-        ? "Локальная конфигурация лежит в каноническом файле `config.txt`."
-        : "Создайте `config.txt` на основе `config-example.txt`.",
+        ? "Локальная конфигурация лежит в каноническом файле `desengine.config.txt`."
+        : "Создайте `desengine.config.txt` на основе `desengine.config-example.txt`.",
   })
 
   if (localConfigState.hasLegacyEnv) {
     instructions.push({
       id: "local-config-file",
       actor: "Администратор",
-      text: "Перенесите рабочие значения в `config.txt` и удалите `.env.local`, чтобы лаборатория использовала один канонический конфиг.",
+      text: "Перенесите рабочие значения в `desengine.config.txt` и удалите `.env.local`, чтобы лаборатория использовала один канонический конфиг.",
     })
   } else if (!localConfigState.hasConfig) {
     instructions.push({
       id: "local-config-file",
       actor: "Администратор",
-      text: "Создайте `config.txt` на основе `config-example.txt`, чтобы лаборатория получила локальные настройки.",
+      text: "Создайте `desengine.config.txt` на основе `desengine.config-example.txt`, чтобы лаборатория получила локальные настройки.",
     })
   }
 
@@ -233,7 +233,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     instructions.push({
       id: "openai-config",
       actor: "Администратор",
-      text: "Добавьте `OPENAI_API_KEY` в `config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
+      text: "Добавьте `OPENAI_API_KEY` в `desengine.config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
     })
   }
 
@@ -283,7 +283,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     summary: accessConfig.isConfigured ? "Allowlist настроен" : "Allowlist не настроен",
     detail: accessConfig.isConfigured
       ? "Базовый URL и salt заданы."
-      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `config.txt`.",
+      : "Нужны `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `desengine.config.txt`.",
   })
 
   if (!accessConfig.isConfigured) {
@@ -303,14 +303,14 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     summary: onboardingRepoUrl ? "URL onboarding-репозитория задан" : "URL onboarding-репозитория не задан",
     detail: onboardingRepoUrl
       ? `Используется значение DESENGINE_ONBOARDING_REPO_URL: ${onboardingRepoUrl}.`
-      : "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, чтобы система знала канонический источник onboarding-контента.",
+      : "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, чтобы система знала канонический источник onboarding-контента.",
   })
 
   if (!onboardingRepoUrl) {
     instructions.push({
       id: "onboarding-config",
       actor: "Администратор",
-      text: "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, чтобы зафиксировать внешний источник onboarding-контента.",
+      text: "Добавьте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, чтобы зафиксировать внешний источник onboarding-контента.",
     })
   }
 
@@ -328,7 +328,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
       actor: "Администратор",
       text: onboardingRepoUrl
         ? "Используйте кнопку `Обновить onboarding` на `/config`, чтобы заново загрузить локальный каталог `/onboarding`."
-        : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `config.txt`, затем используйте кнопку `Обновить onboarding` на `/config`.",
+        : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, затем используйте кнопку `Обновить onboarding` на `/config`.",
     })
   }
 

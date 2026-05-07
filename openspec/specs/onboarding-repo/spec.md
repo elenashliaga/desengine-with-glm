@@ -14,13 +14,13 @@
 - **WHEN** системе нужно понять, откуда брать onboarding-данные
 - **THEN** каноническим источником считается отдельный onboarding-репозиторий
 
-### Requirement: Адрес onboarding-репозитория задаётся в config.txt
+### Requirement: Адрес onboarding-репозитория задаётся в desengine.config.txt
 
-Система SHALL брать адрес внешнего onboarding-репозитория из `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
+Система SHALL брать адрес внешнего onboarding-репозитория из `desengine.config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
 
 #### Scenario: Система определяет источник onboarding-контента
 - **WHEN** системе нужен адрес внешнего onboarding-репозитория
-- **THEN** она читает `DESENGINE_ONBOARDING_REPO_URL` из `config.txt`
+- **THEN** она читает `DESENGINE_ONBOARDING_REPO_URL` из `desengine.config.txt`
 
 ### Requirement: Onboarding-контент собирается под единым корнем `/onboarding`
 
