@@ -56,6 +56,10 @@ export function createAuthPath() {
   return "/auth"
 }
 
+export function createAccessPreparePath(returnTo: string) {
+  return `/api/access/prepare?returnTo=${encodeURIComponent(returnTo)}`
+}
+
 export function createConfigPath() {
   return "/config"
 }

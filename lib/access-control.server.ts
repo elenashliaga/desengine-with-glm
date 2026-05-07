@@ -13,7 +13,12 @@ import {
   type VerifiedAccessSession,
   verifyAccessSessionValue,
 } from "@/lib/access-control"
-import { createAuthPath, createTasksPath, sanitizeReturnPath } from "@/lib/navigation"
+import {
+  createAccessPreparePath,
+  createAuthPath,
+  createTasksPath,
+  sanitizeReturnPath,
+} from "@/lib/navigation"
 
 const ACCESS_RETURN_PATH_COOKIE_NAME = "desengine-return-path"
 
@@ -46,7 +51,7 @@ async function verifyAllowlistAccess(email: string): Promise<{
       cache: "no-store",
     })
 
-    if (response.status === 405 || response.status === 501) {
+    if (response.status !== 200 && response.status !== 404) {
       response = await fetch(markerUrl, {
         method: "GET",
         cache: "no-store",
@@ -112,23 +117,6 @@ async function createAccessCookieValue(email: string): Promise<string> {
   return createAccessSessionValue(email, salt)
 }
 
-async function setReturnPathCookie(pathname: string) {
-  const safePath = sanitizeReturnPath(pathname)
-  const cookieStore = await cookies()
-
-  if (!safePath) {
-    cookieStore.delete(ACCESS_RETURN_PATH_COOKIE_NAME)
-    return
-  }
-
-  cookieStore.set(ACCESS_RETURN_PATH_COOKIE_NAME, safePath, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  })
-}
-
 async function consumeReturnPathCookie() {
   const cookieStore = await cookies()
   const rawValue = cookieStore.get(ACCESS_RETURN_PATH_COOKIE_NAME)?.value
@@ -144,8 +132,8 @@ async function requireAccessOrRedirect(pathname: string) {
     return
   }
 
-  await setReturnPathCookie(pathname)
-  redirect(createAuthPath())
+  const safePath = sanitizeReturnPath(pathname)
+  redirect(safePath ? createAccessPreparePath(safePath) : createAuthPath())
 }
 
 export {
@@ -156,6 +144,5 @@ export {
   getAccessControlConfig,
   hasAccessSession,
   requireAccessOrRedirect,
-  setReturnPathCookie,
   verifyAllowlistAccess,
 }

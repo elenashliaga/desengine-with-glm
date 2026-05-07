@@ -75,6 +75,14 @@ function getAccessControlConfig() {
   }
 }
 
+function shouldUseSecureCookies(requestUrl: string): boolean {
+  try {
+    return new URL(requestUrl).protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
@@ -195,6 +203,7 @@ export {
   getAccessControlConfig,
   isPlausibleEmail,
   normalizeEmail,
+  shouldUseSecureCookies,
   type VerifiedAccessSession,
   verifyAccessSessionValue,
 }

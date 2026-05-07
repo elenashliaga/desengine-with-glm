@@ -1,6 +1,11 @@
 import { cookies } from "next/headers"
 
-import { ACCESS_COOKIE_NAME, isPlausibleEmail, normalizeEmail } from "@/lib/access-control"
+import {
+  ACCESS_COOKIE_NAME,
+  isPlausibleEmail,
+  normalizeEmail,
+  shouldUseSecureCookies,
+} from "@/lib/access-control"
 import {
   consumeReturnPathCookie,
   createAccessCookieValue,
@@ -41,7 +46,7 @@ export async function POST(request: Request) {
   cookieStore.set(ACCESS_COOKIE_NAME, cookieValue, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies(request.url),
     path: "/",
   })
 

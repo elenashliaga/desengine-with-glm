@@ -26,6 +26,12 @@ type Params = { taskId: string }
 
 type FilesPayload = Record<string, string>
 
+const blankStartFallbackByFileName: Record<string, string> = {
+  "styles.ts": "export {};",
+  "mock.ts": "export const mock = {};",
+  "props.ts": "export {};",
+}
+
 function extractJson(text: string): unknown {
   const trimmed = (text || "").trim()
   if (!trimmed) return null
@@ -34,6 +40,33 @@ function extractJson(text: string): unknown {
   const candidate = fenced ? fenced[1] : trimmed
 
   return JSON.parse(candidate)
+}
+
+function normalizeStartPayload(
+  payload: FilesPayload,
+  outputFiles: { id: string; fileName: string }[],
+  currentContentByFileId: Record<string, string>,
+): FilesPayload {
+  const normalizedEntries = outputFiles.map((file) => {
+    const rawContent = payload[file.id]
+
+    if (typeof rawContent !== "string") {
+      return [file.id, rawContent] as const
+    }
+
+    if (rawContent.trim()) {
+      return [file.id, rawContent] as const
+    }
+
+    const existingContent = currentContentByFileId[file.id]?.trim()
+    if (existingContent) {
+      return [file.id, currentContentByFileId[file.id]] as const
+    }
+
+    return [file.id, blankStartFallbackByFileName[file.fileName] ?? rawContent] as const
+  })
+
+  return Object.fromEntries(normalizedEntries)
 }
 
 export async function POST(
@@ -224,8 +257,10 @@ ${allowedFilesText}
   try {
     const parsed = extractJson(outputText)
     if (!parsed || typeof parsed !== "object") throw new Error("Ответ не является JSON-объектом")
-    payload = parsed as FilesPayload
-    validateGeneratedFilesPayload(payload, fileList, appConfig.taskWorkbenchFiles)
+    payload = normalizeStartPayload(parsed as FilesPayload, fileList, taskData.contentByFileId)
+    validateGeneratedFilesPayload(payload, fileList, appConfig.taskWorkbenchFiles, {
+      allowBlankFileNames: Object.keys(blankStartFallbackByFileName),
+    })
   } catch (error) {
     console.error("[desengine][task-start] parse_failed", {
       taskId,

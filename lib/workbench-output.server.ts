@@ -34,10 +34,12 @@ export function validateGeneratedFilesPayload(
   allWorkbenchFiles: OutputFileDescriptor[],
   options?: {
     allowNull?: boolean
+    allowBlankFileNames?: string[]
   },
 ) {
   const allowedFileNames = new Set(outputFiles.map((file) => file.fileName))
   const knownWorkbenchBySpecifier = new Map<string, string>()
+  const allowBlankFileNames = new Set(options?.allowBlankFileNames ?? [])
 
   for (const file of allWorkbenchFiles) {
     const withoutExtension = stripKnownExtension(file.fileName)
@@ -57,8 +59,12 @@ export function validateGeneratedFilesPayload(
     }
 
     const trimmed = rawContent.trim()
-    if (!trimmed) {
+    if (!trimmed && !allowBlankFileNames.has(file.fileName)) {
       throw new Error(`Ответ вернул пустой контент для файла ${file.fileName}`)
+    }
+
+    if (!trimmed) {
+      continue
     }
 
     if (trimmed === file.fileName || trimmed === file.id) {

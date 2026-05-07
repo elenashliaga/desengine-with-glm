@@ -333,9 +333,15 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   }
 
   if (accessConfig.isConfigured) {
-    const allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
+    let allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
       method: "HEAD",
     })
+
+    if (allowlistNetwork.status && allowlistNetwork.status !== 200 && allowlistNetwork.status !== 404) {
+      allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
+        method: "GET",
+      })
+    }
 
     const allowlistSummary = allowlistNetwork.status
       ? summarizeHttpStatus("Allowlist-хранилище", allowlistNetwork.status)

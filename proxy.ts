@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
 import { ACCESS_COOKIE_NAME, getAccessControlConfig, verifyAccessSessionValue } from "@/lib/access-control"
+import { createAccessPreparePath } from "@/lib/navigation"
 
 function isProtectedApiPath(pathname: string): boolean {
   return pathname.startsWith("/api/") && !pathname.startsWith("/api/access/")
@@ -20,7 +21,10 @@ export async function proxy(request: NextRequest) {
 
   const { salt, isConfigured } = getAccessControlConfig()
   const cookieValue = request.cookies.get(ACCESS_COOKIE_NAME)?.value
-  const hasAccess = isConfigured && (await verifyAccessSessionValue(cookieValue, salt))
+  const verification = isConfigured
+    ? await verifyAccessSessionValue(cookieValue, salt)
+    : { status: "invalid" as const }
+  const hasAccess = verification.status === "valid"
 
   if (hasAccess) {
     return NextResponse.next()
@@ -33,8 +37,7 @@ export async function proxy(request: NextRequest) {
     )
   }
 
-  const redirectUrl = new URL("/", request.url)
-  redirectUrl.searchParams.set("next", `${pathname}${search}`)
+  const redirectUrl = new URL(createAccessPreparePath(`${pathname}${search}`), request.url)
 
   return NextResponse.redirect(redirectUrl)
 }

@@ -214,7 +214,7 @@ function LabWorkbench({
 
         event.preventDefault();
 
-        if (!started || promptPending || !taskItem.progress.currentLevelInitialized || !promptText.trim()) {
+        if (promptPending) {
             return;
         }
 
@@ -234,7 +234,7 @@ function LabWorkbench({
     }
 
     const promptInputDisabled = promptPending;
-    const promptRunDisabled = promptPending || !taskItem.progress.currentLevelInitialized;
+    const promptRunDisabled = promptPending;
 
     return (
         <div
