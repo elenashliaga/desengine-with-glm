@@ -82,6 +82,7 @@ const LevelConfigSchema = z.object({
   number: z.number().int().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
+  url: z.string().optional(),
   layoutKey: z.string().min(1),
   maxPromptsPerTask: z.number().int().min(1),
   labId: z.string().min(1).optional(),
@@ -105,6 +106,7 @@ const LevelConfigSchema = z.object({
 
   return {
     ...value,
+    url: value.url?.trim() ? value.url.trim() : undefined,
     labId: value.labId ?? (value.number === 1 ? "level-1" : value.number === 2 ? "level-2" : "shared-lab"),
     images: value.images ?? defaultImages,
     editableFileIds: value.editableFileIds ?? defaultEditableFileIds,
