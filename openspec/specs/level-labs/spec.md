@@ -107,7 +107,7 @@
 #### Scenario: Разработчик открывает config уровня
 - **WHEN** разработчик читает `onboarding/levels/<levelId>/config.json`
 - **THEN** он видит только компактный контракт уровня
-- **AND** не видит дублирования содержимого `overview.md` и hidden prompt-файлов вроде `init.md` и `specify.md`
+- **AND** не видит дублирования содержимого `overview.md` и hidden prompt-файлов вроде `start.md` и `iterate.md`
 
 ### Requirement: Набор редактируемых файлов зависит от уровня
 

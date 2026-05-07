@@ -70,7 +70,7 @@
 #### Scenario: Команда просматривает содержимое уровня
 - **WHEN** разработчик открывает `onboarding/levels/<levelId>/`
 - **THEN** он видит только открытые материалы уровня
-- **AND** не видит там init- или specify-prompt файлов
+- **AND** не видит там start- или iterate-prompt файлов
 
 ### Requirement: Production-prompts не входят в onboarding-репозиторий
 

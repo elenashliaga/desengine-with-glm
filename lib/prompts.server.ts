@@ -14,8 +14,8 @@ export async function readPrompt(kind: PromptKind, name: PromptName) {
   return readFile(filePath, "utf-8")
 }
 
-export async function readLevelSpecifyPrompt(levelId: string) {
-  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "specify.md")
+export async function readLevelIteratePrompt(levelId: string) {
+  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "iterate.md")
 
   try {
     return await readFile(filePath, "utf-8")
@@ -24,13 +24,13 @@ export async function readLevelSpecifyPrompt(levelId: string) {
   }
 }
 
-export async function readLevelInitPrompt(levelId: string) {
-  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "init.md")
+export async function readLevelStartPrompt(levelId: string) {
+  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "start.md")
 
   try {
     return await readFile(filePath, "utf-8")
   } catch {
-    throw new Error(`Инициирующий промпт уровня не найден: ${levelId}`)
+    throw new Error(`Стартовый промпт уровня не найден: ${levelId}`)
   }
 }
 

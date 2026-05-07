@@ -10,9 +10,9 @@
 ## What Changes
 
 - Фиксируем, что task-level пользовательские пояснения могут храниться отдельными Markdown-файлами.
-- Фиксируем layout `onboarding/tasks/<taskId>/levels/<levelId>/intro.md`.
-- Фиксируем, что эти `intro.md` относятся только к пользовательскому интерфейсу и не входят в prompt-контекст LLM.
-- Фиксируем, что отсутствие `intro.md` допустимо и означает пустое task-specific пояснение уровня.
+- Фиксируем layout `onboarding/tasks/<taskId>/levels/<levelId>/tip.md`.
+- Фиксируем, что эти `tip.md` относятся только к пользовательскому интерфейсу и не входят в prompt-контекст LLM.
+- Фиксируем, что отсутствие `tip.md` допустимо и означает пустое task-specific пояснение уровня.
 - Фиксируем, что task config больше не является единственным местом для task-level пояснений.
 
 ## Capabilities
@@ -20,10 +20,10 @@
 ### Modified Capabilities
 - `task`: задача получает отдельный файловый слой пользовательских task-level пояснений.
 - `level-labs`: лаборатория уровня читает task-specific пояснение уровня из Markdown-файла, если он существует.
-- `onboarding-repo`: onboarding-задача поддерживает открытые level-specific intro-файлы в task-owned структуре.
+- `onboarding-repo`: onboarding-задача поддерживает открытые level-specific tip-файлы в task-owned структуре.
 
 ## Impact
 
-- Content model: потребуется ввести новый task-owned каталог `levels/<levelId>/intro.md` внутри каждой onboarding-задачи.
-- Runtime: потребуется читать task-specific intro из Markdown-файла с безопасным fallback на пустое значение.
+- Content model: потребуется ввести новый task-owned каталог `levels/<levelId>/tip.md` внутри каждой onboarding-задачи.
+- Runtime: потребуется читать task-specific tip из Markdown-файла с безопасным fallback на пустое значение.
 - Authoring: учебные пояснения по уровням станет проще писать и поддерживать как Markdown.

@@ -14,7 +14,7 @@ import {
 } from "@/lib/server"
 import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
-import { readLevelSpecifyPrompt, readPrompt } from "@/lib/prompts.server"
+import { readLevelIteratePrompt, readPrompt } from "@/lib/prompts.server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
@@ -93,7 +93,7 @@ export async function POST(
       readPrompt("production", "default"),
       readPrompt("production", "iterate-component"),
       readPrompt("didactic", "default"),
-      readLevelSpecifyPrompt(level.id),
+      readLevelIteratePrompt(level.id),
     ])
 
   let imageBase64List: string[]

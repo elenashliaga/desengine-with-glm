@@ -14,7 +14,7 @@ import {
 } from "@/lib/server"
 import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
-import { readLevelInitPrompt, readLevelSpecifyPrompt, readPrompt } from "@/lib/prompts.server"
+import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/prompts.server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
@@ -130,8 +130,8 @@ export async function POST(
   const [prod, did, levelSpecifyPrompt, levelInitPrompt, taskData] = await Promise.all([
     readPrompt("production", "default"),
     readPrompt("didactic", "default"),
-    readLevelSpecifyPrompt(level.id),
-    readLevelInitPrompt(level.id),
+    readLevelIteratePrompt(level.id),
+    readLevelStartPrompt(level.id),
     readTaskData(taskItem, labContext),
   ])
 

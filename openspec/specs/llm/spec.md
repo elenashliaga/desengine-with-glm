@@ -52,15 +52,15 @@
 
 ### Requirement: Level-specific prompts читаются из скрытого onboarding prompt-слоя
 
-Система SHALL читать init- и specify-prompt уровня только из скрытого onboarding prompt-слоя.
+Система SHALL читать level-specific prompts класса `start` и `iterate` только из скрытого onboarding prompt-слоя.
 
-#### Scenario: Система выполняет init для уровня
-- **WHEN** runtime подбирает init prompt уровня
-- **THEN** он читает `onboarding/prompts/levels/<levelId>/init.md`
+#### Scenario: Система выполняет start для уровня
+- **WHEN** runtime подбирает start prompt уровня
+- **THEN** он читает `onboarding/prompts/levels/<levelId>/start.md`
 
-#### Scenario: Система выполняет specify prompt lookup для уровня
-- **WHEN** runtime подбирает specify prompt уровня
-- **THEN** он читает `onboarding/prompts/levels/<levelId>/specify.md`
+#### Scenario: Система выполняет iterate prompt lookup для уровня
+- **WHEN** runtime подбирает iterate prompt уровня
+- **THEN** он читает `onboarding/prompts/levels/<levelId>/iterate.md`
 
 ### Requirement: LLM-контур не требует level promptKey
 
