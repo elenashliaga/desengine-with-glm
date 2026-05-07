@@ -9,12 +9,13 @@ import { createTasksPath } from "@/lib/navigation"
 import { SystemStatusPanel, type Instruction, type StatusItem } from "@/components/desengine/SystemStatusPanel"
 
 type AccessGateProps = {
+  accessState: "valid" | "missing" | "expired"
   configured: boolean
   statusItems: StatusItem[]
   instructions: Instruction[]
 }
 
-function AccessGate({ configured, statusItems, instructions }: AccessGateProps) {
+function AccessGate({ accessState, configured, statusItems, instructions }: AccessGateProps) {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
@@ -72,6 +73,12 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
               </p>
             </div>
 
+            {accessState === "expired" && (
+              <p className="mt-4 tool-notice-warning">
+                Предыдущий допуск истёк. Повторно введите email из allowlist, чтобы открыть защищённую часть лаборатории.
+              </p>
+            )}
+
             <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
               <label className="grid gap-2 text-black/75">
                 Email
@@ -113,7 +120,7 @@ function AccessGate({ configured, statusItems, instructions }: AccessGateProps) 
                 После допуска приложение возвращает пользователя на целевой path без `?next=...`.
               </div>
               <div className="tool-subcard">
-                Допуск действует только для текущего открытия приложения.
+                Допуск действует только для текущего открытия приложения и в любом случае истекает через 24 часа после проверки.
               </div>
               <div className="tool-subcard">
                 Проверка допуска не подтверждает владение почтовым ящиком.

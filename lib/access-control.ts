@@ -1,9 +1,40 @@
 const ACCESS_COOKIE_NAME = "desengine-access"
 
 const ACCESS_ALLOWED_PAYLOAD = "allowlist-access-granted"
+const ACCESS_SESSION_TTL_MS = 24 * 60 * 60 * 1000
 
 const ALLOWLIST_BASE_URL_ENV = "DESENGINE_ALLOWLIST_BASE_URL"
 const ALLOWLIST_SALT_ENV = "DESENGINE_ALLOWLIST_SALT"
+
+type AccessSessionPayload = {
+  access?: string
+  email?: string
+  grantedAt?: string
+  v?: number
+}
+
+type VerifiedAccessSession =
+  | {
+      status: "valid"
+      payload: {
+        access: string
+        email: string
+        grantedAt: string
+        v: number
+      }
+    }
+  | {
+      status: "expired"
+      payload: {
+        access: string
+        email: string
+        grantedAt: string
+        v: number
+      }
+    }
+  | {
+      status: "invalid"
+    }
 
 function toHex(buffer: ArrayBuffer): string {
   return Array.from(new Uint8Array(buffer))
@@ -96,38 +127,67 @@ async function createAccessSessionValue(email: string, secret: string): Promise<
 async function verifyAccessSessionValue(
   cookieValue: string | undefined,
   secret: string,
-): Promise<boolean> {
-  if (!cookieValue) return false
+): Promise<VerifiedAccessSession> {
+  if (!cookieValue) {
+    return { status: "invalid" }
+  }
 
   const [encodedPayload, signature] = cookieValue.split(".")
-  if (!encodedPayload || !signature) return false
+  if (!encodedPayload || !signature) {
+    return { status: "invalid" }
+  }
 
   const expectedSignature = await hmacHex(secret, encodedPayload)
-  if (expectedSignature !== signature) return false
+  if (expectedSignature !== signature) {
+    return { status: "invalid" }
+  }
 
   const payloadBytes = base64UrlToBytes(encodedPayload)
-  if (!payloadBytes) return false
+  if (!payloadBytes) {
+    return { status: "invalid" }
+  }
 
   try {
-    const payload = JSON.parse(new TextDecoder().decode(payloadBytes)) as {
-      access?: string
-      email?: string
-      v?: number
+    const payload = JSON.parse(new TextDecoder().decode(payloadBytes)) as AccessSessionPayload
+    const grantedAtTime = Date.parse(payload.grantedAt ?? "")
+
+    if (
+      payload.v !== 1 ||
+      payload.access !== ACCESS_ALLOWED_PAYLOAD ||
+      typeof payload.email !== "string" ||
+      !isPlausibleEmail(payload.email) ||
+      typeof payload.grantedAt !== "string" ||
+      Number.isNaN(grantedAtTime)
+    ) {
+      return { status: "invalid" }
     }
 
-    return (
-      payload.v === 1 &&
-      payload.access === ACCESS_ALLOWED_PAYLOAD &&
-      typeof payload.email === "string" &&
-      isPlausibleEmail(payload.email)
-    )
+    const normalizedPayload = {
+      access: payload.access,
+      email: payload.email,
+      grantedAt: payload.grantedAt,
+      v: payload.v,
+    } as const
+
+    if (Date.now() - grantedAtTime > ACCESS_SESSION_TTL_MS) {
+      return {
+        status: "expired",
+        payload: normalizedPayload,
+      }
+    }
+
+    return {
+      status: "valid",
+      payload: normalizedPayload,
+    }
   } catch {
-    return false
+    return { status: "invalid" }
   }
 }
 
 export {
   ACCESS_COOKIE_NAME,
+  ACCESS_SESSION_TTL_MS,
   ALLOWLIST_BASE_URL_ENV,
   ALLOWLIST_SALT_ENV,
   createAccessSessionValue,
@@ -135,5 +195,6 @@ export {
   getAccessControlConfig,
   isPlausibleEmail,
   normalizeEmail,
+  type VerifiedAccessSession,
   verifyAccessSessionValue,
 }

@@ -4,7 +4,7 @@ import { access, readdir } from "node:fs/promises"
 import path from "node:path"
 
 import { getLlmStatus } from "@/lib/llm.server"
-import { getAccessControlConfig, hasAccessSession } from "@/lib/access-control.server"
+import { getAccessControlConfig, getAccessSessionState } from "@/lib/access-control.server"
 import { appConfig } from "@/lib/config.server"
 import localConfig from "@/lib/local-config.cjs"
 
@@ -39,6 +39,7 @@ type SystemStatusModel = {
   items: SystemStatusItem[]
   instructions: SystemInstruction[]
   allowlistConfigured: boolean
+  accessState: "valid" | "missing" | "expired"
   hasAccess: boolean
   onboardingRepoConfigured: boolean
   readyForProtectedLab: boolean
@@ -181,9 +182,10 @@ async function getOnboardingContentStatus() {
 export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   const [llmStatus, accessState, onboardingContent] = await Promise.all([
     getLlmStatus(),
-    hasAccessSession(),
+    getAccessSessionState(),
     getOnboardingContentStatus(),
   ])
+  const hasAccess = accessState === "valid"
   const accessConfig = getAccessControlConfig()
   const localConfigState = localConfig.getLocalConfigState()
   const items: SystemStatusItem[] = []
@@ -371,20 +373,29 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   items.push({
     id: "access-session",
     label: "Доступ в лабораторию",
-    tone: accessState ? "ready" : "blocked",
-    summary: accessState ? "Допуск уже выдан" : "Допуск ещё не выдан",
-    detail: accessState
+    tone: hasAccess ? "ready" : accessState === "expired" ? "warning" : "blocked",
+    summary: hasAccess
+      ? "Допуск уже выдан"
+      : accessState === "expired"
+        ? "Допуск истёк"
+        : "Допуск ещё не выдан",
+    detail: hasAccess
       ? "Можно открыть защищённую часть лаборатории."
+      : accessState === "expired"
+        ? "Нужно снова пройти allowlist-проверку на `/auth`, чтобы открыть защищённую часть лаборатории."
       : accessConfig.isConfigured
         ? "Введите email из allowlist, чтобы открыть задачи и рабочую часть лаборатории."
         : "Сначала администратор должен настроить allowlist, после этого пользователь сможет пройти допуск.",
   })
 
-  if (!accessState && accessConfig.isConfigured) {
+  if (!hasAccess && accessConfig.isConfigured) {
     instructions.push({
       id: "access-session",
       actor: "Пользователь",
-      text: "Введите email, который уже добавлен в allowlist, чтобы открыть задачи и рабочую часть лаборатории.",
+      text:
+        accessState === "expired"
+          ? "Предыдущий допуск истёк. Повторно введите email из allowlist на `/auth`, чтобы открыть задачи и рабочую часть лаборатории."
+          : "Введите email, который уже добавлен в allowlist, чтобы открыть задачи и рабочую часть лаборатории.",
     })
   }
 
@@ -393,8 +404,9 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     items,
     instructions,
     allowlistConfigured: accessConfig.isConfigured,
-    hasAccess: accessState,
+    accessState,
+    hasAccess,
     onboardingRepoConfigured: Boolean(onboardingRepoUrl),
-    readyForProtectedLab: accessState,
+    readyForProtectedLab: hasAccess,
   }
 }

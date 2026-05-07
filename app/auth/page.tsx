@@ -13,6 +13,7 @@ export default async function AuthPage() {
 
   return (
     <AccessGate
+      accessState={status.accessState}
       configured={status.allowlistConfigured}
       statusItems={status.items}
       instructions={status.instructions}

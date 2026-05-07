@@ -10,11 +10,14 @@ import {
   createAllowlistMarker,
   getAccessControlConfig,
   normalizeEmail,
+  type VerifiedAccessSession,
   verifyAccessSessionValue,
 } from "@/lib/access-control"
 import { createAuthPath, createTasksPath, sanitizeReturnPath } from "@/lib/navigation"
 
 const ACCESS_RETURN_PATH_COOKIE_NAME = "desengine-return-path"
+
+type AccessSessionState = "valid" | "missing" | "expired"
 
 localConfig.loadLocalConfig()
 
@@ -76,14 +79,32 @@ async function verifyAllowlistAccess(email: string): Promise<{
   }
 }
 
-async function hasAccessSession(): Promise<boolean> {
+async function getVerifiedAccessSession(): Promise<VerifiedAccessSession | null> {
   const { salt, isConfigured } = getAccessControlConfig()
-  if (!isConfigured) return false
+  if (!isConfigured) return null
 
   const cookieStore = await cookies()
   const cookieValue = cookieStore.get(ACCESS_COOKIE_NAME)?.value
 
   return verifyAccessSessionValue(cookieValue, salt)
+}
+
+async function getAccessSessionState(): Promise<AccessSessionState> {
+  const verification = await getVerifiedAccessSession()
+
+  if (!verification) {
+    return "missing"
+  }
+
+  if (verification.status === "expired") {
+    return "expired"
+  }
+
+  return verification.status === "valid" ? "valid" : "missing"
+}
+
+async function hasAccessSession(): Promise<boolean> {
+  return (await getAccessSessionState()) === "valid"
 }
 
 async function createAccessCookieValue(email: string): Promise<string> {
@@ -119,7 +140,7 @@ async function consumeReturnPathCookie() {
 }
 
 async function requireAccessOrRedirect(pathname: string) {
-  if (await hasAccessSession()) {
+  if ((await getAccessSessionState()) === "valid") {
     return
   }
 
@@ -131,6 +152,7 @@ export {
   ACCESS_RETURN_PATH_COOKIE_NAME,
   consumeReturnPathCookie,
   createAccessCookieValue,
+  getAccessSessionState,
   getAccessControlConfig,
   hasAccessSession,
   requireAccessOrRedirect,
