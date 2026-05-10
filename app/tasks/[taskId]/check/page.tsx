@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation"
 import { Lab } from "@/components/desengine/Lab"
 import { requireAccessOrRedirect } from "@/lib/access-control.server"
 import { createTaskCheckPath, createTaskPath } from "@/lib/navigation"
-import { getLevelOverview, getTaskCheckResult, getTaskLabContext, getTaskListItemById, getTaskPendingTransition, isTaskStarted, readTaskData } from "@/lib/server"
+import { getLevelOverview, getTaskCheckResult, getTaskDoneTransition, getTaskLabContext, getTaskListItemById, getTaskPendingTransition, isTaskStarted, readTaskData } from "@/lib/server"
 
 type Params = {
   taskId: string
@@ -51,7 +51,9 @@ export default async function TaskCheckPage({
   }
 
   const transition = checkResult.kind === "passed"
-    ? await getTaskPendingTransition(taskId)
+    ? (taskItem.progress.isCompleted
+      ? await getTaskDoneTransition(taskId)
+      : await getTaskPendingTransition(taskId))
     : null
 
   const labContext = await getTaskLabContext(taskItem)

@@ -246,6 +246,7 @@ export type LabScreenState =
   | { type: "level" }
   | { type: "task"; screen: string }
   | { type: "transition"; transition: TaskTransition }
+  | { type: "done"; transition: TaskTransition }
   | { type: "check"; result: TaskCheckResult; transition: TaskTransition | null }
 
 export type TaskTransition = {

@@ -2,20 +2,20 @@ import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/Lab"
 import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createTaskNextPath, createTaskPath } from "@/lib/navigation"
-import { getLevelOverview, getTaskLabContext, getTaskListItemById, getTaskPendingTransition, isTaskStarted, readTaskData } from "@/lib/server"
+import { createTaskDonePath, createTaskPath } from "@/lib/navigation"
+import { getLevelOverview, getTaskDoneTransition, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/server"
 
 type Params = {
   taskId: string
 }
 
-export default async function TaskNextPage({
+export default async function TaskDonePage({
   params,
 }: {
   params: Promise<Params>
 }) {
   const { taskId } = await params
-  const canonicalPath = createTaskNextPath(taskId)
+  const canonicalPath = createTaskDonePath(taskId)
 
   await requireAccessOrRedirect(canonicalPath)
 
@@ -25,21 +25,21 @@ export default async function TaskNextPage({
     notFound()
   }
 
-  const transition = await getTaskPendingTransition(taskId)
+  const transition = await getTaskDoneTransition(taskId)
 
-  if (!transition || !transition.toLevel) {
+  if (!transition) {
     redirect(createTaskPath(taskId))
   }
 
   const labContext = await getTaskLabContext(taskItem)
   const started = await isTaskStarted(taskId)
   const taskData = started ? await readTaskData(taskItem, labContext) : null
-  const levelOverview = await getLevelOverview(transition.toLevel.id)
+  const levelOverview = await getLevelOverview(transition.fromLevel.id)
 
   return (
     <Lab
       initLevelOverview={levelOverview}
-      initScreen={{ type: "transition", transition }}
+      initScreen={{ type: "done", transition }}
       initTaskItem={taskItem}
       initTaskData={taskData}
     />

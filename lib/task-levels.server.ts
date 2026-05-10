@@ -562,16 +562,6 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
   const currentLevelNumber = taskProgress.currentLevel
   const currentLevelProgress = taskProgress.levels[String(currentLevelNumber)]
 
-  if (currentLevelProgress?.status === "completed" && currentLevelNumber === taskConfig.maxLevel) {
-    return buildTransition(
-      levels,
-      taskId,
-      currentLevelNumber,
-      null,
-      "check_passed",
-    )
-  }
-
   if (currentLevelNumber <= 1) {
     return null
   }
@@ -597,6 +587,33 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
     taskId,
     previousLevelNumber,
     currentLevelNumber,
+    "check_passed",
+  )
+}
+
+export async function getTaskDoneTransition(taskId: string): Promise<TaskTransition | null> {
+  const [levels, store, taskConfig, promptHistory] = await Promise.all([
+    getLevelsCatalog(),
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+    readPromptHistory(taskId),
+  ])
+
+  const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
+  reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
+
+  const currentLevelNumber = taskProgress.currentLevel
+  const currentLevelProgress = taskProgress.levels[String(currentLevelNumber)]
+
+  if (currentLevelNumber !== taskConfig.maxLevel || currentLevelProgress?.status !== "completed") {
+    return null
+  }
+
+  return buildTransition(
+    levels,
+    taskId,
+    currentLevelNumber,
+    null,
     "check_passed",
   )
 }

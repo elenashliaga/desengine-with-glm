@@ -16,7 +16,7 @@ function getTitle(result: TaskCheckResult, transition: TaskTransition | null) {
   if (result.kind === "passed") {
     return transition?.toLevel
       ? `Проверка пройдена, можно переходить к ${transition.toLevel.title}`
-      : `Проверка пройдена, задача завершена на последнем уровне`
+      : `Проверка пройдена, задача решена целиком`
   }
 
   if (result.kind === "failed_and_reset") {
@@ -72,7 +72,7 @@ export function TaskCheckResult({
       <div className="flex flex-wrap gap-3">
         {canContinue ? (
           <Button disabled={pending} onClick={onContinue}>
-            {transition?.toLevel ? "Перейти дальше" : "К списку задач"}
+            {transition?.toLevel ? "Перейти дальше" : "Открыть итог задачи"}
           </Button>
         ) : null}
         {canReturnToLab ? (

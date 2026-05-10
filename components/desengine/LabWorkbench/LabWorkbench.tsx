@@ -239,6 +239,7 @@ function LabWorkbench({
     }
 
     const canCompleteCurrentLevel = started && taskItem.progress.currentLevelInitialized && taskItem.progress.currentLevelStatus !== "completed";
+    const levelReadyForWork = started && taskItem.progress.currentLevelInitialized;
     const promptInputDisabled = promptPending;
     const promptRunDisabled = promptPending;
 
@@ -269,6 +270,14 @@ function LabWorkbench({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
+                            {!taskItem.progress.currentLevelInitialized && (
+                                <Button
+                                    disabled={startStatus === "starting" || completePending || resetPending}
+                                    onClick={() => void handleStart()}
+                                >
+                                    {startStatus === "starting" ? "Запуск уровня…" : "Начать уровень"}
+                                </Button>
+                            )}
                             <Button variant="outline" onClick={onBackToLevelList}>
                                 К списку задач уровня
                             </Button>
@@ -337,7 +346,16 @@ function LabWorkbench({
                         </div>
                     )}
 
-                    {started && (
+                    {started && !taskItem.progress.currentLevelInitialized && (
+                        <div className="rounded-md border p-4">
+                            <p className="font-medium">Уровень ещё не начат</p>
+                            <p className="mt-2 text-muted-foreground whitespace-pre-wrap">
+                                Этот уровень уже стал текущим, но скрытый инициирующий запуск ещё не выполнялся. Нажмите `Начать уровень`, чтобы подготовить файлы и открыть рабочий контур именно для этого уровня.
+                            </p>
+                        </div>
+                    )}
+
+                    {levelReadyForWork && (
                         <div className="space-y-3 pb-4">
                             <div className="flex items-center gap-2">
                                 <Button onClick={handleSave} variant="secondary" disabled={saveStatus === "saving"}>
@@ -383,7 +401,7 @@ function LabWorkbench({
                 </div>
             </div>
 
-            {started && (
+            {levelReadyForWork && (
                 <PromptComposer
                   value={promptText}
                   disabled={promptInputDisabled}

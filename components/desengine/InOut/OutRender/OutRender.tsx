@@ -75,6 +75,7 @@ function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRender
                           currentLevel: 1,
                           currentLevelId: "level-1",
                           currentLevelStatus: "available",
+                          currentLevelDisplayStatus: "available",
                           currentLevelInitialized: false,
                           promptsUsed: 0,
                           promptsLimit: 0,

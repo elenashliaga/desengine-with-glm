@@ -44,6 +44,10 @@ export function createTaskNextPath(taskId: string) {
   return `/tasks/${encodeURIComponent(taskId)}/next`
 }
 
+export function createTaskDonePath(taskId: string) {
+  return `/tasks/${encodeURIComponent(taskId)}/done`
+}
+
 export function createTaskCheckPath(taskId: string) {
   return `/tasks/${encodeURIComponent(taskId)}/check`
 }
