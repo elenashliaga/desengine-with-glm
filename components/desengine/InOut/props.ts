@@ -6,7 +6,6 @@ type InOutProps = BaseProps & {
     taskData: TaskData;
     started: boolean;
     reloadKey: number;
-    onStart: () => void;
     startStatus: "" | "starting";
 }
 

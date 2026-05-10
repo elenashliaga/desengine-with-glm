@@ -74,9 +74,9 @@ export async function POST(
     return Response.json({ ok: false, error: "Сначала запустите задачу" }, { status: 409 })
   }
 
-  if (!taskItem.progress.currentLevelInitialized) {
+  if (!taskItem.progress.currentLevelStarted) {
     return Response.json(
-      { ok: false, error: "Сначала дождитесь инициирующего запуска текущего уровня" },
+      { ok: false, error: "Сначала начните текущий уровень" },
       { status: 409 },
     )
   }

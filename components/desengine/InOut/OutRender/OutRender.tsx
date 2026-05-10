@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import TaskStart from "../../TaskStart/TaskStart";
 import { OutRenderProps } from "./props";
 import React from "react";
 
 type PreviewComponent = React.ComponentType<Record<string, unknown>>;
 
-function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRenderProps) {
+function OutRender({ task, started, reloadKey, startStatus }: OutRenderProps) {
     const [error, setError] = useState<string>("");
     const [Component, setComponent] = useState<PreviewComponent | null>(null);
     const [props, setProps] = useState<Record<string, unknown>>({});
@@ -64,35 +63,11 @@ function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRender
     return (
         <div className="flex-1">
             {!started ? (
-                <div className="space-y-3">
-                    <TaskStart
-                      task={{
-                        id: task,
-                        image: { width: 0, height: 0 },
-                        started: false,
-                        maxLevel: 1,
-                        progress: {
-                          currentLevel: 1,
-                          currentLevelId: "level-1",
-                          currentLevelStatus: "available",
-                          currentLevelDisplayStatus: "available",
-                          currentLevelInitialized: false,
-                          promptsUsed: 0,
-                          promptsLimit: 0,
-                          checkAttemptsUsed: 0,
-                          checkAttemptsLimit: 0,
-                          checkingState: "idle",
-                          maxLevel: 1,
-                          isCompleted: false,
-                          hasNextLevel: false,
-                          completionReason: null,
-                        },
-                      }}
-                      onStarted={onStart}
-                    />
-                    {startStatus === "starting" && (
-                        <p className="text-muted-foreground">Генерация файлов…</p>
-                    )}
+                <div className="space-y-2 rounded-md border bg-background p-4">
+                    <p className="text-muted-foreground">
+                        Превью станет доступно после старта уровня.
+                    </p>
+                    {startStatus === "starting" && <p className="text-muted-foreground">Генерация файлов…</p>}
                 </div>
             ) : (
                 <div className="rounded-md border bg-background p-3 min-h-32">

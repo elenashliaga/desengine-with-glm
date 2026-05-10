@@ -56,7 +56,6 @@ export function TaskDone({
               task={transition.taskId}
               started={started}
               reloadKey={0}
-              onStart={() => {}}
               startStatus=""
             />
           </div>

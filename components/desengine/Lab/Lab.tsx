@@ -6,10 +6,11 @@ import { LabWorkbench } from "../LabWorkbench";
 import { LevelOverview } from "../LevelOverview";
 import { TaskCheckResult } from "../TaskCheckResult";
 import { TaskDone } from "../TaskDone";
+import { TaskLevelStart } from "../TaskLevelStart/TaskLevelStart";
 import { TaskLevelTransition } from "../TaskLevelTransition";
 import { LabProps } from "./props"
 import type { LabScreenState, LevelOverview as LevelOverviewData, TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/types";
-import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createTaskNextPath, createTaskPath } from "@/lib/navigation";
+import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createTaskPath } from "@/lib/navigation";
 
 function createLevelHref(levelId?: string | null) {
     return createLevelsPath(levelId);
@@ -17,10 +18,6 @@ function createLevelHref(levelId?: string | null) {
 
 function createTaskHref(taskId: string, screen?: string | null) {
     return createTaskPath(taskId, screen);
-}
-
-function createTransitionHref(transition: TaskTransition) {
-    return createTaskNextPath(transition.taskId);
 }
 
 function createDoneHref(taskId: string) {
@@ -38,7 +35,8 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     const [taskItem, setTaskItem] = useState(initTaskItem);
     const [taskData, setTaskData] = useState(initTaskData);
     const [status, setStatus] = useState<string>("");
-    const [started, setStarted] = useState<boolean>(Boolean(initTaskItem?.started));
+    const [startStatus, setStartStatus] = useState<"" | "starting">("");
+    const [startError, setStartError] = useState("");
 
     async function loadLevelOverview(levelId?: string, options?: { silent?: boolean }) {
         const ref = levelId ? `/api/levels/${levelId}` : "/api/levels/current";
@@ -72,7 +70,6 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
         setTaskItem(data.taskItem);
         setTaskData(data.taskData);
-        setStarted(Boolean(data.started));
         setScreen({ type: "task", screen: "component" });
         setStatus("");
     }
@@ -98,8 +95,15 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     function handleTransition(transition: TaskTransition | null) {
         if (!transition) return;
-        router.push(createTransitionHref(transition));
-        setScreen({ type: "transition", transition });
+
+        if (transition.toLevel) {
+            router.push(createTaskHref(transition.taskId));
+            setScreen({ type: "task", screen: "component" });
+            return;
+        }
+
+        router.push(createDoneHref(transition.taskId));
+        setScreen({ type: "done", transition });
     }
 
     function handleCheckResult(
@@ -107,15 +111,37 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         transition: TaskTransition | null,
         nextTaskItem: TaskListItem | null,
         nextTaskData: TaskData,
-        nextStarted: boolean,
     ) {
         if (nextTaskItem) {
             setTaskItem(nextTaskItem);
         }
         setTaskData(nextTaskData);
-        setStarted(nextStarted);
         router.push(createCheckHref(result.taskId));
         setScreen({ type: "check", result, transition });
+    }
+
+    async function handleLevelStart() {
+        if (!taskItem) return;
+
+        setStartStatus("starting");
+        setStartError("");
+
+        const res = await fetch(`/api/tasks/${taskItem.id}/start`, { method: "POST" });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.ok) {
+            setStartError(data?.error || "Не удалось запустить уровень");
+            setStartStatus("");
+            return;
+        }
+
+        if (data.taskItem) {
+            setTaskItem(data.taskItem);
+        }
+        if (data.taskData) {
+            setTaskData(data.taskData);
+        }
+        setStartStatus("");
     }
 
     function handleScreenChange(nextScreen: string) {
@@ -142,7 +168,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
             {screen.type === "transition" ? (
                 <TaskLevelTransition
                     transition={screen.transition}
-                    started={started}
+                    started={taskItem?.started ?? false}
                     pending={status.length > 0}
                     onContinue={() => {
                         router.push(createTaskHref(screen.transition.taskId));
@@ -155,7 +181,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
             {screen.type === "done" ? (
                 <TaskDone
                     transition={screen.transition}
-                    started={started}
+                    started={taskItem?.started ?? false}
                     pending={status.length > 0}
                     onOpenTask={() => {
                         router.push(createTaskHref(screen.transition.taskId));
@@ -172,8 +198,8 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     pending={status.length > 0}
                     onContinue={() => {
                         if (screen.transition?.toLevel) {
-                            router.push(createTransitionHref(screen.transition));
-                            setScreen({ type: "transition", transition: screen.transition });
+                            router.push(createTaskHref(screen.transition.taskId));
+                            setScreen({ type: "task", screen: "component" });
                             return;
                         }
 
@@ -208,26 +234,34 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                             data.transition ?? null,
                             data.taskItem ?? null,
                             data.taskData,
-                            Boolean(data.started),
                         );
                     }}
                 />
             ) : null}
 
             {screen.type === "task" && taskItem && taskData ? (
-                <LabWorkbench
-                    taskItem={taskItem}
-                    taskData={taskData}
-                    onTaskItemChange={handleTaskItemChange}
-                    onTaskDataChange={setTaskData}
-                    started={started}
-                    onStartedChange={setStarted}
-                    onBackToLevelList={() => handleReturnToLevelList(taskItem.progress.currentLevelId)}
-                    onCheckResult={handleCheckResult}
-                    onTransition={handleTransition}
-                    activeScreen={screen.screen}
-                    onScreenChange={handleScreenChange}
-                />
+                taskItem.progress.currentLevelStarted ? (
+                    <LabWorkbench
+                        taskItem={taskItem}
+                        taskData={taskData}
+                        onTaskItemChange={handleTaskItemChange}
+                        onTaskDataChange={setTaskData}
+                        onBackToLevelList={() => handleReturnToLevelList(taskItem.progress.currentLevelId)}
+                        onCheckResult={handleCheckResult}
+                        onTransition={handleTransition}
+                        activeScreen={screen.screen}
+                        onScreenChange={handleScreenChange}
+                    />
+                ) : (
+                    <TaskLevelStart
+                        taskItem={taskItem}
+                        taskData={taskData}
+                        startStatus={startStatus}
+                        startError={startError}
+                        onStart={() => void handleLevelStart()}
+                        onBackToLevelList={() => handleReturnToLevelList(taskItem.progress.currentLevelId)}
+                    />
+                )
             ) : null}
         </main>
     );

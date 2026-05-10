@@ -5,7 +5,7 @@ import path from "node:path"
 
 import { appConfig } from "./config.server"
 import { readLevelCommonExplanation } from "./prompts.server"
-import { isTaskStarted, readPromptHistory } from "./repository"
+import { readPromptHistory } from "./repository"
 import {
   LevelsCatalogSchema,
   TaskConfigSchema,
@@ -38,7 +38,6 @@ type CompletionReason = "check_passed"
 type TaskCatalogItem = {
   id: string
   config: TaskConfig
-  started: boolean
 }
 
 type TaskProgressMutationResult = {
@@ -58,6 +57,19 @@ type FailedTaskCheckMutationResult = {
   attemptNumber: number
   maxCheckAttempts: number
   reset: boolean
+}
+
+function isLevelStarted(levelProgress: TaskLevelProgress | undefined) {
+  if (!levelProgress) {
+    return false
+  }
+
+  return Boolean(
+    levelProgress.initializedAt
+      || levelProgress.completedAt
+      || levelProgress.promptsUsed > 0
+      || levelProgress.status !== "available",
+  )
 }
 
 function getCurrentLevelDisplayStatus(levelProgress: TaskLevelProgress): TaskProgressSummary["currentLevelDisplayStatus"] {
@@ -382,7 +394,7 @@ function summarizeTaskProgress(
     currentLevelId: currentLevel.id,
     currentLevelStatus: levelProgress.status,
     currentLevelDisplayStatus: getCurrentLevelDisplayStatus(levelProgress),
-    currentLevelInitialized: Boolean(levelProgress.initializedAt),
+    currentLevelStarted: isLevelStarted(levelProgress),
     promptsUsed: levelProgress.promptsUsed,
     promptsLimit: currentLevel.maxPromptsPerTask,
     checkAttemptsUsed: levelProgress.checkAttemptsUsed ?? 0,
@@ -404,7 +416,7 @@ function buildTaskListItem(
   return {
     id: task.id,
     image: task.config.image,
-    started: task.started,
+    started: isLevelStarted(taskProgress.levels["1"]),
     maxLevel: task.config.maxLevel,
     progress: summarizeTaskProgress(levels, task.config, taskProgress),
   }
@@ -424,12 +436,10 @@ async function readTaskCatalog(): Promise<TaskCatalogItem[]> {
   const tasks = await Promise.all(
     taskDirs.map(async (entry) => {
       const config = await readTaskConfig(entry.name)
-      const started = await isTaskStarted(entry.name)
 
       return {
         id: entry.name,
         config,
-        started,
       }
     }),
   )

@@ -1,9 +1,8 @@
 import { notFound, redirect } from "next/navigation"
 
-import { Lab } from "@/components/desengine/Lab"
 import { requireAccessOrRedirect } from "@/lib/access-control.server"
 import { createTaskNextPath, createTaskPath } from "@/lib/navigation"
-import { getLevelOverview, getTaskLabContext, getTaskListItemById, getTaskPendingTransition, isTaskStarted, readTaskData } from "@/lib/server"
+import { getTaskListItemById, getTaskPendingTransition } from "@/lib/server"
 
 type Params = {
   taskId: string
@@ -31,17 +30,5 @@ export default async function TaskNextPage({
     redirect(createTaskPath(taskId))
   }
 
-  const labContext = await getTaskLabContext(taskItem)
-  const started = await isTaskStarted(taskId)
-  const taskData = started ? await readTaskData(taskItem, labContext) : null
-  const levelOverview = await getLevelOverview(transition.toLevel.id)
-
-  return (
-    <Lab
-      initLevelOverview={levelOverview}
-      initScreen={{ type: "transition", transition }}
-      initTaskItem={taskItem}
-      initTaskData={taskData}
-    />
-  )
+  redirect(createTaskPath(taskId))
 }

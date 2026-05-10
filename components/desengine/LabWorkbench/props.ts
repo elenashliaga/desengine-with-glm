@@ -6,10 +6,8 @@ type LabWorkbenchProps = BaseProps & {
     taskData: TaskData;
     onTaskItemChange: (next: TaskListItem | null) => void;
     onTaskDataChange: (next: TaskData) => void;
-    started: boolean;
-    onStartedChange: (next: boolean) => void;
     onBackToLevelList: () => void;
-    onCheckResult: (result: TaskCheckResult, transition: TaskTransition | null, nextTaskItem: TaskListItem | null, nextTaskData: TaskData, nextStarted: boolean) => void;
+    onCheckResult: (result: TaskCheckResult, transition: TaskTransition | null, nextTaskItem: TaskListItem | null, nextTaskData: TaskData) => void;
     onTransition: (transition: TaskTransition | null) => void;
     activeScreen: string;
     onScreenChange: (screen: string) => void;

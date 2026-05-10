@@ -30,8 +30,6 @@ function LabWorkbench({
     taskData,
     onTaskItemChange,
     onTaskDataChange,
-    started,
-    onStartedChange,
     onBackToLevelList,
     onCheckResult,
     onTransition,
@@ -40,8 +38,6 @@ function LabWorkbench({
 }: LabWorkbenchProps) {
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const [saveError, setSaveError] = useState<string>("");
-    const [startStatus, setStartStatus] = useState<"" | "starting">("");
-    const [startError, setStartError] = useState("");
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
     const [resetPending, setResetPending] = useState(false);
@@ -94,26 +90,6 @@ function LabWorkbench({
         setPreviewVersion((current) => current + 1);
     }
 
-    async function handleStart() {
-        setStartStatus("starting");
-        setStartError("");
-
-        const res = await fetch(`/api/tasks/${taskItem.id}/start`, { method: "POST" });
-        const data = await res.json().catch(() => null);
-
-        if (!res.ok || !data?.ok) {
-            setStartError(data?.error || "Не удалось запустить задачу");
-            setStartStatus("");
-            return;
-        }
-
-        onTaskItemChange(data.taskItem ?? null);
-        onTaskDataChange(data.taskData);
-        onStartedChange(true);
-        setStartStatus("");
-        setPreviewVersion((current) => current + 1);
-    }
-
     async function handleCheck() {
         setCompletePending(true);
         setCompleteError("");
@@ -133,7 +109,6 @@ function LabWorkbench({
             data.transition ?? null,
             data.taskItem ?? null,
             data.taskData,
-            Boolean(data.started),
         );
     }
 
@@ -157,7 +132,6 @@ function LabWorkbench({
             if (data.taskData) {
                 onTaskDataChange(data.taskData);
             }
-            onStartedChange(false);
             onTransition(null);
             onScreenChange("component");
             setResetPending(false);
@@ -171,13 +145,8 @@ function LabWorkbench({
         setPromptStatus("");
         setPromptError("");
 
-        if (!started) {
-            setPromptError("Сначала запустите задачу");
-            return;
-        }
-
-        if (!taskItem.progress.currentLevelInitialized) {
-            setPromptError("Сначала дождитесь инициирующего запуска текущего уровня");
+        if (!taskItem.progress.currentLevelStarted) {
+            setPromptError("Сначала начните текущий уровень");
             return;
         }
 
@@ -238,8 +207,8 @@ function LabWorkbench({
         }
     }
 
-    const canCompleteCurrentLevel = started && taskItem.progress.currentLevelInitialized && taskItem.progress.currentLevelStatus !== "completed";
-    const levelReadyForWork = started && taskItem.progress.currentLevelInitialized;
+    const canCompleteCurrentLevel = taskItem.progress.currentLevelStarted && taskItem.progress.currentLevelStatus !== "completed";
+    const levelReadyForWork = taskItem.progress.currentLevelStarted;
     const promptInputDisabled = promptPending;
     const promptRunDisabled = promptPending;
 
@@ -270,14 +239,6 @@ function LabWorkbench({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            {!taskItem.progress.currentLevelInitialized && (
-                                <Button
-                                    disabled={startStatus === "starting" || completePending || resetPending}
-                                    onClick={() => void handleStart()}
-                                >
-                                    {startStatus === "starting" ? "Запуск уровня…" : "Начать уровень"}
-                                </Button>
-                            )}
                             <Button variant="outline" onClick={onBackToLevelList}>
                                 К списку задач уровня
                             </Button>
@@ -321,17 +282,10 @@ function LabWorkbench({
                     <InOut
                       task={taskItem.id}
                       taskData={taskData}
-                      started={started}
+                      started={taskItem.started}
                       reloadKey={previewVersion}
-                      onStart={handleStart}
-                      startStatus={startStatus}
+                      startStatus=""
                     />
-
-                    {startError && (
-                        <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
-                            {startError}
-                        </pre>
-                    )}
 
                     {taskData.labContext && (
                         <div className="rounded-md border p-4">
@@ -342,15 +296,6 @@ function LabWorkbench({
                             <p className="mt-4 font-medium">Пояснение задачи</p>
                             <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
                                 {taskData.labContext.taskTip}
-                            </p>
-                        </div>
-                    )}
-
-                    {started && !taskItem.progress.currentLevelInitialized && (
-                        <div className="rounded-md border p-4">
-                            <p className="font-medium">Уровень ещё не начат</p>
-                            <p className="mt-2 text-muted-foreground whitespace-pre-wrap">
-                                Этот уровень уже стал текущим, но скрытый инициирующий запуск ещё не выполнялся. Нажмите `Начать уровень`, чтобы подготовить файлы и открыть рабочий контур именно для этого уровня.
                             </p>
                         </div>
                     )}

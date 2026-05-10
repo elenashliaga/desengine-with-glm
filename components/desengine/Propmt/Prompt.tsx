@@ -21,9 +21,9 @@ function Prompt({
             <p className="text-muted-foreground">
                 Осталось промптов на этом уровне: {Math.max(taskItem.progress.promptsLimit - taskItem.progress.promptsUsed, 0)}
             </p>
-            {!taskItem.progress.currentLevelInitialized && (
+            {!taskItem.progress.currentLevelStarted && (
                 <p className="text-muted-foreground">
-                    Система сначала выполняет скрытый инициирующий запуск этого уровня. Уточняющие промпты станут доступны после него.
+                    Уточняющие промпты станут доступны после явного старта текущего уровня.
                 </p>
             )}
 

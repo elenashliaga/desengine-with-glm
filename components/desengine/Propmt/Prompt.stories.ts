@@ -16,7 +16,7 @@ const taskItem: TaskListItem = {
     currentLevelId: 'level-1',
     currentLevelStatus: 'in_progress',
     currentLevelDisplayStatus: 'in_progress',
-    currentLevelInitialized: true,
+    currentLevelStarted: true,
     promptsUsed: 1,
     promptsLimit: 3,
     checkAttemptsUsed: 0,

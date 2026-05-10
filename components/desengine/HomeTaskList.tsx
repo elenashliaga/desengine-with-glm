@@ -67,30 +67,9 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null)
   const [error, setError] = useState<string>("")
 
-  async function handleStart(taskId: string) {
+  function handleStart(taskId: string) {
     setError("")
-    setPendingTaskId(taskId)
-
-    try {
-      const response = await fetch(`/api/tasks/${taskId}/start`, {
-        method: "POST",
-      })
-      const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
-        | null
-
-      if (!response.ok || !data?.ok) {
-        setError(data?.error || "Не удалось запустить задачу.")
-        return
-      }
-
-      router.push(createTaskHref(taskId))
-      router.refresh()
-    } catch {
-      setError("Не удалось запустить задачу.")
-    } finally {
-      setPendingTaskId((current) => (current === taskId ? null : current))
-    }
+    router.push(createTaskHref(taskId))
   }
 
   async function handleReset(taskId: string) {
@@ -180,13 +159,13 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                             {getLevelBadgeText(task)}
                           </span>
                         ) : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            disabled={isPending}
-                            onClick={() => void handleStart(task.id)}
-                          >
-                            {isPending ? "Запуск…" : "Начать"}
+                            <Button
+                              type="button"
+                              size="sm"
+                              disabled={isPending}
+                              onClick={() => handleStart(task.id)}
+                            >
+                            {isPending ? "Открытие…" : "Начать"}
                           </Button>
                         )}
 

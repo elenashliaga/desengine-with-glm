@@ -67,8 +67,8 @@ export async function POST(
     return Response.json({ ok: false, error: "Текущий уровень уже завершён" }, { status: 409 })
   }
 
-  if (!taskItem.progress.currentLevelInitialized) {
-    return Response.json({ ok: false, error: "Сначала дождитесь инициирующего запуска текущего уровня" }, { status: 409 })
+  if (!taskItem.progress.currentLevelStarted) {
+    return Response.json({ ok: false, error: "Сначала начните текущий уровень" }, { status: 409 })
   }
 
   if (taskItem.progress.promptsUsed >= taskItem.progress.promptsLimit) {

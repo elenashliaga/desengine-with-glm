@@ -90,7 +90,7 @@ export async function POST(
   const already = await isTaskStarted(taskId)
   const levelEditableFiles = getLevelEditableWorkbenchFiles(labContext.editableFileIds)
 
-  if (already && taskItem.progress.currentLevelInitialized) {
+  if (already && taskItem.progress.currentLevelStarted) {
     await clearTaskCheckResult(taskId)
     const cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
     if (cleanup.deletedFileIds.length > 0) {
