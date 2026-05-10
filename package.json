@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "smoke": "node tools/smoke-local-install.mjs",
+    "openspec": "node tools/list-active-openspec-changes.mjs",
     "allowlist:marker": "node tools/generate-allowlist-marker.mjs",
     "admin:tasks:configs": "node tools/generate-task-configs.mjs",
     "admin:tasks:import": "node tools/import-task-assets.mjs",

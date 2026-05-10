@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises"
 
 import {
+  clearTaskCheckResult,
   cleanupForbiddenWorkbenchFiles,
   filterWorkbenchPayloadByAllowlist,
   getLevelForTaskItem,
@@ -90,6 +91,7 @@ export async function POST(
   const levelEditableFiles = getLevelEditableWorkbenchFiles(labContext.editableFileIds)
 
   if (already && taskItem.progress.currentLevelInitialized) {
+    await clearTaskCheckResult(taskId)
     const cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
     if (cleanup.deletedFileIds.length > 0) {
       console.log("[desengine][task-start] forbidden_files_deleted", {
@@ -164,9 +166,6 @@ ${levelInitPrompt}
 ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
 ${labContext.commonExplanation}
 
-УНИКАЛЬНОЕ ПОЯСНЕНИЕ ЭТОЙ ЗАДАЧИ:
-${labContext.taskExplanation}
-
 ЗАДАНИЕ:
 Это инициирующий запуск нового уровня для уже существующей задачи.
 Посмотри на картинки текущего уровня и на все разрешённые рабочие файлы задачи.
@@ -198,9 +197,6 @@ ${levelInitPrompt}
 
 ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
 ${labContext.commonExplanation}
-
-УНИКАЛЬНОЕ ПОЯСНЕНИЕ ЭТОЙ ЗАДАЧИ:
-${labContext.taskExplanation}
 
 ЗАДАНИЕ:
 По картинкам текущего уровня создай первичную реализацию набора файлов компонента.
@@ -314,6 +310,7 @@ ${allowedFilesText}
     durationMs: Date.now() - startedAt,
   })
 
+  await clearTaskCheckResult(taskId)
   const progress = await markCurrentTaskLevelInitialized(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)
   const nextLabContext = nextTaskItem ? await getTaskLabContext(nextTaskItem) : null

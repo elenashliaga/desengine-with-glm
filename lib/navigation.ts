@@ -44,6 +44,10 @@ export function createTaskNextPath(taskId: string) {
   return `/tasks/${encodeURIComponent(taskId)}/next`
 }
 
+export function createTaskCheckPath(taskId: string) {
+  return `/tasks/${encodeURIComponent(taskId)}/check`
+}
+
 export function createLevelsPath(levelId?: string | null) {
   if (!levelId) {
     return "/levels"

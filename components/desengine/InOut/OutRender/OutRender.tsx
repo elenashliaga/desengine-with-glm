@@ -78,9 +78,13 @@ function OutRender({ task, started, reloadKey, onStart, startStatus }: OutRender
                           currentLevelInitialized: false,
                           promptsUsed: 0,
                           promptsLimit: 0,
+                          checkAttemptsUsed: 0,
+                          checkAttemptsLimit: 0,
+                          checkingState: "idle",
                           maxLevel: 1,
                           isCompleted: false,
                           hasNextLevel: false,
+                          completionReason: null,
                         },
                       }}
                       onStarted={onStart}

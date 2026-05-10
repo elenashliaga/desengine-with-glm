@@ -1,3 +1,7 @@
+## Status
+
+Superseded by `level-result-check`.
+
 ## ADDED Requirements
 
 ### Requirement: Прогресс задачи хранит статус завершения

@@ -14,6 +14,10 @@ type LevelTaskCardProps = {
 };
 
 function renderTaskMeta(task: LevelOverviewTaskItem) {
+  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
+    return "Задача ждёт повторной проверки результата"
+  }
+
   if (task.nextUnlockedLevel !== null) {
     return `Сейчас решается на уровне ${task.nextUnlockedLevel}`
   }

@@ -20,7 +20,6 @@ const LegacyTaskConfigSchema = z.union([
 
 const ModernTaskConfigSchema = z.object({
   images: z.record(z.string().min(1), TaskImageSchema),
-  levelTaskNotes: z.record(z.string().min(1), z.string().min(1)),
   maxLevel: z.number().int().min(1),
 })
 
@@ -39,7 +38,6 @@ const TaskConfigSchema = z
           ...value.images,
           ...(variants ? { variants } : {}),
         },
-        levelTaskNotes: value.levelTaskNotes,
         maxLevel: value.maxLevel,
       }
     }
@@ -52,7 +50,6 @@ const TaskConfigSchema = z
         images: {
           base: value.image,
         },
-        levelTaskNotes: {},
         maxLevel: value.maxLevel,
       }
     }
@@ -65,7 +62,6 @@ const TaskConfigSchema = z
         base: value.base,
         ...(value.variants ? { variants: value.variants } : {}),
       },
-      levelTaskNotes: {},
       maxLevel: value.maxLevel,
     }
   })
@@ -85,6 +81,7 @@ const LevelConfigSchema = z.object({
   url: z.string().optional(),
   layoutKey: z.string().min(1),
   maxPromptsPerTask: z.number().int().min(1),
+  maxCheckAttempts: z.number().int().min(1).optional(),
   labId: z.string().min(1).optional(),
   images: z.array(LevelImageConfigSchema).optional(),
   editableFileIds: z.array(z.string().min(1)).optional(),
@@ -108,10 +105,14 @@ const LevelConfigSchema = z.object({
     ...value,
     url: value.url?.trim() ? value.url.trim() : undefined,
     labId: value.labId ?? (value.number === 1 ? "level-1" : value.number === 2 ? "level-2" : "shared-lab"),
+    maxCheckAttempts: value.maxCheckAttempts ?? 3,
     images: value.images ?? defaultImages,
     editableFileIds: value.editableFileIds ?? defaultEditableFileIds,
   }
 })
+
+const CompletionReasonSchema = z.enum(["check_passed"])
+const CheckingStateSchema = z.enum(["idle", "awaiting_retry"])
 
 const LevelsCatalogSchema = z.object({
   levels: z.array(LevelConfigSchema).min(1),
@@ -122,7 +123,9 @@ const TaskLevelProgressSchema = z.object({
   promptsUsed: z.number().int().min(0),
   initializedAt: z.string().optional(),
   completedAt: z.string().optional(),
-  completionReason: z.enum(["manual", "prompt_limit"]).optional(),
+  completionReason: CompletionReasonSchema.optional(),
+  checkAttemptsUsed: z.number().int().min(0).optional(),
+  checkingState: CheckingStateSchema.optional(),
 })
 
 const TaskProgressSchema = z.object({
@@ -145,12 +148,17 @@ type TaskProgressSummary = {
   currentLevel: number
   currentLevelId: string
   currentLevelStatus: TaskLevelProgress["status"]
+  currentLevelDisplayStatus: "available" | "in_progress" | "awaiting_check_retry" | "completed"
   currentLevelInitialized: boolean
   promptsUsed: number
   promptsLimit: number
+  checkAttemptsUsed: number
+  checkAttemptsLimit: number
+  checkingState: z.infer<typeof CheckingStateSchema>
   maxLevel: number
   isCompleted: boolean
   hasNextLevel: boolean
+  completionReason: TaskLevelProgress["completionReason"] | null
 }
 
 type TaskListItem = {
@@ -192,7 +200,7 @@ export type TaskLabContext = {
   levelNumber: number
   labId: string
   commonExplanation: string
-  taskExplanation: string
+  taskTip: string
   editableFileIds: string[]
   images: TaskLabImage[]
 }
@@ -211,6 +219,21 @@ export type LevelOverviewTaskItem = TaskListItem & {
   nextUnlockedLevel: number | null
 }
 
+export type TaskCheckResultKind = "passed" | "failed" | "technical_error" | "failed_and_reset"
+
+export type TaskCheckResult = {
+  taskId: string
+  levelId: string
+  levelNumber: number
+  levelTitle: string
+  attemptNumber: number
+  maxCheckAttempts: number
+  passed: boolean
+  message: string
+  kind: TaskCheckResultKind
+  createdAt: string
+}
+
 export type LevelOverview = {
   level: LevelConfig
   availableTasks: LevelOverviewTaskItem[]
@@ -223,12 +246,15 @@ export type LabScreenState =
   | { type: "level" }
   | { type: "task"; screen: string }
   | { type: "transition"; transition: TaskTransition }
+  | { type: "check"; result: TaskCheckResult; transition: TaskTransition | null }
 
 export type TaskTransition = {
   taskId: string
   fromLevel: LevelConfig
   toLevel: LevelConfig | null
-  reason: "manual" | "prompt_limit"
+  fromTaskTip: string
+  toTaskTip: string | null
+  reason: z.infer<typeof CompletionReasonSchema>
 }
 
 export {

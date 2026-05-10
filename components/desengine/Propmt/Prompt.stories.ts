@@ -18,9 +18,13 @@ const taskItem: TaskListItem = {
     currentLevelInitialized: true,
     promptsUsed: 1,
     promptsLimit: 3,
+    checkAttemptsUsed: 0,
+    checkAttemptsLimit: 3,
+    checkingState: 'idle',
     maxLevel: 3,
     isCompleted: false,
     hasNextLevel: true,
+    completionReason: null,
   },
 };
 
@@ -42,7 +46,7 @@ const taskData: TaskData = {
     levelNumber: 1,
     labId: 'lab-1',
     commonExplanation: 'Общее описание уровня',
-    taskExplanation: 'Описание задания',
+    taskTip: 'Описание задания',
     editableFileIds: ['src/app.ts'],
     images: [],
   },

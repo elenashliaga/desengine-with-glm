@@ -11,7 +11,7 @@ type LlmStructuredRequest = {
   imageBase64List?: string[]
   schemaName: string
   schema: Record<string, unknown>
-  target?: "default" | "init"
+  target?: "default" | "init" | "check"
 }
 
 type LlmStructuredResponse = {

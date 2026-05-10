@@ -29,6 +29,7 @@ function createTaskHref(taskId: string) {
 
 function getIndicatorWidth(task: TaskListItem) {
   if (!task.started) return "0%"
+  if (task.progress.isCompleted) return "100%"
 
   const ratio = task.progress.currentLevel / task.progress.maxLevel
   return `${Math.max(ratio * 100, 8)}%`
@@ -36,7 +37,29 @@ function getIndicatorWidth(task: TaskListItem) {
 
 function getStatusText(task: TaskListItem) {
   if (!task.started) return "Не начиналась"
+  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
+    return "Ждёт проверки"
+  }
+  if (task.progress.isCompleted) {
+    if (task.progress.completionReason === "check_passed") {
+      return "Проверка пройдена, задача завершена"
+    }
+
+    return "Задача завершена"
+  }
   return `Уровень ${task.progress.currentLevel} из ${task.progress.maxLevel}`
+}
+
+function getLevelBadgeText(task: TaskListItem) {
+  if (task.progress.isCompleted) {
+    return "Завершена"
+  }
+
+  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
+    return "Ждёт проверки"
+  }
+
+  return `Уровень ${task.progress.currentLevel}`
 }
 
 export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
@@ -154,7 +177,7 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                       <div className="flex flex-wrap items-center gap-2">
                         {task.started ? (
                           <span className="inline-flex h-7 items-center rounded-full border border-black/10 bg-[#f5efe2] px-3 font-medium text-black/75">
-                            Уровень {task.progress.currentLevel}
+                            {getLevelBadgeText(task)}
                           </span>
                         ) : (
                           <Button

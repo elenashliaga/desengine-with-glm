@@ -15,6 +15,7 @@
 | Назначение | Канонический файл | Каноническая команда |
 | --- | --- | --- |
 | Smoke-check локальной установки | `tools/smoke-local-install.mjs` | `npm run smoke` |
+| Краткая сводка актуальных OpenSpec changes | `tools/list-active-openspec-changes.mjs` | `npm run openspec` |
 | Генерация allowlist-маркера | `tools/generate-allowlist-marker.mjs` | `npm run allowlist:marker -- user@example.com` |
 | Генерация `config.json` по `base.png` и `variants.png` | `tools/generate-task-configs.mjs` | `npm run admin:tasks:configs` |
 | Подготовка task-каталогов из набора PNG | `tools/import-task-assets.mjs` | `npm run admin:tasks:import -- --variants-root=... --base-root=...` |
@@ -43,6 +44,21 @@
 - отсутствие устаревшего `.env.local`;
 - базовую конфигурацию `OPENAI_API_KEY` и allowlist;
 - production build проекта.
+
+### `npm run openspec`
+
+Печатает все актуальные OpenSpec changes, исключая:
+- archived changes из `openspec/changes/archive`;
+- changes со статусом `Suspended`.
+
+Для короткой аннотации скрипт сначала читает поле `short` из `openspec/changes/<change>/.openspec.yaml`.
+Если `short` не задан или metadata-файла нет, используется fallback на сокращённый текст из секции `Why` в `proposal.md`.
+
+Формат вывода:
+
+```bash
+<change-name> — <короткое пояснение из секции Why>
+```
 
 ### `npm run allowlist:marker -- user@example.com`
 

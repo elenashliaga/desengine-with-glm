@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LabWorkbench } from "../LabWorkbench";
 import { LevelOverview } from "../LevelOverview";
+import { TaskCheckResult } from "../TaskCheckResult";
 import { TaskLevelTransition } from "../TaskLevelTransition";
 import { LabProps } from "./props"
-import type { LabScreenState, LevelOverview as LevelOverviewData, TaskListItem, TaskTransition } from "@/lib/types";
-import { createLevelsPath, createTaskNextPath, createTaskPath } from "@/lib/navigation";
+import type { LabScreenState, LevelOverview as LevelOverviewData, TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/types";
+import { createLevelsPath, createTaskCheckPath, createTaskNextPath, createTaskPath } from "@/lib/navigation";
 
 function createLevelHref(levelId?: string | null) {
     return createLevelsPath(levelId);
@@ -19,6 +20,10 @@ function createTaskHref(taskId: string, screen?: string | null) {
 
 function createTransitionHref(transition: TaskTransition) {
     return createTaskNextPath(transition.taskId);
+}
+
+function createCheckHref(taskId: string) {
+    return createTaskCheckPath(taskId);
 }
 
 function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabProps) {
@@ -114,6 +119,22 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         setScreen({ type: "transition", transition });
     }
 
+    function handleCheckResult(
+        result: TaskCheckResultData,
+        transition: TaskTransition | null,
+        nextTaskItem: TaskListItem | null,
+        nextTaskData: TaskData,
+        nextStarted: boolean,
+    ) {
+        if (nextTaskItem) {
+            setTaskItem(nextTaskItem);
+        }
+        setTaskData(nextTaskData);
+        setStarted(nextStarted);
+        router.push(createCheckHref(result.taskId));
+        setScreen({ type: "check", result, transition });
+    }
+
     function handleScreenChange(nextScreen: string) {
         if (!taskItem) return;
         router.push(createTaskHref(taskItem.id, nextScreen));
@@ -153,12 +174,56 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
             {screen.type === "transition" ? (
                 <TaskLevelTransition
                     transition={screen.transition}
+                    started={started}
                     pending={status.length > 0}
                     onContinue={() => {
                         router.push(createTaskHref(screen.transition.taskId));
                         setScreen({ type: "task", screen: "component" });
                     }}
                     onBackToLevelList={() => handleReturnToLevelList(screen.transition.toLevel?.id)}
+                />
+            ) : null}
+
+            {screen.type === "check" ? (
+                <TaskCheckResult
+                    result={screen.result}
+                    transition={screen.transition}
+                    pending={status.length > 0}
+                    onContinue={() => {
+                        if (screen.transition?.toLevel) {
+                            router.push(createTransitionHref(screen.transition));
+                            setScreen({ type: "transition", transition: screen.transition });
+                            return;
+                        }
+
+                        handleReturnToLevelList(taskItem?.progress.currentLevelId);
+                    }}
+                    onBackToLab={() => {
+                        if (!taskItem) return;
+                        router.push(createTaskHref(taskItem.id));
+                        setScreen({ type: "task", screen: "component" });
+                    }}
+                    onRetry={async () => {
+                        if (!taskItem) return;
+
+                        setStatus("Повторная проверка уровня…");
+                        const res = await fetch(`/api/tasks/${taskItem.id}/check`, { method: "POST" });
+                        const data = await res.json().catch(() => null);
+
+                        if (!res.ok || !data?.ok || !data?.checkResult || !data?.taskData) {
+                            setStatus(data?.error || "Не удалось повторить проверку");
+                            return;
+                        }
+
+                        setStatus("");
+                        handleCheckResult(
+                            data.checkResult,
+                            data.transition ?? null,
+                            data.taskItem ?? null,
+                            data.taskData,
+                            Boolean(data.started),
+                        );
+                    }}
                 />
             ) : null}
 
@@ -171,6 +236,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     started={started}
                     onStartedChange={setStarted}
                     onBackToLevelList={() => handleReturnToLevelList(taskItem.progress.currentLevelId)}
+                    onCheckResult={handleCheckResult}
                     onTransition={handleTransition}
                     activeScreen={screen.screen}
                     onScreenChange={handleScreenChange}

@@ -1,4 +1,5 @@
 import {
+  clearTaskCheckResult,
   getTaskLabContext,
   getTaskListItemById,
   resetTask,
@@ -19,6 +20,7 @@ export async function POST(
   }
 
   await resetTask(taskId)
+  await clearTaskCheckResult(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)
   const labContext = nextTaskItem ? await getTaskLabContext(nextTaskItem) : null
 

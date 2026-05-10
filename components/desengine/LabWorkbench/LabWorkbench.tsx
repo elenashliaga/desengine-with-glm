@@ -33,6 +33,7 @@ function LabWorkbench({
     started,
     onStartedChange,
     onBackToLevelList,
+    onCheckResult,
     onTransition,
     activeScreen,
     onScreenChange,
@@ -113,23 +114,27 @@ function LabWorkbench({
         setPreviewVersion((current) => current + 1);
     }
 
-    async function handleComplete() {
+    async function handleCheck() {
         setCompletePending(true);
         setCompleteError("");
 
-        const res = await fetch(`/api/tasks/${taskItem.id}/complete`, { method: "POST" });
+        const res = await fetch(`/api/tasks/${taskItem.id}/check`, { method: "POST" });
         const data = await res.json().catch(() => null);
 
         setCompletePending(false);
 
-        if (!res.ok || !data?.ok) {
-            setCompleteError(data?.error || "Не удалось завершить уровень");
+        if (!res.ok || !data?.ok || !data?.checkResult || !data?.taskData) {
+            setCompleteError(data?.error || "Не удалось проверить уровень");
             return;
         }
 
-        onTaskItemChange(data.taskItem ?? null);
-        onTaskDataChange(data.taskData);
-        onTransition(data.transition ?? null);
+        onCheckResult(
+            data.checkResult,
+            data.transition ?? null,
+            data.taskItem ?? null,
+            data.taskData,
+            Boolean(data.started),
+        );
     }
 
     async function handleReset() {
@@ -233,6 +238,7 @@ function LabWorkbench({
         }
     }
 
+    const canCompleteCurrentLevel = started && taskItem.progress.currentLevelInitialized && taskItem.progress.currentLevelStatus !== "completed";
     const promptInputDisabled = promptPending;
     const promptRunDisabled = promptPending;
 
@@ -255,6 +261,11 @@ function LabWorkbench({
                             <p className="text-muted-foreground">
                                 Уровень {taskItem.progress.currentLevel} из {taskItem.maxLevel}. Промптов: {taskItem.progress.promptsUsed} / {taskItem.progress.promptsLimit}.
                             </p>
+                            {taskItem.progress.currentLevelDisplayStatus === "awaiting_check_retry" && (
+                                <p className="text-muted-foreground">
+                                    Статус уровня: ждёт повторной проверки.
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex flex-wrap gap-2">
@@ -290,10 +301,10 @@ function LabWorkbench({
                             </AlertDialog>
                             <Button
                                 variant="secondary"
-                                disabled={completePending || resetPending || taskItem.progress.currentLevelStatus === "completed"}
-                                onClick={handleComplete}
+                                disabled={completePending || resetPending || !canCompleteCurrentLevel}
+                                onClick={handleCheck}
                             >
-                                {completePending ? "Завершение…" : "Я закончил"}
+                                {completePending ? "Проверка…" : "Я закончил"}
                             </Button>
                         </div>
                     </div>
@@ -321,7 +332,7 @@ function LabWorkbench({
                             </p>
                             <p className="mt-4 font-medium">Пояснение задачи</p>
                             <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
-                                {taskData.labContext.taskExplanation}
+                                {taskData.labContext.taskTip}
                             </p>
                         </div>
                     )}

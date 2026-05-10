@@ -12,10 +12,12 @@ import {
   UserProgressStoreSchema,
   type LevelConfig,
   type LevelOverview,
+  type TaskCheckResult,
   type LevelOverviewTaskItem,
   type PromptHistoryEntry,
   type TaskLabContext,
   type TaskConfig,
+  type TaskLevelProgress,
   type TaskListItem,
   type TaskProgress,
   type TaskProgressSummary,
@@ -25,12 +27,14 @@ import {
 import {
   defaultUserProgressStore,
   ensureUserProgressStorage,
+  ensureParentDir,
   getTaskCatalogFilePath,
+  getTaskCheckResultPath,
   removeUserTaskDir,
+  removeTaskCheckResult,
 } from "./user-state.server"
 
-type CompletionReason = "manual" | "prompt_limit"
-
+type CompletionReason = "check_passed"
 type TaskCatalogItem = {
   id: string
   config: TaskConfig
@@ -40,6 +44,36 @@ type TaskCatalogItem = {
 type TaskProgressMutationResult = {
   summary: TaskProgressSummary
   transition: TaskTransition | null
+}
+
+type TaskCheckMutationResult = {
+  summary: TaskProgressSummary
+  transition: TaskTransition | null
+  attemptNumber: number
+  maxCheckAttempts: number
+}
+
+type FailedTaskCheckMutationResult = {
+  summary: TaskProgressSummary | null
+  attemptNumber: number
+  maxCheckAttempts: number
+  reset: boolean
+}
+
+function getCurrentLevelDisplayStatus(levelProgress: TaskLevelProgress): TaskProgressSummary["currentLevelDisplayStatus"] {
+  if (levelProgress.status === "completed") {
+    return "completed"
+  }
+
+  if (levelProgress.checkingState === "awaiting_retry") {
+    return "awaiting_check_retry"
+  }
+
+  if (levelProgress.status === "in_progress") {
+    return "in_progress"
+  }
+
+  return "available"
 }
 
 async function readLevelsCatalogRaw() {
@@ -82,6 +116,40 @@ async function writeUserProgressStore(store: UserProgressStore) {
   await writeFile(appConfig.userProgressFile, JSON.stringify(store, null, 2), "utf-8")
 }
 
+async function readTaskCheckResult(taskId: string): Promise<TaskCheckResult | null> {
+  try {
+    const raw = await readFile(getTaskCheckResultPath(taskId), "utf-8")
+    const parsed = JSON.parse(raw) as TaskCheckResult
+
+    if (
+      !parsed
+      || typeof parsed !== "object"
+      || typeof parsed.taskId !== "string"
+      || typeof parsed.levelId !== "string"
+      || typeof parsed.levelNumber !== "number"
+      || typeof parsed.levelTitle !== "string"
+      || typeof parsed.attemptNumber !== "number"
+      || typeof parsed.maxCheckAttempts !== "number"
+      || typeof parsed.passed !== "boolean"
+      || typeof parsed.message !== "string"
+      || typeof parsed.kind !== "string"
+      || typeof parsed.createdAt !== "string"
+    ) {
+      return null
+    }
+
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+async function writeTaskCheckResult(result: TaskCheckResult) {
+  const filePath = getTaskCheckResultPath(result.taskId)
+  await ensureParentDir(filePath)
+  await writeFile(filePath, JSON.stringify(result, null, 2), "utf-8")
+}
+
 async function readTaskConfig(taskId: string): Promise<TaskConfig> {
   const configPath = getTaskCatalogFilePath(taskId, appConfig.taskConfigFile)
   const rawTaskConfig = await readFile(configPath, "utf-8")
@@ -97,6 +165,8 @@ function buildInitialTaskProgress(maxLevel: number): TaskProgress {
         {
           status: "available" as const,
           promptsUsed: 0,
+          checkAttemptsUsed: 0,
+          checkingState: "idle" as const,
         },
       ]
     }),
@@ -117,6 +187,8 @@ function normalizeTaskProgress(taskProgress: TaskProgress, maxLevel: number): Ta
       nextLevels[key] = {
         status: "available",
         promptsUsed: 0,
+        checkAttemptsUsed: 0,
+        checkingState: "idle",
       }
     }
   }
@@ -130,7 +202,16 @@ function normalizeTaskProgress(taskProgress: TaskProgress, maxLevel: number): Ta
 
   return {
     currentLevel: Math.min(Math.max(taskProgress.currentLevel, 1), maxLevel),
-    levels: nextLevels,
+    levels: Object.fromEntries(
+      Object.entries(nextLevels).map(([key, level]) => [
+        key,
+        {
+          ...level,
+          checkAttemptsUsed: level.checkAttemptsUsed ?? 0,
+          checkingState: level.checkingState ?? "idle",
+        },
+      ]),
+    ),
     updatedAt: taskProgress.updatedAt,
   }
 }
@@ -180,7 +261,7 @@ function reconcileTaskProgressWithHistory(
     const key = String(levelNumber)
     const countedPrompts = countsByLevel.get(levelNumber) ?? 0
     const levelProgress = taskProgress.levels[key]
-    const levelConfig = requireLevel(levels, levelNumber)
+    requireLevel(levels, levelNumber)
 
     if (countedPrompts > levelProgress.promptsUsed) {
       levelProgress.promptsUsed = countedPrompts
@@ -197,11 +278,6 @@ function reconcileTaskProgressWithHistory(
       changed = true
     }
 
-    if (levelProgress.promptsUsed >= levelConfig.maxPromptsPerTask && levelProgress.status !== "completed") {
-      levelProgress.status = "completed"
-      levelProgress.completionReason ??= "prompt_limit"
-      changed = true
-    }
   }
 
   const currentLevelProgress = taskProgress.levels[String(taskProgress.currentLevel)]
@@ -245,16 +321,14 @@ function normalizeEditableFileIds(level: LevelConfig) {
   return level.editableFileIds.filter((fileId) => knownFileIds.has(fileId))
 }
 
-function resolveTaskExplanation(
-  levelNumber: number,
-  levelTaskNotes: Record<string, string>,
-) {
-  const directNote = levelTaskNotes[String(levelNumber)]
+async function readTaskLevelTip(taskId: string, levelId: string) {
+  const filePath = getTaskCatalogFilePath(taskId, path.join("levels", levelId, "tip.md"))
 
-  if (directNote) {
-    return directNote
+  try {
+    return (await readFile(filePath, "utf-8")).trim()
+  } catch {
+    return ""
   }
-  return ""
 }
 
 async function buildTaskLabContext(
@@ -262,20 +336,20 @@ async function buildTaskLabContext(
   level: LevelConfig,
   taskConfig: TaskConfig,
 ): Promise<TaskLabContext> {
-  const levelTaskNotes = taskConfig.levelTaskNotes as Record<string, string>
-  const taskExplanation = resolveTaskExplanation(level.number, levelTaskNotes)
-
-  const commonExplanation = await readLevelCommonExplanation(
-    level.id,
-    level.description,
-  )
+  const [commonExplanation, taskTip] = await Promise.all([
+    readLevelCommonExplanation(
+      level.id,
+      level.description,
+    ),
+    readTaskLevelTip(taskId, level.id),
+  ])
 
   return {
     levelId: level.id,
     levelNumber: level.number,
     labId: level.labId,
     commonExplanation,
-    taskExplanation,
+    taskTip,
     editableFileIds: normalizeEditableFileIds(level),
     images: level.images.map((imageConfig) => {
       const size = requireTaskImage(taskConfig, imageConfig.id)
@@ -307,13 +381,18 @@ function summarizeTaskProgress(
     currentLevel: currentLevelNumber,
     currentLevelId: currentLevel.id,
     currentLevelStatus: levelProgress.status,
+    currentLevelDisplayStatus: getCurrentLevelDisplayStatus(levelProgress),
     currentLevelInitialized: Boolean(levelProgress.initializedAt),
     promptsUsed: levelProgress.promptsUsed,
     promptsLimit: currentLevel.maxPromptsPerTask,
+    checkAttemptsUsed: levelProgress.checkAttemptsUsed ?? 0,
+    checkAttemptsLimit: currentLevel.maxCheckAttempts,
+    checkingState: levelProgress.checkingState ?? "idle",
     maxLevel: taskConfig.maxLevel,
     isCompleted:
       levelProgress.status === "completed" && currentLevelNumber === taskConfig.maxLevel,
     hasNextLevel: currentLevelNumber < taskConfig.maxLevel,
+    completionReason: levelProgress.completionReason ?? null,
   }
 }
 
@@ -374,11 +453,18 @@ export async function getTaskListItemsWithProgress(): Promise<TaskListItem[]> {
     readUserProgressStore(),
     readTaskCatalog(),
   ])
+  let changed = false
 
-  const result = tasks.map((task) => {
+  const result = await Promise.all(tasks.map(async (task) => {
     const taskProgress = ensureTaskProgress(store, task.id, task.config.maxLevel)
+    const promptHistory = await readPromptHistory(task.id)
+    changed = reconcileTaskProgressWithHistory(levels, task.config, taskProgress, promptHistory) || changed
     return buildTaskListItem(task, levels, taskProgress)
-  })
+  }))
+
+  if (changed) {
+    await writeUserProgressStore(store)
+  }
 
   return result
 }
@@ -389,11 +475,18 @@ export async function getLevelOverview(levelId?: string | null): Promise<LevelOv
     readUserProgressStore(),
     readTaskCatalog(),
   ])
+  let changed = false
 
-  const taskSnapshots = tasks.map((task) => {
+  const taskSnapshots = await Promise.all(tasks.map(async (task) => {
     const taskProgress = ensureTaskProgress(store, task.id, task.config.maxLevel)
+    const promptHistory = await readPromptHistory(task.id)
+    changed = reconcileTaskProgressWithHistory(levels, task.config, taskProgress, promptHistory) || changed
     return { task, taskProgress }
-  })
+  }))
+
+  if (changed) {
+    await writeUserProgressStore(store)
+  }
 
   const fallbackLevel =
     levels.find((level) =>
@@ -475,7 +568,7 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
       taskId,
       currentLevelNumber,
       null,
-      currentLevelProgress.completionReason ?? "prompt_limit",
+      "check_passed",
     )
   }
 
@@ -504,7 +597,7 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
     taskId,
     previousLevelNumber,
     currentLevelNumber,
-    previousLevelProgress.completionReason ?? "prompt_limit",
+    "check_passed",
   )
 }
 
@@ -518,17 +611,26 @@ export async function getTaskLabContext(taskItem: TaskListItem) {
   return buildTaskLabContext(taskItem.id, level, taskConfig)
 }
 
-function buildTransition(
+async function buildTransition(
   levels: LevelConfig[],
   taskId: string,
   fromLevelNumber: number,
   toLevelNumber: number | null,
   reason: CompletionReason,
-): TaskTransition {
+): Promise<TaskTransition> {
+  const fromLevel = requireLevel(levels, fromLevelNumber)
+  const toLevel = toLevelNumber === null ? null : requireLevel(levels, toLevelNumber)
+  const [fromTaskTip, toTaskTip] = await Promise.all([
+    readTaskLevelTip(taskId, fromLevel.id),
+    toLevel ? readTaskLevelTip(taskId, toLevel.id) : Promise.resolve(null),
+  ])
+
   return {
     taskId,
-    fromLevel: requireLevel(levels, fromLevelNumber),
-    toLevel: toLevelNumber === null ? null : requireLevel(levels, toLevelNumber),
+    fromLevel,
+    toLevel,
+    fromTaskTip,
+    toTaskTip,
     reason,
   }
 }
@@ -603,7 +705,7 @@ export async function registerPromptForCurrentLevel(taskId: string): Promise<Tas
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
   reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
   const currentLevelNumber = taskProgress.currentLevel
-  const currentLevel = requireLevel(levels, currentLevelNumber)
+  requireLevel(levels, currentLevelNumber)
   const levelProgress = taskProgress.levels[String(currentLevelNumber)]
 
   if (!levelProgress.initializedAt) {
@@ -622,35 +724,18 @@ export async function registerPromptForCurrentLevel(taskId: string): Promise<Tas
 
   levelProgress.status = "in_progress"
   levelProgress.promptsUsed += 1
+  levelProgress.checkingState = "idle"
   taskProgress.updatedAt = new Date().toISOString()
-
-  let transition: TaskTransition | null = null
-
-  if (levelProgress.promptsUsed >= currentLevel.maxPromptsPerTask) {
-    levelProgress.status = "completed"
-    levelProgress.completedAt = new Date().toISOString()
-    levelProgress.completionReason = "prompt_limit"
-
-    if (currentLevelNumber < taskConfig.maxLevel) {
-      taskProgress.currentLevel = currentLevelNumber + 1
-      transition = buildTransition(levels, taskId, currentLevelNumber, currentLevelNumber + 1, "prompt_limit")
-    } else {
-      transition = buildTransition(levels, taskId, currentLevelNumber, null, "prompt_limit")
-    }
-  }
 
   await writeUserProgressStore(store)
 
   return {
     summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
-    transition,
+    transition: null,
   }
 }
 
-export async function completeCurrentTaskLevel(
-  taskId: string,
-  reason: CompletionReason,
-): Promise<TaskProgressMutationResult> {
+export async function markCurrentTaskLevelCheckTechnicalError(taskId: string) {
   const [levels, store, taskConfig, promptHistory] = await Promise.all([
     getLevelsCatalog(),
     readUserProgressStore(),
@@ -661,31 +746,45 @@ export async function completeCurrentTaskLevel(
   const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
   reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
   const currentLevelNumber = taskProgress.currentLevel
+  const levelProgress = taskProgress.levels[String(currentLevelNumber)]
+
+  levelProgress.checkingState = "awaiting_retry"
+  taskProgress.updatedAt = new Date().toISOString()
+
+  await writeUserProgressStore(store)
+
+  return summarizeTaskProgress(levels, taskConfig, taskProgress)
+}
+
+export async function passCurrentTaskLevelCheck(taskId: string): Promise<TaskCheckMutationResult> {
+  const [levels, store, taskConfig, promptHistory] = await Promise.all([
+    getLevelsCatalog(),
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+    readPromptHistory(taskId),
+  ])
+
+  const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
+  reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
+
+  const currentLevelNumber = taskProgress.currentLevel
   const currentLevel = requireLevel(levels, currentLevelNumber)
   const levelProgress = taskProgress.levels[String(currentLevelNumber)]
 
-  if (levelProgress.status === "completed" && currentLevelNumber === taskConfig.maxLevel) {
-    return {
-      summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
-      transition: buildTransition(levels, taskId, currentLevelNumber, null, reason),
-    }
-  }
-
+  levelProgress.checkAttemptsUsed = (levelProgress.checkAttemptsUsed ?? 0) + 1
+  levelProgress.checkingState = "idle"
   levelProgress.status = "completed"
-  if (reason === "manual") {
-    levelProgress.promptsUsed = currentLevel.maxPromptsPerTask
-  }
   levelProgress.completedAt = new Date().toISOString()
-  levelProgress.completionReason = reason
+  levelProgress.completionReason = "check_passed"
   taskProgress.updatedAt = new Date().toISOString()
 
   let transition: TaskTransition | null
 
   if (currentLevelNumber < taskConfig.maxLevel) {
     taskProgress.currentLevel = currentLevelNumber + 1
-    transition = buildTransition(levels, taskId, currentLevelNumber, currentLevelNumber + 1, reason)
+    transition = await buildTransition(levels, taskId, currentLevelNumber, currentLevelNumber + 1, "check_passed")
   } else {
-    transition = buildTransition(levels, taskId, currentLevelNumber, null, reason)
+    transition = await buildTransition(levels, taskId, currentLevelNumber, null, "check_passed")
   }
 
   await writeUserProgressStore(store)
@@ -693,10 +792,67 @@ export async function completeCurrentTaskLevel(
   return {
     summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
     transition,
+    attemptNumber: levelProgress.checkAttemptsUsed,
+    maxCheckAttempts: currentLevel.maxCheckAttempts,
   }
 }
 
-export async function resetTask(taskId: string) {
+export async function failCurrentTaskLevelCheck(taskId: string): Promise<FailedTaskCheckMutationResult> {
+  const [levels, store, taskConfig, promptHistory] = await Promise.all([
+    getLevelsCatalog(),
+    readUserProgressStore(),
+    readTaskConfig(taskId),
+    readPromptHistory(taskId),
+  ])
+
+  const taskProgress = ensureTaskProgress(store, taskId, taskConfig.maxLevel)
+  reconcileTaskProgressWithHistory(levels, taskConfig, taskProgress, promptHistory)
+
+  const currentLevelNumber = taskProgress.currentLevel
+  const currentLevel = requireLevel(levels, currentLevelNumber)
+  const levelProgress = taskProgress.levels[String(currentLevelNumber)]
+
+  levelProgress.checkAttemptsUsed = (levelProgress.checkAttemptsUsed ?? 0) + 1
+  levelProgress.checkingState = "idle"
+  taskProgress.updatedAt = new Date().toISOString()
+
+  const attemptNumber = levelProgress.checkAttemptsUsed
+  const exhausted = attemptNumber >= currentLevel.maxCheckAttempts
+
+  if (exhausted) {
+    await writeUserProgressStore(store)
+    await resetTask(taskId, { preserveCheckResult: true })
+    return {
+      summary: null,
+      attemptNumber,
+      maxCheckAttempts: currentLevel.maxCheckAttempts,
+      reset: true,
+    }
+  }
+
+  await writeUserProgressStore(store)
+
+  return {
+    summary: summarizeTaskProgress(levels, taskConfig, taskProgress),
+    attemptNumber,
+    maxCheckAttempts: currentLevel.maxCheckAttempts,
+    reset: false,
+  }
+}
+
+export async function getTaskCheckResult(taskId: string) {
+  return readTaskCheckResult(taskId)
+}
+
+export async function saveTaskCheckResult(result: TaskCheckResult) {
+  await writeTaskCheckResult(result)
+}
+
+export async function clearTaskCheckResult(taskId: string) {
+  await removeTaskCheckResult(taskId)
+}
+
+export async function resetTask(taskId: string, options?: { preserveCheckResult?: boolean }) {
   const store = await readUserProgressStore()
 
   await removeUserTaskDir(taskId)
@@ -704,5 +860,9 @@ export async function resetTask(taskId: string) {
   if (store.tasks[taskId]) {
     delete store.tasks[taskId]
     await writeUserProgressStore(store)
+  }
+
+  if (!options?.preserveCheckResult) {
+    await removeTaskCheckResult(taskId)
   }
 }

@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises"
 
 import {
   appendPromptHistory,
+  clearTaskCheckResult,
   cleanupForbiddenWorkbenchFiles,
   filterWorkbenchPayloadByAllowlist,
   getLevelForTaskItem,
@@ -140,9 +141,6 @@ ${levelSpecifyPrompt}
 ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
 ${labContext.commonExplanation}
 
-УНИКАЛЬНОЕ ПОЯСНЕНИЕ ЭТОЙ ЗАДАЧИ:
-${labContext.taskExplanation}
-
 ## Разрешённые файлы
 ${allowedFilesText}
 
@@ -242,6 +240,8 @@ ${selectedFilesText}
       deletedAfterIterationFileIds: cleanupAfterIteration.deletedFileIds,
     })
   }
+
+  await clearTaskCheckResult(taskId)
 
   const progressUpdate = await registerPromptForCurrentLevel(taskId)
   const nextTaskItem = await getTaskListItemById(taskId)

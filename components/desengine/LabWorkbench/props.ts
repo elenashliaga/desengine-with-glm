@@ -1,5 +1,5 @@
 import { BaseProps } from "../Base";
-import type { TaskData, TaskListItem, TaskTransition } from "@/lib/types";
+import type { TaskCheckResult, TaskData, TaskListItem, TaskTransition } from "@/lib/types";
 
 type LabWorkbenchProps = BaseProps & {
     taskItem: TaskListItem;
@@ -9,6 +9,7 @@ type LabWorkbenchProps = BaseProps & {
     started: boolean;
     onStartedChange: (next: boolean) => void;
     onBackToLevelList: () => void;
+    onCheckResult: (result: TaskCheckResult, transition: TaskTransition | null, nextTaskItem: TaskListItem | null, nextTaskData: TaskData, nextStarted: boolean) => void;
     onTransition: (transition: TaskTransition | null) => void;
     activeScreen: string;
     onScreenChange: (screen: string) => void;

@@ -7,6 +7,7 @@ import { appConfig } from "./config.server"
 import type { UserProgressStore } from "./types"
 
 const promptHistoryFileName = "prompt-history.json"
+const taskCheckResultFileName = "check-result.json"
 
 function defaultUserProgressStore(): UserProgressStore {
   return { tasks: {} }
@@ -41,6 +42,10 @@ export function getUserTasksRoot() {
   return path.join(appConfig.userRoot, "tasks")
 }
 
+export function getUserCheckResultsRoot() {
+  return path.join(appConfig.userRoot, "check-results")
+}
+
 export function getUserTaskDir(taskId: string) {
   return path.join(getUserTasksRoot(), taskId)
 }
@@ -49,12 +54,20 @@ export function getUserTaskFilePath(taskId: string, fileName: string) {
   return path.join(getUserTaskDir(taskId), fileName)
 }
 
+export function getTaskCheckResultPath(taskId: string) {
+  return path.join(getUserCheckResultsRoot(), `${taskId}.json`)
+}
+
 export async function ensureUserRoot() {
   await ensureDir(appConfig.userRoot)
 }
 
 export async function ensureUserTaskDir(taskId: string) {
   await ensureDir(getUserTaskDir(taskId))
+}
+
+export async function ensureUserCheckResultsDir() {
+  await ensureDir(getUserCheckResultsRoot())
 }
 
 export async function ensureUserProgressStorage() {
@@ -74,4 +87,10 @@ export async function removeUserTaskDir(taskId: string) {
   }
 }
 
-export { defaultUserProgressStore, ensureParentDir, pathExists, promptHistoryFileName }
+export async function removeTaskCheckResult(taskId: string) {
+  await rm(getTaskCheckResultPath(taskId), {
+    force: true,
+  })
+}
+
+export { defaultUserProgressStore, ensureParentDir, pathExists, promptHistoryFileName, taskCheckResultFileName }

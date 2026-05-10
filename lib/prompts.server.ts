@@ -34,6 +34,16 @@ export async function readLevelStartPrompt(levelId: string) {
   }
 }
 
+export async function readLevelCheckPrompt(levelId: string) {
+  const filePath = path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "check.md")
+
+  try {
+    return await readFile(filePath, "utf-8")
+  } catch {
+    throw new Error(`Промпт проверки уровня не найден: ${levelId}`)
+  }
+}
+
 export async function readLevelCommonExplanation(levelId: string, fallbackText?: string) {
   const filePath = path.join(appConfig.levelsCatalogRoot, levelId, "overview.md")
 
