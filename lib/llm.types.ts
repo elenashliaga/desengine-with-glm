@@ -1,4 +1,4 @@
-export type LlmProvider = "openai"
+export type LlmProvider = "openai" | "deepseek"
 
 export type LlmUsageMetrics =
   | {
@@ -23,9 +23,13 @@ export type LlmStatus = {
   provider: LlmProvider
   label: string
   ready: boolean
+  endpoint: string
   config: {
+    activeProvider: LlmProvider
     model: string | null
-    hasOpenAIKey: boolean
+    hasRequiredKey: boolean
+    missingEnvVars: string[]
+    configuredProviders: LlmProvider[]
   }
   availability: {
     ok: boolean

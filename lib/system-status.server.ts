@@ -15,8 +15,8 @@ type SystemStatusTone = "ready" | "warning" | "blocked"
 type SystemStatusItem = {
   id:
     | "local-config-file"
-    | "openai-config"
-    | "openai-network"
+    | "llm-config"
+    | "llm-network"
     | "allowlist-config"
     | "allowlist-network"
     | "onboarding-config"
@@ -222,57 +222,69 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   }
 
   items.push({
-    id: "openai-config",
-    label: "OpenAI API",
-    tone: llmStatus.config.hasOpenAIKey ? "ready" : "blocked",
-    summary: llmStatus.config.hasOpenAIKey ? "Ключ OpenAI задан" : "Ключ OpenAI не задан",
+    id: "llm-config",
+    label: `${llmStatus.label} API`,
+    tone: llmStatus.ready ? "ready" : "blocked",
+    summary: llmStatus.ready
+      ? `${llmStatus.label}: конфиг готов`
+      : `${llmStatus.label}: конфиг неполный`,
     detail: llmStatus.availability.message,
   })
 
-  if (!llmStatus.config.hasOpenAIKey) {
+  if (!llmStatus.ready) {
+    const missingText =
+      llmStatus.config.missingEnvVars.length > 0
+        ? ` Не хватает: ${llmStatus.config.missingEnvVars.join(", ")}.`
+        : ""
     instructions.push({
-      id: "openai-config",
+      id: "llm-config",
       actor: "Администратор",
-      text: "Добавьте `OPENAI_API_KEY` в `desengine.config.txt`, чтобы LLM-сценарии лаборатории стали рабочими.",
+      text: `Проверьте настройки активного LLM-провайдера ${llmStatus.config.activeProvider} в desengine.config.txt.${missingText}`,
     })
   }
 
-  if (llmStatus.config.hasOpenAIKey) {
-    const openAiNetwork = await fetchReachability("https://api.openai.com/v1/models", {
+  if (llmStatus.config.hasRequiredKey) {
+    const networkUrl =
+      llmStatus.provider === "deepseek"
+        ? `${llmStatus.endpoint}/models`
+        : `${llmStatus.endpoint}/models`
+    const authToken =
+      llmStatus.provider === "deepseek" ? process.env.DEEPSEEK_API_KEY : process.env.OPENAI_API_KEY
+    const providerNetwork = await fetchReachability(networkUrl, {
       headers: {
-        authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        authorization: `Bearer ${authToken}`,
       },
     })
-    const openAiSummary = openAiNetwork.status
-      ? summarizeHttpStatus("OpenAI API", openAiNetwork.status)
+    const providerSummary = providerNetwork.status
+      ? summarizeHttpStatus(`${llmStatus.label} API`, providerNetwork.status)
       : {
           tone: "warning" as const,
-          summary: "OpenAI API недоступен по сети",
-          detail: `Не удалось обратиться к OpenAI API: ${openAiNetwork.message}.`,
+          summary: `${llmStatus.label} API недоступен по сети`,
+          detail: `Не удалось обратиться к ${llmStatus.label} API: ${providerNetwork.message}.`,
         }
 
     items.push({
-      id: "openai-network",
-      label: "Сеть до OpenAI",
-      tone: openAiSummary.tone,
-      summary: openAiSummary.summary,
-      detail: openAiSummary.detail,
+      id: "llm-network",
+      label: `Сеть до ${llmStatus.label}`,
+      tone: providerSummary.tone,
+      summary: providerSummary.summary,
+      detail: providerSummary.detail,
     })
 
-    if (!openAiNetwork.status) {
+    if (!providerNetwork.status) {
       instructions.push({
-        id: "openai-network",
+        id: "llm-network",
         actor: "Администратор",
-        text: "Проверьте сетевой доступ до OpenAI API с этой машины и повторите запуск.",
+        text: `Проверьте сетевой доступ до ${llmStatus.label} API с этой машины и повторите запуск.`,
       })
     }
   } else {
     items.push({
-      id: "openai-network",
-      label: "Сеть до OpenAI",
+      id: "llm-network",
+      label: `Сеть до ${llmStatus.label}`,
       tone: "blocked",
       summary: "Проверка не выполнялась",
-      detail: "Сначала нужно задать `OPENAI_API_KEY`, затем можно проверять доступность OpenAI API.",
+      detail: `Сначала нужно задать ключ активного провайдера ${llmStatus.config.activeProvider}, затем можно проверять доступность ${llmStatus.label} API.`,
     })
   }
 

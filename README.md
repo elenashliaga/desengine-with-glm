@@ -49,5 +49,6 @@ npm run admin:tasks:import -- --variants-root=... --base-root=...
 - Локальная установка: [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1)
 - Админские утилиты: [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1)
 - Настройка OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
+- Настройка DeepSeek: [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1)
 - Настройка allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
 - Platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)

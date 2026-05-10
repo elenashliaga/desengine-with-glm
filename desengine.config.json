@@ -8,9 +8,6 @@
   "userProgressFile": "user/user-progress.json",
   "taskConfigFile": "config.json",
   "taskImageFile": "image.png",
-  "llm": {
-    "provider": "openai"
-  },
   "taskWorkbenchFiles": [
     { "id": "image", "fileName": "image.png", "title": "", "edit": false },
     { "id": "component", "fileName": "Component.tsx", "title": "Структура", "edit": true },

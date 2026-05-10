@@ -58,18 +58,23 @@ npm install
 Что нужно проверить в файле:
 
 ```env
+DESENGINE_LLM_PROVIDER=openai
 OPENAI_API_KEY=...
 DESENGINE_OPENAI_MODEL=gpt-4.1-nano
+DEEPSEEK_API_KEY=
+DESENGINE_DEEPSEEK_MODEL=deepseek-v4-flash
+DESENGINE_DEEPSEEK_BASE_URL=https://api.deepseek.com
 DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
 DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 ```
 
-В шаблоне уже оставлены типовые значения для модели, allowlist-настроек и URL onboarding-репозитория, поэтому обычно вручную меняется только `OPENAI_API_KEY`, а адрес onboarding-репозитория заменяется на реальный при подготовке установки.
+В шаблоне уже оставлены типовые значения для моделей, allowlist-настроек и URL onboarding-репозитория. Обычно вручную меняются `DESENGINE_LLM_PROVIDER`, ключ выбранного провайдера и реальный адрес onboarding-репозитория.
 
 Подробности:
 
 - OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
+- DeepSeek: [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1)
 - allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
 
 ## 4. Запустите приложение

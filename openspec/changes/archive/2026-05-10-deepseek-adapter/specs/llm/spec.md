@@ -8,9 +8,24 @@
 - OpenAI по ключу;
 - DeepSeek.
 
+Активный провайдер SHALL выбираться через локальный env-конфиг запуска (`desengine.config.txt` или эквивалентные env vars процесса), а не через `desengine.config.json`.
+
 #### Scenario: Конфигурация выбрала DeepSeek
 - **WHEN** приложение настроено на режим DeepSeek
 - **THEN** система отправляет LLM-запросы через адаптер DeepSeek
+
+#### Scenario: Оператор переключает активный провайдер
+- **WHEN** оператор меняет `DESENGINE_LLM_PROVIDER` и provider-specific модель в `desengine.config.txt`
+- **THEN** и `start`, и `iterate` используют новый активный провайдер без изменений в коде
+
+### Requirement: Конфиги нескольких провайдеров не конфликтуют
+
+Система SHALL позволять хранить настройки нескольких LLM-провайдеров в одном `desengine.config.txt`, если активный провайдер выбран явно.
+
+#### Scenario: В конфиге лежат OpenAI и DeepSeek
+- **WHEN** в `desengine.config.txt` присутствуют ключи и модели для OpenAI и DeepSeek одновременно
+- **THEN** система использует только параметры активного провайдера из `DESENGINE_LLM_PROVIDER`
+- **AND** наличие неактивных provider-specific переменных не ломает запуск
 
 ### Requirement: Ошибки LLM-провайдера объясняются пользователю
 

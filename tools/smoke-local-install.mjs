@@ -125,12 +125,50 @@ async function main() {
 
   checks.push(
     createCheck(
-      "openai-key",
-      Boolean(env.OPENAI_API_KEY),
-      env.OPENAI_API_KEY ? "OPENAI_API_KEY задан" : "OPENAI_API_KEY не задан",
-      env.OPENAI_API_KEY
+      "llm-provider",
+      Boolean(env.DESENGINE_LLM_PROVIDER || env.OPENAI_API_KEY),
+      env.DESENGINE_LLM_PROVIDER
+        ? `Активный LLM-провайдер: ${env.DESENGINE_LLM_PROVIDER}`
+        : "Активный LLM-провайдер не задан",
+      env.DESENGINE_LLM_PROVIDER
+        ? "Проверьте, что для этого провайдера заданы его ключ и модель."
+        : "Задайте `DESENGINE_LLM_PROVIDER` в `desengine.config.txt`. Для обратной совместимости старый OpenAI-конфиг всё ещё может подхватиться по умолчанию.",
+    ),
+  )
+
+  const activeProvider = (env.DESENGINE_LLM_PROVIDER || "openai").trim().toLowerCase()
+  const hasActiveProviderCredentials =
+    activeProvider === "deepseek"
+      ? Boolean(env.DEEPSEEK_API_KEY)
+      : Boolean(env.OPENAI_API_KEY)
+  const hasActiveProviderModel =
+    activeProvider === "deepseek"
+      ? Boolean(env.DESENGINE_DEEPSEEK_MODEL)
+      : Boolean(env.DESENGINE_OPENAI_MODEL)
+
+  checks.push(
+    createCheck(
+      "llm-credentials",
+      hasActiveProviderCredentials,
+      hasActiveProviderCredentials
+        ? `Ключ активного провайдера ${activeProvider} задан`
+        : `Ключ активного провайдера ${activeProvider} не задан`,
+      hasActiveProviderCredentials
         ? "LLM-конфигурация может работать после сетевой проверки."
-        : "Без `OPENAI_API_KEY` откроется только страница состояния, а LLM-сценарии останутся недоступны.",
+        : `Без ключа для активного провайдера ${activeProvider} откроется только страница состояния, а LLM-сценарии останутся недоступны.`,
+    ),
+  )
+
+  checks.push(
+    createCheck(
+      "llm-model",
+      hasActiveProviderModel,
+      hasActiveProviderModel
+        ? `Модель активного провайдера ${activeProvider} задана`
+        : `Модель активного провайдера ${activeProvider} не задана`,
+      hasActiveProviderModel
+        ? "Обе точки входа `start` и `iterate` смогут использовать одну и ту же модель."
+        : `Задайте модель для активного провайдера ${activeProvider} в desengine.config.txt.`,
     ),
   )
 

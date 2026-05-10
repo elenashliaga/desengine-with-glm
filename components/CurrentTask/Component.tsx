@@ -1,1 +1,0 @@
-../../tasks/innovatika-segment-tariff-summary/Component.tsx

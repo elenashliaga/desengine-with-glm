@@ -13,3 +13,15 @@
 Пока пользователь не сказал иначе, любые новые ветки нужно создавать от `main`.
 
 Без явного отдельного распоряжения пользователя нельзя менять технический стек, критичный для установки и запуска проекта. Это ограничение распространяется в том числе на версии `Node.js`, сборщик проекта, `Turbopack` и прочие инфраструктурные и install-critical части. Такие изменения допустимы только если пользователь прямо сказал, что именно можно менять и как именно.
+
+- All custom UI components live in /components/desengine
+- Use TypeScript strictly
+- Prefer shadcn/ui primitives
+- Separate rendering from playground logic
+- Do not inline styles
+- Keep educational file split:
+  Component.tsx
+  styles.ts
+  mock.ts
+  props.ts
+  variants.ts

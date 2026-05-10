@@ -1,1 +1,0 @@
-../../tasks/innovatika-segment-tariff-summary/styles.ts

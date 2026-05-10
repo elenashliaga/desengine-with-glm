@@ -21,8 +21,28 @@ type LlmStructuredResponse = {
   metrics: LlmUsageMetrics
 }
 
+type ProviderRuntimeConfig = {
+  provider: LlmProvider
+  model: string
+  apiKey: string
+  baseUrl: string
+}
+
+type LlmAdapter = {
+  provider: LlmProvider
+  label: string
+  envVars: {
+    apiKey: string
+    model: string
+    baseUrl?: string
+  }
+  defaultBaseUrl: string
+  buildConfig: () => ProviderRuntimeConfig
+  call: (request: LlmStructuredRequest, config: ProviderRuntimeConfig) => Promise<LlmStructuredResponse>
+}
+
 class LlmError extends Error {
-  kind: "config" | "network" | "timeout" | "provider" | "invalid_response"
+  kind: "config" | "auth" | "network" | "timeout" | "provider" | "invalid_response"
 
   constructor(kind: LlmError["kind"], message: string) {
     super(message)
@@ -31,7 +51,20 @@ class LlmError extends Error {
 }
 
 function getLlmProvider(): LlmProvider {
-  return "openai"
+  const rawProvider = process.env.DESENGINE_LLM_PROVIDER?.trim().toLowerCase()
+
+  if (!rawProvider) {
+    return "openai"
+  }
+
+  if (rawProvider === "openai" || rawProvider === "deepseek") {
+    return rawProvider
+  }
+
+  throw new LlmError(
+    "config",
+    `Неподдерживаемый DESENGINE_LLM_PROVIDER: ${rawProvider}. Поддерживаются: openai, deepseek.`,
+  )
 }
 
 function getOpenAIModel(): string {
@@ -39,6 +72,16 @@ function getOpenAIModel(): string {
 
   if (!model) {
     throw new LlmError("config", "Для режима OpenAI не настроен DESENGINE_OPENAI_MODEL")
+  }
+
+  return model
+}
+
+function getDeepSeekModel(): string {
+  const model = process.env.DESENGINE_DEEPSEEK_MODEL?.trim()
+
+  if (!model) {
+    throw new LlmError("config", "Для режима DeepSeek не настроен DESENGINE_DEEPSEEK_MODEL")
   }
 
   return model
@@ -81,6 +124,32 @@ function getOutputTextFromOpenAI(data: unknown): string {
   throw new LlmError("invalid_response", "Провайдер вернул ответ без итогового текста")
 }
 
+function getOutputTextFromDeepSeek(data: unknown): string {
+  const choices =
+    data &&
+    typeof data === "object" &&
+    "choices" in data &&
+    Array.isArray(data.choices)
+      ? data.choices
+      : []
+
+  const firstChoice = choices[0]
+  const message =
+    firstChoice &&
+    typeof firstChoice === "object" &&
+    "message" in firstChoice &&
+    firstChoice.message &&
+    typeof firstChoice.message === "object"
+      ? (firstChoice.message as Record<string, unknown>)
+      : null
+
+  if (message && typeof message.content === "string" && message.content.trim()) {
+    return message.content
+  }
+
+  throw new LlmError("invalid_response", "DeepSeek вернул ответ без итогового текста")
+}
+
 function getOpenAIMetrics(data: unknown): LlmUsageMetrics {
   const usage =
     data &&
@@ -107,6 +176,32 @@ function getOpenAIMetrics(data: unknown): LlmUsageMetrics {
   }
 }
 
+function getDeepSeekMetrics(data: unknown): LlmUsageMetrics {
+  const usage =
+    data &&
+    typeof data === "object" &&
+    "usage" in data &&
+    data.usage &&
+    typeof data.usage === "object"
+      ? (data.usage as Record<string, unknown>)
+      : null
+
+  if (!usage) {
+    return {
+      status: "unavailable",
+      reason: "provider_did_not_return_metrics",
+    }
+  }
+
+  return {
+    status: "available",
+    inputTokens: typeof usage.prompt_tokens === "number" ? usage.prompt_tokens : null,
+    outputTokens: typeof usage.completion_tokens === "number" ? usage.completion_tokens : null,
+    totalTokens: typeof usage.total_tokens === "number" ? usage.total_tokens : null,
+    costUsd: null,
+  }
+}
+
 function mapFetchError(error: unknown, fallbackMessage: string): never {
   if (error instanceof LlmError) {
     throw error
@@ -119,20 +214,36 @@ function mapFetchError(error: unknown, fallbackMessage: string): never {
   throw new LlmError("network", fallbackMessage)
 }
 
-function ensureOpenAIConfig() {
-  if (!process.env.OPENAI_API_KEY) {
+function ensureOpenAIConfig(): ProviderRuntimeConfig {
+  if (!process.env.OPENAI_API_KEY?.trim()) {
     throw new LlmError("config", "Для режима OpenAI не настроен OPENAI_API_KEY")
   }
 
   return {
-    provider: "openai" as const,
+    provider: "openai",
     model: getOpenAIModel(),
     apiKey: process.env.OPENAI_API_KEY,
+    baseUrl: process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com/v1",
   }
 }
 
-async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
-  const config = ensureOpenAIConfig()
+function ensureDeepSeekConfig(): ProviderRuntimeConfig {
+  if (!process.env.DEEPSEEK_API_KEY?.trim()) {
+    throw new LlmError("config", "Для режима DeepSeek не настроен DEEPSEEK_API_KEY")
+  }
+
+  return {
+    provider: "deepseek",
+    model: getDeepSeekModel(),
+    apiKey: process.env.DEEPSEEK_API_KEY,
+    baseUrl: process.env.DESENGINE_DEEPSEEK_BASE_URL?.trim() || "https://api.deepseek.com",
+  }
+}
+
+async function callOpenAI(
+  request: LlmStructuredRequest,
+  config: ProviderRuntimeConfig,
+): Promise<LlmStructuredResponse> {
   const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
   const startedAt = Date.now()
 
@@ -154,7 +265,7 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
       schemaName: request.schemaName,
     })
 
-    res = await fetch("https://api.openai.com/v1/responses", {
+    res = await fetch(`${config.baseUrl}/responses`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${config.apiKey}`,
@@ -200,6 +311,7 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
       typeof data.error.message === "string"
         ? data.error.message
         : "Ошибка OpenAI API"
+    const errorKind = res.status === 401 || res.status === 403 ? "auth" : "provider"
     console.error("[desengine][openai] provider_error", {
       target: request.target ?? "default",
       model: config.model,
@@ -207,7 +319,7 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
       durationMs: Date.now() - startedAt,
       message: providerMessage,
     })
-    throw new LlmError("provider", providerMessage)
+    throw new LlmError(errorKind, providerMessage)
   }
 
   console.log("[desengine][openai] success", {
@@ -225,8 +337,161 @@ async function callOpenAI(request: LlmStructuredRequest): Promise<LlmStructuredR
   }
 }
 
+async function callDeepSeek(
+  request: LlmStructuredRequest,
+  config: ProviderRuntimeConfig,
+): Promise<LlmStructuredResponse> {
+  const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
+  const startedAt = Date.now()
+  const instruction =
+    images.length > 0
+      ? `${request.instruction}
+
+[СИСТЕМНОЕ ОГРАНИЧЕНИЕ ПРОВАЙДЕРА]
+Изображения текущего уровня в этом вызове недоступны. Не придумывай конкретные визуальные детали, которых нет в текстовом контексте.`
+      : request.instruction
+
+  let res: Response
+  try {
+    console.log("[desengine][deepseek] start", {
+      target: request.target ?? "default",
+      model: config.model,
+      imageCount: images.length,
+      instructionLength: instruction.length,
+      schemaName: request.schemaName,
+    })
+
+    if (images.length > 0) {
+      console.warn("[desengine][deepseek] images_omitted", {
+        target: request.target ?? "default",
+        model: config.model,
+        imageCount: images.length,
+      })
+    }
+
+    res = await fetch(`${config.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${config.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Верни только валидный JSON-объект без markdown и без пояснений. Строго соблюдай ограничения из запроса пользователя.",
+          },
+          {
+            role: "user",
+            content: instruction,
+          },
+        ],
+        response_format: {
+          type: "json_object",
+        },
+        stream: false,
+      }),
+    })
+  } catch (error) {
+    console.error("[desengine][deepseek] network_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      durationMs: Date.now() - startedAt,
+      message: error instanceof Error ? error.message : String(error),
+    })
+    mapFetchError(error, "Не удалось подключиться к DeepSeek API")
+  }
+
+  const data = await res.json().catch(() => null)
+  if (!res.ok) {
+    const providerMessage =
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      data.error &&
+      typeof data.error === "object" &&
+      "message" in data.error &&
+      typeof data.error.message === "string"
+        ? data.error.message
+        : "Ошибка DeepSeek API"
+    const errorKind = res.status === 401 || res.status === 403 ? "auth" : "provider"
+    console.error("[desengine][deepseek] provider_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      status: res.status,
+      durationMs: Date.now() - startedAt,
+      message: providerMessage,
+    })
+    throw new LlmError(errorKind, providerMessage)
+  }
+
+  console.log("[desengine][deepseek] success", {
+    target: request.target ?? "default",
+    model: config.model,
+    status: res.status,
+    durationMs: Date.now() - startedAt,
+  })
+
+  return {
+    provider: "deepseek",
+    model: config.model,
+    outputText: getOutputTextFromDeepSeek(data),
+    metrics: getDeepSeekMetrics(data),
+  }
+}
+
+const ADAPTERS: Record<LlmProvider, LlmAdapter> = {
+  openai: {
+    provider: "openai",
+    label: "OpenAI",
+    envVars: {
+      apiKey: "OPENAI_API_KEY",
+      model: "DESENGINE_OPENAI_MODEL",
+      baseUrl: "OPENAI_BASE_URL",
+    },
+    defaultBaseUrl: "https://api.openai.com/v1",
+    buildConfig: ensureOpenAIConfig,
+    call: callOpenAI,
+  },
+  deepseek: {
+    provider: "deepseek",
+    label: "DeepSeek",
+    envVars: {
+      apiKey: "DEEPSEEK_API_KEY",
+      model: "DESENGINE_DEEPSEEK_MODEL",
+      baseUrl: "DESENGINE_DEEPSEEK_BASE_URL",
+    },
+    defaultBaseUrl: "https://api.deepseek.com",
+    buildConfig: ensureDeepSeekConfig,
+    call: callDeepSeek,
+  },
+}
+
+function getActiveAdapter(): LlmAdapter {
+  return ADAPTERS[getLlmProvider()]
+}
+
+function listConfiguredProviders(): LlmProvider[] {
+  const configured: LlmProvider[] = []
+
+  if (process.env.OPENAI_API_KEY?.trim() || process.env.DESENGINE_OPENAI_MODEL?.trim()) {
+    configured.push("openai")
+  }
+
+  if (process.env.DEEPSEEK_API_KEY?.trim() || process.env.DESENGINE_DEEPSEEK_MODEL?.trim()) {
+    configured.push("deepseek")
+  }
+
+  return configured
+}
+
 export async function runStructuredLlmRequest(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
-  return callOpenAI(request)
+  const adapter = getActiveAdapter()
+  const config = adapter.buildConfig()
+
+  return adapter.call(request, config)
 }
 
 export function toLlmErrorResponse(error: unknown) {
@@ -240,11 +505,9 @@ export function toLlmErrorResponse(error: unknown) {
       ? 400
       : llmError.kind === "timeout"
         ? 504
-        : llmError.kind === "network"
+        : llmError.kind === "auth" || llmError.kind === "network" || llmError.kind === "invalid_response"
           ? 502
-          : llmError.kind === "invalid_response"
-            ? 502
-            : 500
+          : 500
 
   return {
     status,
@@ -257,34 +520,72 @@ export function toLlmErrorResponse(error: unknown) {
 }
 
 export async function getLlmStatus(): Promise<LlmStatus> {
-  const provider = getLlmProvider()
+  let adapter: LlmAdapter
 
   try {
-    const config = ensureOpenAIConfig()
+    adapter = getActiveAdapter()
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Не удалось определить активный LLM-провайдер"
+
     return {
-      provider,
-      label: "OpenAI",
-      ready: true,
+      provider: "openai",
+      label: "LLM",
+      ready: false,
+      endpoint: "",
       config: {
+        activeProvider: "openai",
+        model: null,
+        hasRequiredKey: false,
+        missingEnvVars: ["DESENGINE_LLM_PROVIDER"],
+        configuredProviders: listConfiguredProviders(),
+      },
+      availability: {
+        ok: false,
+        message,
+      },
+    }
+  }
+
+  const configuredProviders = listConfiguredProviders()
+
+  try {
+    const config = adapter.buildConfig()
+    return {
+      provider: adapter.provider,
+      label: adapter.label,
+      ready: true,
+      endpoint: config.baseUrl,
+      config: {
+        activeProvider: adapter.provider,
         model: config.model,
-        hasOpenAIKey: true,
+        hasRequiredKey: true,
+        missingEnvVars: [],
+        configuredProviders,
       },
       availability: {
         ok: true,
-        message: "OpenAI API настроен",
+        message: `${adapter.label} настроен`,
       },
     }
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Конфигурация OpenAI некорректна"
-    const configuredModel = process.env.DESENGINE_OPENAI_MODEL?.trim() || null
+    const message = error instanceof Error ? error.message : `Конфигурация ${adapter.label} некорректна`
+    const missingEnvVars = [
+      process.env[adapter.envVars.model]?.trim() ? null : adapter.envVars.model,
+      process.env[adapter.envVars.apiKey]?.trim() ? null : adapter.envVars.apiKey,
+    ].filter((value): value is string => Boolean(value))
 
     return {
-      provider,
-      label: "OpenAI",
+      provider: adapter.provider,
+      label: adapter.label,
       ready: false,
+      endpoint: process.env[adapter.envVars.baseUrl ?? ""]?.trim() || adapter.defaultBaseUrl,
       config: {
-        model: configuredModel,
-        hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY),
+        activeProvider: adapter.provider,
+        model: process.env[adapter.envVars.model]?.trim() || null,
+        hasRequiredKey: Boolean(process.env[adapter.envVars.apiKey]?.trim()),
+        missingEnvVars,
+        configuredProviders,
       },
       availability: {
         ok: false,

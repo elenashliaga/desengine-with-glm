@@ -29,7 +29,7 @@ export default async function ConfigPage() {
               statusItems={status.items}
               instructions={status.instructions}
               title="Конфигурация и статусы подключения"
-              description="Здесь собрана текущая диагностика локального конфига, OpenAI API, allowlist, onboarding-контента и пользовательского допуска."
+              description="Здесь собрана текущая диагностика локального конфига, активного LLM-провайдера, allowlist, onboarding-контента и пользовательского допуска."
             />
           </div>
 

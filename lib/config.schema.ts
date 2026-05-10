@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-const LlmProviderSchema = z.enum(["openai"])
+const LlmProviderSchema = z.enum(["openai", "deepseek"])
 
 // Схема конфигурации приложения (desengine.config.json)
 const AppConfigSchema = z
@@ -17,9 +17,11 @@ const AppConfigSchema = z
     userProgressFile: z.string().optional(),
     taskConfigFile: z.string(),
     taskImageFile: z.string(),
-    llm: z.object({
-      provider: LlmProviderSchema,
-    }),
+    llm: z
+      .object({
+        provider: LlmProviderSchema.optional(),
+      })
+      .optional(),
     taskWorkbenchFiles: z.array(
       z.object({
         id: z.string(),
