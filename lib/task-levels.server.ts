@@ -338,8 +338,17 @@ async function readTaskLevelTip(taskId: string, levelId: string) {
 
   try {
     return (await readFile(filePath, "utf-8")).trim()
-  } catch {
-    return ""
+  } catch (error) {
+    if (
+      typeof error === "object"
+      && error !== null
+      && "code" in error
+      && error.code === "ENOENT"
+    ) {
+      return ""
+    }
+
+    throw error
   }
 }
 

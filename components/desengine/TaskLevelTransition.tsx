@@ -1,5 +1,6 @@
 "use client";
 
+import { MarkdownContent } from "@/components/desengine/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { OutRender } from "@/components/desengine/InOut/OutRender/OutRender";
 import type { TaskTransition } from "@/lib/types";
@@ -21,7 +22,7 @@ export function TaskLevelTransition({
 }: TaskLevelTransitionProps) {
   const reasonText = "успешная проверка результата уровня"
   const previousLevelTaskText = transition.fromTaskTip
-    || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить такой результат: ${transition.fromLevel.description}`
+    || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить результат и подготовить переход дальше.`
   const nextLevel = transition.toLevel
 
   if (!nextLevel) {
@@ -29,7 +30,7 @@ export function TaskLevelTransition({
   }
 
   const nextLevelTaskText = transition.toTaskTip
-    || `В задаче ${transition.taskId} на уровне ${nextLevel.number} следующий фокус такой: ${nextLevel.description}`
+    || `В задаче ${transition.taskId} на уровне ${nextLevel.number} начинается следующий шаг с новым дидактическим фокусом.`
 
   return (
     <section className="space-y-4 rounded-md border p-6">
@@ -49,14 +50,14 @@ export function TaskLevelTransition({
         <div className="space-y-4 rounded-md border p-4">
           <div className="space-y-2">
             <p className="font-medium">Что удалось на предыдущем уровне</p>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {previousLevelTaskText}
-            </p>
-            {transition.fromTaskTip ? (
-              <p className="text-sm text-muted-foreground/80 whitespace-pre-wrap">
-                Общий фокус уровня: {transition.fromLevel.description}
-              </p>
-            ) : null}
+            <MarkdownContent content={previousLevelTaskText} />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground/80">Общий фокус уровня</p>
+              <MarkdownContent
+                className="text-sm text-muted-foreground/80"
+                content={transition.fromLevel.description}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -74,14 +75,14 @@ export function TaskLevelTransition({
           <p className="font-medium">
             Что хочет следующий уровень
           </p>
-          <p className="text-muted-foreground whitespace-pre-wrap">
-            {nextLevelTaskText}
-          </p>
-          {transition.toTaskTip ? (
-            <p className="text-sm text-muted-foreground/80 whitespace-pre-wrap">
-              Общий фокус уровня: {nextLevel.description}
-            </p>
-          ) : null}
+          <MarkdownContent content={nextLevelTaskText} />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-muted-foreground/80">Общий фокус уровня</p>
+            <MarkdownContent
+              className="text-sm text-muted-foreground/80"
+              content={nextLevel.description}
+            />
+          </div>
         </div>
       </div>
 

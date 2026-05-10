@@ -35,6 +35,7 @@
 Система SHALL относить к onboarding-репозиторию:
 - `onboarding/levels/**`
 - `onboarding/tasks/**/config.json`
+- `onboarding/tasks/**/levels/**/tip.md`
 - `onboarding/tasks/**/base.png`
 - `onboarding/tasks/**/variants.png`
 - `onboarding/prompts/**`
@@ -44,7 +45,7 @@
 - **THEN** она рассматривает onboarding-репозиторий как источник этих данных
 
 #### Scenario: Система читает onboarding-описание задачи
-- **WHEN** системе нужны `config.json`, `base.png` или `variants.png` задачи
+- **WHEN** системе нужны `config.json`, `tip.md`, `base.png` или `variants.png` задачи
 - **THEN** она рассматривает onboarding-репозиторий как источник этих данных
 
 #### Scenario: Система читает onboarding prompt

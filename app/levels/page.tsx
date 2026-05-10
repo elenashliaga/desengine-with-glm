@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { MarkdownContent } from "@/components/desengine/MarkdownContent"
 import { LevelTaskCard } from "@/components/desengine/LevelTaskCard"
 import { requireAccessOrRedirect } from "@/lib/access-control.server"
 import { createConfigPath, createHelpPath, createLevelsPath, createTasksPath } from "@/lib/navigation"
@@ -51,9 +52,7 @@ export default async function LevelsPage() {
                   <p className="text-muted-foreground">
                     Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
                   </p>
-                  <p className="max-w-3xl text-muted-foreground">
-                    {overview.level.description}
-                  </p>
+                  <MarkdownContent className="max-w-3xl" content={overview.level.description} />
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">

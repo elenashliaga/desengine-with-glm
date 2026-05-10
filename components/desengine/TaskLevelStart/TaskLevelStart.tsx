@@ -1,5 +1,6 @@
 "use client"
 
+import { MarkdownContent } from "@/components/desengine/MarkdownContent"
 import { Button } from "@/components/ui/button"
 
 import { type TaskLevelStartProps } from "./props"
@@ -38,16 +39,12 @@ function TaskLevelStart({
         <div className="space-y-4 rounded-lg border p-4">
           <div className="space-y-2">
             <p className="font-medium">Что важно на этом уровне</p>
-            <p className="whitespace-pre-wrap text-muted-foreground">
-              {taskTip || "Для этого уровня пока нет отдельного пояснения задачи."}
-            </p>
+            <MarkdownContent content={taskTip || "Для этого уровня пока нет отдельного пояснения задачи."} />
           </div>
 
           <div className="space-y-2">
             <p className="font-medium">Общее пояснение уровня</p>
-            <p className="whitespace-pre-wrap text-muted-foreground">
-              {commonExplanation || "Общее пояснение уровня пока не заполнено."}
-            </p>
+            <MarkdownContent content={commonExplanation || "Общее пояснение уровня пока не заполнено."} />
           </div>
         </div>
 

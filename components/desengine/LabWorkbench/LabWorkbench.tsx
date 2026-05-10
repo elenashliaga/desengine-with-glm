@@ -3,6 +3,7 @@
 import { type KeyboardEvent, useMemo, useState } from "react";
 import { type LabWorkbenchProps } from "./props";
 
+import { MarkdownContent } from "../MarkdownContent";
 import { InOut } from "../InOut";
 import { Prompt, PromptComposer } from "../Propmt";
 import { CodeList } from "../Code";
@@ -289,14 +290,11 @@ function LabWorkbench({
 
                     {taskData.labContext && (
                         <div className="rounded-md border p-4">
-                            <p className="font-medium">Пояснение уровня</p>
-                            <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
-                                {taskData.labContext.commonExplanation}
-                            </p>
-                            <p className="mt-4 font-medium">Пояснение задачи</p>
-                            <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
-                                {taskData.labContext.taskTip}
-                            </p>
+                            <p className="font-medium">Что важно в этой задаче</p>
+                            <MarkdownContent
+                                className="mt-2"
+                                content={taskData.labContext.taskTip || "Для этого уровня пока нет отдельного пояснения задачи."}
+                            />
                         </div>
                     )}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { MarkdownContent } from "@/components/desengine/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { createLevelsPath } from "@/lib/navigation";
 import type { LevelOverview as LevelOverviewData } from "@/lib/types";
@@ -28,9 +29,7 @@ export function LevelOverview({
           <p className="text-muted-foreground">
             Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
           </p>
-          <p className="max-w-3xl text-muted-foreground">
-            {overview.level.description}
-          </p>
+          <MarkdownContent className="max-w-3xl" content={overview.level.description} />
           <Link className="tool-link-inline" href={createLevelsPath()}>
             Открыть все уровни
           </Link>

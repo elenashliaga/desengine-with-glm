@@ -25,6 +25,8 @@ Onboarding-контент runtime читает из каталога `/onboardin
 ## Project Data и User State
 
 - Канонические onboarding-данные читаются из `/onboarding`: `onboarding/levels/**`, `onboarding/tasks/**/{config.json,base.png,variants.png}`, `onboarding/prompts/**`.
+- Открытые пользовательские пояснения хранятся в Markdown: общий текст уровня лежит в `onboarding/levels/<levelId>/overview.md`, а task-specific пояснение уровня — в `onboarding/tasks/<taskId>/levels/<levelId>/tip.md`.
+- Эти Markdown-файлы рендерятся в UI как Markdown и не должны использоваться для hidden prompt-логики.
 - Корневые `levels/`, `tasks/` и старые вложенные пути промптов не должны использоваться и подлежат удалению как legacy-каталоги.
 - Ручное обновление локального `/onboarding` выполняется через кнопку `Обновить onboarding` на `/config`.
 - Весь локальный прогресс пользователя, рабочие файлы задач и prompt-history живут в `user/`.

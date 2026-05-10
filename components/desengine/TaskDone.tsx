@@ -1,5 +1,6 @@
 "use client";
 
+import { MarkdownContent } from "@/components/desengine/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { OutRender } from "@/components/desengine/InOut/OutRender/OutRender";
 import type { TaskTransition } from "@/lib/types";
@@ -20,7 +21,7 @@ export function TaskDone({
   onBackToTaskList,
 }: TaskDoneProps) {
   const previousLevelTaskText = transition.fromTaskTip
-    || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить такой результат: ${transition.fromLevel.description}`;
+    || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить итоговый результат без необходимости перехода дальше.`;
 
   return (
     <section className="space-y-4 rounded-md border p-6">
@@ -40,14 +41,14 @@ export function TaskDone({
         <div className="space-y-4 rounded-md border p-4">
           <div className="space-y-2">
             <p className="font-medium">Что удалось на последнем уровне</p>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {previousLevelTaskText}
-            </p>
-            {transition.fromTaskTip ? (
-              <p className="text-sm text-muted-foreground/80 whitespace-pre-wrap">
-                Общий фокус уровня: {transition.fromLevel.description}
-              </p>
-            ) : null}
+            <MarkdownContent content={previousLevelTaskText} />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground/80">Общий фокус уровня</p>
+              <MarkdownContent
+                className="text-sm text-muted-foreground/80"
+                content={transition.fromLevel.description}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
