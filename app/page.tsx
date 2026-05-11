@@ -1,7 +1,14 @@
-import { redirect } from "next/navigation"
+import { RootStatusPage } from "@/components/desengine/RootStatusPage"
+import { getSystemStatusModel } from "@/lib/system-status.server"
 
-import { createTasksPath } from "@/lib/navigation"
+export default async function Page() {
+  const status = await getSystemStatusModel()
 
-export default function Page() {
-  redirect(createTasksPath())
+  return (
+    <RootStatusPage
+      accessState={status.accessState}
+      statusItems={status.items}
+      instructions={status.instructions}
+    />
+  )
 }
