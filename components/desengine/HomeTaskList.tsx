@@ -23,6 +23,10 @@ type HomeTaskListProps = {
   initialTasks: TaskListItem[]
 }
 
+type PendingAction =
+  | { taskId: string; type: "start" }
+  | { taskId: string; type: "reset" }
+
 function createTaskHref(taskId: string) {
   return createTaskPath(taskId)
 }
@@ -64,17 +68,39 @@ function getLevelBadgeText(task: TaskListItem) {
 
 export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
   const router = useRouter()
-  const [pendingTaskId, setPendingTaskId] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [error, setError] = useState<string>("")
 
-  function handleStart(taskId: string) {
+  async function handleStart(taskId: string) {
     setError("")
-    router.push(createTaskHref(taskId))
+    setPendingAction({ taskId, type: "start" })
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/start`, {
+        method: "POST",
+      })
+      const data = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null
+
+      if (!response.ok || !data?.ok) {
+        setError(data?.error || "Не удалось запустить задачу.")
+        return
+      }
+
+      router.push(createTaskHref(taskId))
+    } catch {
+      setError("Не удалось запустить задачу.")
+    } finally {
+      setPendingAction((current) => (
+        current?.taskId === taskId && current.type === "start" ? null : current
+      ))
+    }
   }
 
   async function handleReset(taskId: string) {
     setError("")
-    setPendingTaskId(taskId)
+    setPendingAction({ taskId, type: "reset" })
 
     try {
       const response = await fetch(`/api/tasks/${taskId}/reset`, {
@@ -93,7 +119,9 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
     } catch {
       setError("Не удалось сбросить задачу.")
     } finally {
-      setPendingTaskId((current) => (current === taskId ? null : current))
+      setPendingAction((current) => (
+        current?.taskId === taskId && current.type === "reset" ? null : current
+      ))
     }
   }
 
@@ -134,7 +162,9 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
 
           <div className="mt-6 space-y-3">
             {initialTasks.map((task) => {
-              const isPending = pendingTaskId === task.id
+              const isStartPending = pendingAction?.taskId === task.id && pendingAction.type === "start"
+              const isResetPending = pendingAction?.taskId === task.id && pendingAction.type === "reset"
+              const isPending = isStartPending || isResetPending
 
               return (
                 <article
@@ -159,24 +189,27 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                             {getLevelBadgeText(task)}
                           </span>
                         ) : (
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={isPending}
-                              onClick={() => handleStart(task.id)}
-                            >
-                            {isPending ? "Открытие…" : "Начать"}
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => void handleStart(task.id)}
+                          >
+                            {isStartPending ? "Запуск…" : "Начать"}
                           </Button>
                         )}
 
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(createTaskHref(task.id))}
-                        >
-                          Продолжить
-                        </Button>
+                        {task.started ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={isPending}
+                            onClick={() => router.push(createTaskHref(task.id))}
+                          >
+                            Продолжить
+                          </Button>
+                        ) : null}
                       </div>
 
                       <div className="flex min-w-0 items-center gap-3">
@@ -191,30 +224,33 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                         </span>
                       </div>
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button type="button" variant="outline" size="sm" disabled={isPending}>
-                            Сбросить задачу
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent size="sm">
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Сбросить задачу?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Будут удалены рабочие файлы и история уточнений. Задача снова станет не начатой.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Отмена</AlertDialogCancel>
-                            <AlertDialogAction
-                              variant="destructive"
-                              onClick={() => void handleReset(task.id)}
-                            >
-                              Подтвердить сброс
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      {task.started ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button type="button" variant="outline" size="sm" disabled={isPending}>
+                              Сбросить задачу
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent size="sm">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Сбросить задачу?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Будут удалены рабочие файлы и история уточнений. Задача снова станет не начатой.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Отмена</AlertDialogCancel>
+                              <AlertDialogAction
+                                variant="destructive"
+                                disabled={isPending}
+                                onClick={() => void handleReset(task.id)}
+                              >
+                                {isResetPending ? "Сброс…" : "Подтвердить сброс"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : null}
                     </div>
                   </div>
                 </article>
