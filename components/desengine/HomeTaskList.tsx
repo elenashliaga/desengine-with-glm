@@ -23,9 +23,7 @@ type HomeTaskListProps = {
   initialTasks: TaskListItem[]
 }
 
-type PendingAction =
-  | { taskId: string; type: "start" }
-  | { taskId: string; type: "reset" }
+type PendingAction = { taskId: string; type: "reset" }
 
 function createTaskHref(taskId: string) {
   return createTaskPath(taskId)
@@ -79,31 +77,9 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
   const [error, setError] = useState<string>("")
 
-  async function handleStart(taskId: string) {
+  function handleStart(taskId: string) {
     setError("")
-    setPendingAction({ taskId, type: "start" })
-
-    try {
-      const response = await fetch(`/api/tasks/${taskId}/start`, {
-        method: "POST",
-      })
-      const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
-        | null
-
-      if (!response.ok || !data?.ok) {
-        setError(data?.error || "Не удалось запустить задачу.")
-        return
-      }
-
-      router.push(createTaskHref(taskId))
-    } catch {
-      setError("Не удалось запустить задачу.")
-    } finally {
-      setPendingAction((current) => (
-        current?.taskId === taskId && current.type === "start" ? null : current
-      ))
-    }
+    router.push(createTaskHref(taskId))
   }
 
   async function handleReset(taskId: string) {
@@ -170,9 +146,8 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
 
           <div className="mt-6 space-y-3">
             {initialTasks.map((task) => {
-              const isStartPending = pendingAction?.taskId === task.id && pendingAction.type === "start"
               const isResetPending = pendingAction?.taskId === task.id && pendingAction.type === "reset"
-              const isPending = isStartPending || isResetPending
+              const isPending = isResetPending
 
               return (
                 <article
@@ -202,9 +177,9 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                             type="button"
                             size="sm"
                             disabled={isPending}
-                            onClick={() => void handleStart(task.id)}
+                            onClick={() => handleStart(task.id)}
                           >
-                            {isStartPending ? "Запуск…" : "Начать"}
+                            Начать
                           </Button>
                         )}
 
