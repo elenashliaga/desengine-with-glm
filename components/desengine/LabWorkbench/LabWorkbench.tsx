@@ -6,6 +6,7 @@ import { type LabWorkbenchProps } from "./props";
 import { MarkdownContent } from "../MarkdownContent";
 import { InOut } from "../InOut";
 import { Prompt, PromptComposer } from "../Propmt";
+import { SnapshotPublishPanel } from "../SnapshotPublishPanel";
 import { CodeList } from "../Code";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,10 @@ function LabWorkbench({
     const [promptStatus, setPromptStatus] = useState("");
     const [promptError, setPromptError] = useState("");
     const [promptPending, setPromptPending] = useState(false);
+    const [snapshotPending, setSnapshotPending] = useState(false);
+    const [snapshotStatus, setSnapshotStatus] = useState("");
+    const [snapshotError, setSnapshotError] = useState("");
+    const [snapshotUrl, setSnapshotUrl] = useState("");
     const [previewVersion, setPreviewVersion] = useState(0);
     const [dirtyFileIds, setDirtyFileIds] = useState<string[]>([]);
     const [autosaveRevision, setAutosaveRevision] = useState(0);
@@ -373,6 +378,32 @@ function LabWorkbench({
         setPromptStatus("Уточнение применено");
     }
 
+    async function handleSnapshotPublish() {
+        const saved = await saveBeforeAction();
+        if (!saved) {
+            return;
+        }
+
+        setSnapshotPending(true);
+        setSnapshotStatus("");
+        setSnapshotError("");
+
+        const res = await fetch(`/api/tasks/${taskItem.id}/snapshot`, {
+            method: "POST",
+        });
+        const data = await res.json().catch(() => null);
+
+        setSnapshotPending(false);
+
+        if (!res.ok || !data?.ok || !data?.snapshotUrl) {
+            setSnapshotError(data?.error || "Не удалось опубликовать слепок");
+            return;
+        }
+
+        setSnapshotUrl(data.snapshotUrl);
+        setSnapshotStatus("Публичная ссылка готова.");
+    }
+
     function handlePromptKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
         if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
             return;
@@ -507,6 +538,14 @@ function LabWorkbench({
 
                     {levelReadyForWork && (
                         <div className="space-y-3 pb-4">
+                            <SnapshotPublishPanel
+                              pending={snapshotPending}
+                              status={snapshotStatus}
+                              error={snapshotError}
+                              snapshotUrl={snapshotUrl}
+                              onPublish={() => void handleSnapshotPublish()}
+                            />
+
                             {hasDirtyFiles && (
                                 <div className="flex items-center gap-2">
                                     <Button onClick={() => void handleSave()} variant="secondary" disabled={saveStatus === "saving"}>
