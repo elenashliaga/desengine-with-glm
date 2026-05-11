@@ -244,16 +244,18 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   }
 
   if (llmStatus.config.hasRequiredKey) {
-    const networkUrl =
-      llmStatus.provider === "deepseek"
-        ? `${llmStatus.endpoint}/models`
-        : `${llmStatus.endpoint}/models`
-    const authToken =
-      llmStatus.provider === "deepseek" ? process.env.DEEPSEEK_API_KEY : process.env.OPENAI_API_KEY
+    const networkUrl = `${llmStatus.endpoint}/models`
     const providerNetwork = await fetchReachability(networkUrl, {
-      headers: {
-        authorization: `Bearer ${authToken}`,
-      },
+      headers:
+        llmStatus.provider === "gemini"
+          ? {
+              "x-goog-api-key": process.env.GEMINI_API_KEY ?? "",
+            }
+          : {
+              authorization: `Bearer ${
+                llmStatus.provider === "deepseek" ? process.env.DEEPSEEK_API_KEY : process.env.OPENAI_API_KEY
+              }`,
+            },
     })
     const providerSummary = providerNetwork.status
       ? summarizeHttpStatus(`${llmStatus.label} API`, providerNetwork.status)

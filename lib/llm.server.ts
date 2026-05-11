@@ -1,7 +1,7 @@
 import "server-only"
 
-import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "@/lib/llm.types"
-import localConfig from "@/lib/local-config.cjs"
+import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "./llm.types"
+import localConfig from "./local-config.cjs"
 
 localConfig.loadLocalConfig()
 
@@ -57,13 +57,13 @@ function getLlmProvider(): LlmProvider {
     return "openai"
   }
 
-  if (rawProvider === "openai" || rawProvider === "deepseek") {
+  if (rawProvider === "openai" || rawProvider === "deepseek" || rawProvider === "gemini") {
     return rawProvider
   }
 
   throw new LlmError(
     "config",
-    `Неподдерживаемый DESENGINE_LLM_PROVIDER: ${rawProvider}. Поддерживаются: openai, deepseek.`,
+    `Неподдерживаемый DESENGINE_LLM_PROVIDER: ${rawProvider}. Поддерживаются: openai, deepseek, gemini.`,
   )
 }
 
@@ -82,6 +82,16 @@ function getDeepSeekModel(): string {
 
   if (!model) {
     throw new LlmError("config", "Для режима DeepSeek не настроен DESENGINE_DEEPSEEK_MODEL")
+  }
+
+  return model
+}
+
+function getGeminiModel(): string {
+  const model = process.env.DESENGINE_GEMINI_MODEL?.trim()
+
+  if (!model) {
+    throw new LlmError("config", "Для режима Google Gemini не настроен DESENGINE_GEMINI_MODEL")
   }
 
   return model
@@ -202,6 +212,101 @@ function getDeepSeekMetrics(data: unknown): LlmUsageMetrics {
   }
 }
 
+function getGeminiBlockedMessage(blockReason: unknown): string {
+  if (blockReason === "SAFETY" || blockReason === "IMAGE_SAFETY") {
+    return "Google Gemini заблокировал запрос по safety-фильтру. Измените формулировку или изображение и повторите попытку."
+  }
+
+  if (blockReason === "BLOCKLIST" || blockReason === "PROHIBITED_CONTENT") {
+    return "Google Gemini отклонил запрос из-за ограничений контента. Измените формулировку и повторите попытку."
+  }
+
+  return "Google Gemini заблокировал запрос. Измените формулировку и повторите попытку."
+}
+
+function getOutputTextFromGemini(data: unknown): string {
+  const promptFeedback =
+    data &&
+    typeof data === "object" &&
+    "promptFeedback" in data &&
+    data.promptFeedback &&
+    typeof data.promptFeedback === "object"
+      ? (data.promptFeedback as Record<string, unknown>)
+      : null
+
+  if (promptFeedback?.blockReason) {
+    throw new LlmError("provider", getGeminiBlockedMessage(promptFeedback.blockReason))
+  }
+
+  const candidates =
+    data &&
+    typeof data === "object" &&
+    "candidates" in data &&
+    Array.isArray(data.candidates)
+      ? data.candidates
+      : []
+
+  const firstCandidate =
+    candidates[0] && typeof candidates[0] === "object" ? (candidates[0] as Record<string, unknown>) : null
+
+  if (!firstCandidate) {
+    throw new LlmError("invalid_response", "Google Gemini вернул ответ без кандидатов")
+  }
+
+  const finishReason = firstCandidate.finishReason
+  if (finishReason === "SAFETY") {
+    throw new LlmError("provider", "Google Gemini заблокировал ответ по safety-фильтру. Измените запрос и повторите попытку.")
+  }
+
+  if (finishReason === "RECITATION") {
+    throw new LlmError("provider", "Google Gemini остановил ответ из-за ограничений на воспроизведение контента. Измените запрос и повторите попытку.")
+  }
+
+  if (finishReason === "LANGUAGE") {
+    throw new LlmError("provider", "Google Gemini не принял запрос из-за ограничений языка. Измените формулировку и повторите попытку.")
+  }
+
+  const content =
+    "content" in firstCandidate && firstCandidate.content && typeof firstCandidate.content === "object"
+      ? (firstCandidate.content as Record<string, unknown>)
+      : null
+  const parts = content && Array.isArray(content.parts) ? content.parts : []
+
+  for (const part of parts) {
+    if (part && typeof part === "object" && typeof part.text === "string" && part.text.trim()) {
+      return part.text
+    }
+  }
+
+  throw new LlmError("invalid_response", "Google Gemini вернул ответ без итогового текста")
+}
+
+function getGeminiMetrics(data: unknown): LlmUsageMetrics {
+  const usage =
+    data &&
+    typeof data === "object" &&
+    "usageMetadata" in data &&
+    data.usageMetadata &&
+    typeof data.usageMetadata === "object"
+      ? (data.usageMetadata as Record<string, unknown>)
+      : null
+
+  if (!usage) {
+    return {
+      status: "unavailable",
+      reason: "provider_did_not_return_metrics",
+    }
+  }
+
+  return {
+    status: "available",
+    inputTokens: typeof usage.promptTokenCount === "number" ? usage.promptTokenCount : null,
+    outputTokens: typeof usage.candidatesTokenCount === "number" ? usage.candidatesTokenCount : null,
+    totalTokens: typeof usage.totalTokenCount === "number" ? usage.totalTokenCount : null,
+    costUsd: null,
+  }
+}
+
 function mapFetchError(error: unknown, fallbackMessage: string): never {
   if (error instanceof LlmError) {
     throw error
@@ -238,6 +343,23 @@ function ensureDeepSeekConfig(): ProviderRuntimeConfig {
     apiKey: process.env.DEEPSEEK_API_KEY,
     baseUrl: process.env.DESENGINE_DEEPSEEK_BASE_URL?.trim() || "https://api.deepseek.com",
   }
+}
+
+function ensureGeminiConfig(): ProviderRuntimeConfig {
+  if (!process.env.GEMINI_API_KEY?.trim()) {
+    throw new LlmError("config", "Для режима Google Gemini не настроен GEMINI_API_KEY")
+  }
+
+  return {
+    provider: "gemini",
+    model: getGeminiModel(),
+    apiKey: process.env.GEMINI_API_KEY,
+    baseUrl: process.env.DESENGINE_GEMINI_BASE_URL?.trim() || "https://generativelanguage.googleapis.com/v1beta",
+  }
+}
+
+function getGeminiModelPath(model: string): string {
+  return model.startsWith("models/") ? model : `models/${model}`
 }
 
 async function callOpenAI(
@@ -442,6 +564,100 @@ async function callDeepSeek(
   }
 }
 
+async function callGemini(
+  request: LlmStructuredRequest,
+  config: ProviderRuntimeConfig,
+): Promise<LlmStructuredResponse> {
+  const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
+  const startedAt = Date.now()
+  const parts: Array<{ text?: string; inline_data?: { mime_type: string; data: string } }> = [{ text: request.instruction }]
+
+  for (const imageBase64 of images) {
+    parts.push({
+      inline_data: {
+        mime_type: "image/png",
+        data: imageBase64,
+      },
+    })
+  }
+
+  let res: Response
+  try {
+    console.log("[desengine][gemini] start", {
+      target: request.target ?? "default",
+      model: config.model,
+      imageCount: images.length,
+      instructionLength: request.instruction.length,
+      schemaName: request.schemaName,
+    })
+
+    res = await fetch(`${config.baseUrl}/${getGeminiModelPath(config.model)}:generateContent`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-goog-api-key": config.apiKey,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts,
+          },
+        ],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseJsonSchema: request.schema,
+        },
+      }),
+    })
+  } catch (error) {
+    console.error("[desengine][gemini] network_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      durationMs: Date.now() - startedAt,
+      message: error instanceof Error ? error.message : String(error),
+    })
+    mapFetchError(error, "Не удалось подключиться к Google Gemini API")
+  }
+
+  const data = await res.json().catch(() => null)
+  if (!res.ok) {
+    const providerMessage =
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      data.error &&
+      typeof data.error === "object" &&
+      "message" in data.error &&
+      typeof data.error.message === "string"
+        ? data.error.message
+        : "Ошибка Google Gemini API"
+    const errorKind = res.status === 401 || res.status === 403 ? "auth" : "provider"
+    console.error("[desengine][gemini] provider_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      status: res.status,
+      durationMs: Date.now() - startedAt,
+      message: providerMessage,
+    })
+    throw new LlmError(errorKind, providerMessage)
+  }
+
+  console.log("[desengine][gemini] success", {
+    target: request.target ?? "default",
+    model: config.model,
+    status: res.status,
+    durationMs: Date.now() - startedAt,
+  })
+
+  return {
+    provider: "gemini",
+    model: config.model,
+    outputText: getOutputTextFromGemini(data),
+    metrics: getGeminiMetrics(data),
+  }
+}
+
 const ADAPTERS: Record<LlmProvider, LlmAdapter> = {
   openai: {
     provider: "openai",
@@ -467,6 +683,18 @@ const ADAPTERS: Record<LlmProvider, LlmAdapter> = {
     buildConfig: ensureDeepSeekConfig,
     call: callDeepSeek,
   },
+  gemini: {
+    provider: "gemini",
+    label: "Google Gemini",
+    envVars: {
+      apiKey: "GEMINI_API_KEY",
+      model: "DESENGINE_GEMINI_MODEL",
+      baseUrl: "DESENGINE_GEMINI_BASE_URL",
+    },
+    defaultBaseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    buildConfig: ensureGeminiConfig,
+    call: callGemini,
+  },
 }
 
 function getActiveAdapter(): LlmAdapter {
@@ -482,6 +710,10 @@ function listConfiguredProviders(): LlmProvider[] {
 
   if (process.env.DEEPSEEK_API_KEY?.trim() || process.env.DESENGINE_DEEPSEEK_MODEL?.trim()) {
     configured.push("deepseek")
+  }
+
+  if (process.env.GEMINI_API_KEY?.trim() || process.env.DESENGINE_GEMINI_MODEL?.trim()) {
+    configured.push("gemini")
   }
 
   return configured

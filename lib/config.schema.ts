@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-const LlmProviderSchema = z.enum(["openai", "deepseek"])
+const LlmProviderSchema = z.enum(["openai", "deepseek", "gemini"])
 
 // Схема конфигурации приложения (desengine.config.json)
 const AppConfigSchema = z

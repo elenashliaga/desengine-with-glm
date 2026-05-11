@@ -1,4 +1,4 @@
-export type LlmProvider = "openai" | "deepseek"
+export type LlmProvider = "openai" | "deepseek" | "gemini"
 
 export type LlmUsageMetrics =
   | {

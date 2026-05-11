@@ -6,11 +6,17 @@
 
 Поддерживаются как минимум следующие режимы:
 - OpenAI по ключу;
+- DeepSeek;
 - Google Gemini.
 
 #### Scenario: Конфигурация выбрала Google Gemini
 - **WHEN** приложение настроено на режим Google Gemini
 - **THEN** система отправляет LLM-запросы через адаптер Google Gemini
+
+#### Scenario: Оператор хранит несколько конфигов провайдеров
+- **WHEN** в `desengine.config.txt` одновременно лежат настройки OpenAI, DeepSeek и Google Gemini
+- **THEN** система использует только параметры активного провайдера из `DESENGINE_LLM_PROVIDER`
+- **AND** наличие неактивных provider-specific переменных не ломает запуск
 
 ### Requirement: Ошибки LLM-провайдера объясняются пользователю
 

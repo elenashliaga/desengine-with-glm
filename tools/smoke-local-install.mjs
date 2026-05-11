@@ -140,11 +140,15 @@ async function main() {
   const hasActiveProviderCredentials =
     activeProvider === "deepseek"
       ? Boolean(env.DEEPSEEK_API_KEY)
-      : Boolean(env.OPENAI_API_KEY)
+      : activeProvider === "gemini"
+        ? Boolean(env.GEMINI_API_KEY)
+        : Boolean(env.OPENAI_API_KEY)
   const hasActiveProviderModel =
     activeProvider === "deepseek"
       ? Boolean(env.DESENGINE_DEEPSEEK_MODEL)
-      : Boolean(env.DESENGINE_OPENAI_MODEL)
+      : activeProvider === "gemini"
+        ? Boolean(env.DESENGINE_GEMINI_MODEL)
+        : Boolean(env.DESENGINE_OPENAI_MODEL)
 
   checks.push(
     createCheck(

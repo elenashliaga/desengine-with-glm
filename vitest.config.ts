@@ -12,8 +12,27 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /^@\//,
+        replacement: `${dirname}/`,
+      },
+      {
+        find: 'server-only',
+        replacement: path.join(dirname, 'test', 'shims', 'server-only.ts'),
+      },
+    ],
+  },
   test: {
     projects: [
+      {
+        test: {
+          name: 'unit',
+          environment: 'node',
+          include: ['lib/**/*.test.ts'],
+        },
+      },
       {
         extends: true,
         plugins: [

@@ -64,6 +64,9 @@ DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 DEEPSEEK_API_KEY=
 DESENGINE_DEEPSEEK_MODEL=deepseek-v4-flash
 DESENGINE_DEEPSEEK_BASE_URL=https://api.deepseek.com
+GEMINI_API_KEY=
+DESENGINE_GEMINI_MODEL=gemini-2.5-flash
+DESENGINE_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
 DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
@@ -75,6 +78,7 @@ DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 
 - OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
 - DeepSeek: [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1)
+- Google Gemini: [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1)
 - allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
 
 ## 4. Запустите приложение

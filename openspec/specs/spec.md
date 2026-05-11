@@ -21,6 +21,7 @@
 - Слепок (публичная публикация): см. `openspec/specs/snapshot/spec.md`.
 - Пользователь и прогресс: см. `openspec/specs/user-progress/spec.md`.
 - Подключение LLM: см. `openspec/specs/llm/spec.md`.
+- Адаптер Google Gemini: см. `openspec/specs/google-gemini/spec.md`.
 - Локальный endpoint LLM: см. `openspec/specs/llm-endpoint/spec.md`.
 - Внешний локальный онбординг: см. `openspec/specs/external-local-onboarding/spec.md`.
 
