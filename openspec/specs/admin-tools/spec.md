@@ -49,3 +49,13 @@
 #### Scenario: Для change не задано поле `short`
 - **WHEN** оператор запускает команду краткой сводки по актуальным changes
 - **THEN** система использует безопасный fallback на сокращённое пояснение из `proposal.md`
+
+### Requirement: Новый change создаётся через project wrapper с полем `short`
+
+Система SHALL предоставлять каноническую project-команду создания нового OpenSpec change, которая вызывает штатный OpenSpec CLI и затем гарантирует наличие поля `short` в `openspec/changes/<change>/.openspec.yaml`.
+
+#### Scenario: Оператор создаёт новый change через каноническую команду проекта
+- **WHEN** оператор запускает project-команду создания change
+- **THEN** в каталоге нового change появляется `.openspec.yaml`
+- **AND** этот metadata-файл содержит `schema`
+- **AND** этот metadata-файл содержит `short`, даже если штатный OpenSpec CLI сам его не добавляет

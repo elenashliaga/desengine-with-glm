@@ -16,6 +16,7 @@
 | --- | --- | --- |
 | Smoke-check локальной установки | `tools/smoke-local-install.mjs` | `npm run smoke` |
 | Краткая сводка актуальных OpenSpec changes | `tools/list-active-openspec-changes.mjs` | `npm run openspec` |
+| Создание нового OpenSpec change с `short` в metadata | `tools/create-openspec-change.mjs` | `npm run openspec:new -- <name>` |
 | Генерация allowlist-маркера | `tools/generate-allowlist-marker.mjs` | `npm run allowlist:marker -- user@example.com` |
 | Генерация `config.json` по `base.png` и `variants.png` | `tools/generate-task-configs.mjs` | `npm run admin:tasks:configs` |
 | Подготовка task-каталогов из набора PNG | `tools/import-task-assets.mjs` | `npm run admin:tasks:import -- --variants-root=... --base-root=...` |
@@ -58,6 +59,22 @@
 
 ```bash
 <change-name> — <короткое пояснение из секции Why>
+```
+
+### `npm run openspec:new -- <name>`
+
+Создаёт новый OpenSpec change через штатный `openspec new change`, а затем гарантирует, что в `openspec/changes/<name>/.openspec.yaml` есть поле:
+
+```yaml
+short: ""
+```
+
+Примеры:
+
+```bash
+npm run openspec:new -- add-level-badges
+npm run openspec:new -- add-level-badges --schema spec-driven
+npm run openspec:new -- add-level-badges --description "Пробный change"
 ```
 
 ### `npm run allowlist:marker -- user@example.com`
