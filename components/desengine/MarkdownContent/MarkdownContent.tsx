@@ -112,21 +112,25 @@ function MarkdownContent({ content, className, assetBasePath }: MarkdownContentP
               </a>
             )
           },
-          img: ({ src, alt }) => {
-            const resolvedSrc = resolveMarkdownUrl(src, assetBasePath)
+img: ({ src, alt }) => {
 
-            if (!resolvedSrc) {
-              return null
-            }
-            return (
-              <img
-                alt={alt ?? ""}
-                className={markdownElementClassNames.image}
-                loading="lazy"
-                src={resolvedSrc}
-              />
-            )
-          },
+  const resolvedSrc =
+
+    typeof src === "string"
+
+      ? resolveMarkdownUrl(src, assetBasePath)
+
+      : undefined
+
+  if (!resolvedSrc) {
+
+    return null
+
+  }
+
+  return <img src={resolvedSrc} alt={alt ?? ""} />
+
+},
           pre: (props) => (
             <pre className={markdownElementClassNames.codeBlock} {...props} />
           ),

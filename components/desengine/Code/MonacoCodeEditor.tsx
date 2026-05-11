@@ -3,6 +3,28 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import type * as Monaco from "monaco-editor";
+
+type MonacoInstance = {
+  languages: {
+    typescript: {
+      typescriptDefaults: {
+        setDiagnosticsOptions(options: {
+          noSemanticValidation?: boolean;
+          noSuggestionDiagnostics?: boolean;
+          noSyntaxValidation?: boolean;
+        }): void;
+      };
+      javascriptDefaults: {
+        setDiagnosticsOptions(options: {
+          noSemanticValidation?: boolean;
+          noSuggestionDiagnostics?: boolean;
+          noSyntaxValidation?: boolean;
+        }): void;
+      };
+    };
+  };
+};
 
 type MonacoEditorProps = {
   fileId: string;
@@ -23,7 +45,7 @@ type MonacoReactEditorProps = {
   value?: string;
 };
 
-type MonacoInstance = typeof import("monaco-editor");
+// type MonacoInstance = typeof import("monaco-editor");
 
 function getEditorLanguage(fileName: string) {
   if (fileName.endsWith(".json")) {
