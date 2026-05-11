@@ -53,6 +53,7 @@ describe("Google Gemini adapter", () => {
     const { runStructuredLlmRequest } = await import("./llm.server")
 
     const result = await runStructuredLlmRequest({
+      target: "init",
       instruction: "Верни JSON",
       imageBase64List: ["img-a", "img-b"],
       schemaName: "test_schema",
@@ -106,6 +107,7 @@ describe("Google Gemini adapter", () => {
         ],
       },
     ])
+    expect(init.signal).toBeInstanceOf(AbortSignal)
   })
 
   it("возвращает понятную ошибку при safety-блокировке Gemini", async () => {
@@ -174,5 +176,128 @@ describe("Google Gemini adapter", () => {
       },
     })
     expect(status.config.configuredProviders).toContain("gemini")
+  })
+
+  it("не добавляет timeout signal для обычного запроса без target init", async () => {
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: '{"ok":true}' }],
+              },
+              finishReason: "STOP",
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      )
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { runStructuredLlmRequest } = await import("./llm.server")
+
+    await runStructuredLlmRequest({
+      instruction: "Обычный запрос",
+      schemaName: "default_schema",
+      schema: { type: "object" },
+    })
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(init.signal).toBeUndefined()
+  })
+
+  it("использует отдельный timeout для initiator-запроса", async () => {
+    process.env.DESENGINE_LLM_INIT_TIMEOUT_MS = "1234"
+
+    const fetchMock = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [{ text: '{"ok":true}' }],
+              },
+              finishReason: "STOP",
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        },
+      )
+    })
+    vi.stubGlobal("fetch", fetchMock)
+
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout")
+    const { runStructuredLlmRequest } = await import("./llm.server")
+
+    await runStructuredLlmRequest({
+      target: "init",
+      instruction: "Инициирующий запрос",
+      schemaName: "init_schema",
+      schema: { type: "object" },
+    })
+
+    expect(timeoutSpy).toHaveBeenCalledWith(1234)
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(init.signal).toBeInstanceOf(AbortSignal)
+  })
+
+  it("возвращает retriable-ошибку при таймауте initiator-запроса", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        const error = new Error("Timed out")
+        error.name = "TimeoutError"
+        throw error
+      }),
+    )
+
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("./llm.server")
+
+    const error = await runStructuredLlmRequest({
+      target: "init",
+      instruction: "Инициирующий запрос",
+      schemaName: "timeout_schema",
+      schema: { type: "object" },
+    }).catch((caught) => caught)
+
+    expect(toLlmErrorResponse(error)).toEqual({
+      status: 504,
+      body: {
+        ok: false,
+        error: "LLM-провайдер не успел ответить вовремя. Повторите попытку.",
+        errorKind: "timeout",
+      },
+    })
+  })
+
+  it("ругается на некорректный DESENGINE_LLM_INIT_TIMEOUT_MS", async () => {
+    process.env.DESENGINE_LLM_INIT_TIMEOUT_MS = "abc"
+
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("./llm.server")
+
+    const error = await runStructuredLlmRequest({
+      target: "init",
+      instruction: "Инициирующий запрос",
+      schemaName: "bad_timeout_schema",
+      schema: { type: "object" },
+    }).catch((caught) => caught)
+
+    expect(toLlmErrorResponse(error)).toEqual({
+      status: 400,
+      body: {
+        ok: false,
+        error: "Переменная DESENGINE_LLM_INIT_TIMEOUT_MS должна быть положительным числом миллисекунд",
+        errorKind: "config",
+      },
+    })
   })
 })

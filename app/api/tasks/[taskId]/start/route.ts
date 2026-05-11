@@ -33,6 +33,11 @@ const blankStartFallbackByFileName: Record<string, string> = {
   "props.ts": "export {};",
 }
 
+type OutputFile = {
+  id: string
+  fileName: string
+}
+
 function extractJson(text: string): unknown {
   const trimmed = (text || "").trim()
   if (!trimmed) return null
@@ -68,6 +73,91 @@ function normalizeStartPayload(
   })
 
   return Object.fromEntries(normalizedEntries)
+}
+
+function formatAllowedFilesText(files: OutputFile[]) {
+  return files.map((file) => `- ${file.id} — ${file.fileName}`).join("\n")
+}
+
+function getRelevantCurrentFiles(files: OutputFile[], contentByFileId: Record<string, string>) {
+  return files
+    .map((file) => ({
+      ...file,
+      content: contentByFileId[file.id] ?? "",
+    }))
+    .filter((file) => file.content.trim().length > 0)
+}
+
+function formatFilesContextText(files: Array<OutputFile & { content: string }>) {
+  return files
+    .map((file) => `FILE ${file.id} (${file.fileName})\n\`\`\`tsx\n${file.content}\n\`\`\``)
+    .join("\n\n")
+}
+
+function buildStartInstruction({
+  already,
+  productionPrompt,
+  defaultDidacticPrompt,
+  levelIteratePrompt,
+  levelStartPrompt,
+  levelNumber,
+  imagesText,
+  allowedFilesText,
+  relevantCurrentFilesText,
+}: {
+  already: boolean
+  productionPrompt: string
+  defaultDidacticPrompt: string
+  levelIteratePrompt: string
+  levelStartPrompt: string
+  levelNumber: number
+  imagesText: string
+  allowedFilesText: string
+  relevantCurrentFilesText: string
+}) {
+  const sections = [
+    productionPrompt,
+    defaultDidacticPrompt,
+    levelIteratePrompt,
+    levelStartPrompt,
+    already
+      ? `
+ЗАДАНИЕ:
+Это initiator-запуск нового уровня для уже существующей задачи.
+Посмотри на картинки текущего уровня и сохрани полезные рабочие наработки только там, где они помогают уровню ${levelNumber}.
+Если какого-то файла ещё нет в текущем состоянии, это нормально: ты можешь создать его с нуля.
+`
+      : `
+ЗАДАНИЕ:
+По картинкам текущего уровня создай первую рабочую реализацию набора файлов компонента.
+Если какого-то файла пока нет, просто создай его с нуля.
+`,
+    `
+КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
+${imagesText}
+`,
+    `
+## Разрешённые файлы результата
+${allowedFilesText}
+
+Верни полный набор файлов строго по этим ключам:
+${allowedFilesText}
+
+Значение каждого ключа должно быть полным текстовым содержимым соответствующего файла.
+Нельзя возвращать имя файла, fileId, короткую заглушку или пояснение вместо кода.
+`,
+    already && relevantCurrentFilesText
+      ? `
+ТЕКУЩИЙ ПОЛЕЗНЫЙ КОНТЕКСТ ИЗ УЖЕ СУЩЕСТВУЮЩИХ ФАЙЛОВ:
+${relevantCurrentFilesText}
+`
+      : "",
+  ]
+
+  return sections
+    .map((section) => section.trim())
+    .filter(Boolean)
+    .join("\n\n")
 }
 
 export async function POST(
@@ -129,8 +219,8 @@ export async function POST(
     return Response.json({ ok: false, error: "Не найдены обязательные картинки текущего уровня" }, { status: 404 })
   }
 
-  const [prod, did, levelSpecifyPrompt, levelInitPrompt, taskData] = await Promise.all([
-    readPrompt("production", "default"),
+  const [startProd, did, levelSpecifyPrompt, levelInitPrompt, taskData] = await Promise.all([
+    readPrompt("production", "start-component"),
     readPrompt("didactic", "default"),
     readLevelIteratePrompt(level.id),
     readLevelStartPrompt(level.id),
@@ -139,80 +229,22 @@ export async function POST(
 
   const outputFiles = levelEditableFiles
   const fileList = outputFiles.map((f) => ({ id: f.id, fileName: f.fileName }))
-  const allowedFilesText = fileList
-    .map((file) => `- ${file.id} — ${file.fileName}`)
-    .join("\n")
-  const filesText = outputFiles
-    .map((file) => {
-      const content = taskData.contentByFileId[file.id] ?? ""
-      return `FILE ${file.id} (${file.fileName})\n\`\`\`tsx\n${content}\n\`\`\``
-    })
-    .join("\n\n")
+  const allowedFilesText = formatAllowedFilesText(fileList)
+  const relevantCurrentFiles = getRelevantCurrentFiles(outputFiles, taskData.contentByFileId)
+  const relevantCurrentFilesText = formatFilesContextText(relevantCurrentFiles)
+  const imagesText = promptImages.map((image) => `- ${image.id}.png — ${image.width}x${image.height}`).join("\n")
 
-  const imagesText = promptImages
-    .map((image) => `- ${image.id}.png — ${image.width}x${image.height}`)
-    .join("\n")
-
-  const instruction = already
-    ? `
-${prod}
-
-${did}
-
-${levelSpecifyPrompt}
-
-${levelInitPrompt}
-
-ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
-${labContext.commonExplanation}
-
-ЗАДАНИЕ:
-Это инициирующий запуск нового уровня для уже существующей задачи.
-Посмотри на картинки текущего уровня и на все разрешённые рабочие файлы задачи.
-Подготовь компонент к работе на уровне ${level.number}, сохранив полезные наработки и обновив реализацию там, где это требуется новой дидактикой уровня.
-
-КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
-${imagesText}
-
-## Разрешённые файлы
-${allowedFilesText}
-
-Верни полный набор файлов по ключам:
-${allowedFilesText}
-
-Значение каждого ключа должно быть полным текстовым содержимым соответствующего файла.
-Нельзя возвращать имя файла, fileId, короткую заглушку или пояснение вместо кода.
-
-ТЕКУЩЕЕ СОСТОЯНИЕ РАЗРЕШЁННЫХ РАБОЧИХ ФАЙЛОВ:
-${filesText}
-`.trim()
-    : `
-${prod}
-
-${did}
-
-${levelSpecifyPrompt}
-
-${levelInitPrompt}
-
-ОБЩЕЕ ПОЯСНЕНИЕ УРОВНЯ:
-${labContext.commonExplanation}
-
-ЗАДАНИЕ:
-По картинкам текущего уровня создай первичную реализацию набора файлов компонента.
-
-КАРТИНКИ ТЕКУЩЕГО УРОВНЯ:
-${imagesText}
-
-## Разрешённые файлы
-${allowedFilesText}
-
-Ключи результата соответствуют fileId из списка:
-${allowedFilesText}
-
-Значение каждого ключа должно быть полным текстовым содержимым соответствующего файла.
-Нельзя возвращать имя файла, fileId, короткую заглушку или пояснение вместо кода.
-`.trim()
+  const instruction = buildStartInstruction({
+    already,
+    productionPrompt: startProd,
+    defaultDidacticPrompt: did,
+    levelIteratePrompt: levelSpecifyPrompt,
+    levelStartPrompt: levelInitPrompt,
+    levelNumber: level.number,
+    imagesText,
+    allowedFilesText,
+    relevantCurrentFilesText,
+  })
 
   let outputText = ""
   try {
@@ -278,37 +310,62 @@ ${allowedFilesText}
     )
   }
 
-  const writtenFiles: string[] = []
   const filteredPayload = filterWorkbenchPayloadByAllowlist(payload, labContext.editableFileIds)
-  await ensureUserTaskDir(taskId)
-
-  for (const entry of filteredPayload.allowedEntries) {
-    const filePath = getUserTaskFilePath(taskId, entry.fileName)
-    await writeFile(filePath, String(entry.content ?? ""), "utf-8")
-    writtenFiles.push(filePath)
+  const writtenFiles: string[] = []
+  let cleanup = {
+    deletedFileIds: [] as string[],
+    deletedFilePaths: [] as string[],
   }
 
-  if (filteredPayload.ignoredFileIds.length > 0) {
-    console.log("[desengine][task-start] forbidden_payload_ignored", {
+  try {
+    await ensureUserTaskDir(taskId)
+
+    for (const entry of filteredPayload.allowedEntries) {
+      const filePath = getUserTaskFilePath(taskId, entry.fileName)
+      await writeFile(filePath, String(entry.content ?? ""), "utf-8")
+      writtenFiles.push(filePath)
+    }
+
+    if (filteredPayload.ignoredFileIds.length > 0) {
+      console.log("[desengine][task-start] forbidden_payload_ignored", {
+        taskId,
+        ignoredFileIds: filteredPayload.ignoredFileIds,
+      })
+    }
+
+    cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
+    if (cleanup.deletedFileIds.length > 0) {
+      console.log("[desengine][task-start] forbidden_files_deleted", {
+        taskId,
+        deletedFileIds: cleanup.deletedFileIds,
+        deletedFilePaths: cleanup.deletedFilePaths,
+      })
+    }
+
+    console.log("[desengine][task-start] files_written", {
       taskId,
+      writtenFiles,
+      durationMs: Date.now() - startedAt,
+    })
+  } catch (error) {
+    console.error("[desengine][task-start] write_error", {
+      taskId,
+      durationMs: Date.now() - startedAt,
+      message: error instanceof Error ? error.message : String(error),
+      writtenFiles,
       ignoredFileIds: filteredPayload.ignoredFileIds,
-    })
-  }
-
-  const cleanup = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
-  if (cleanup.deletedFileIds.length > 0) {
-    console.log("[desengine][task-start] forbidden_files_deleted", {
-      taskId,
       deletedFileIds: cleanup.deletedFileIds,
-      deletedFilePaths: cleanup.deletedFilePaths,
+      outcome: "write_error",
     })
+    return Response.json(
+      {
+        ok: false,
+        error: "Не удалось сохранить результат initiator-запуска. Повторите попытку.",
+        errorKind: "write_error",
+      },
+      { status: 500 },
+    )
   }
-
-  console.log("[desengine][task-start] files_written", {
-    taskId,
-    writtenFiles,
-    durationMs: Date.now() - startedAt,
-  })
 
   await clearTaskCheckResult(taskId)
   const progress = await markCurrentTaskLevelInitialized(taskId)

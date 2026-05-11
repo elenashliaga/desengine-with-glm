@@ -28,6 +28,11 @@ type ProviderRuntimeConfig = {
   baseUrl: string
 }
 
+type LlmRequestRuntime = {
+  timeoutMs: number | null
+  signal?: AbortSignal
+}
+
 type LlmAdapter = {
   provider: LlmProvider
   label: string
@@ -38,7 +43,11 @@ type LlmAdapter = {
   }
   defaultBaseUrl: string
   buildConfig: () => ProviderRuntimeConfig
-  call: (request: LlmStructuredRequest, config: ProviderRuntimeConfig) => Promise<LlmStructuredResponse>
+  call: (
+    request: LlmStructuredRequest,
+    config: ProviderRuntimeConfig,
+    runtime: LlmRequestRuntime,
+  ) => Promise<LlmStructuredResponse>
 }
 
 class LlmError extends Error {
@@ -313,10 +322,47 @@ function mapFetchError(error: unknown, fallbackMessage: string): never {
   }
 
   if (error instanceof Error && error.name === "TimeoutError") {
-    throw new LlmError("timeout", "Таймаут при обращении к LLM-провайдеру")
+    throw new LlmError("timeout", "LLM-провайдер не успел ответить вовремя. Повторите попытку.")
   }
 
   throw new LlmError("network", fallbackMessage)
+}
+
+const DEFAULT_INIT_TIMEOUT_MS = 45_000
+
+function parseTimeoutEnvVar(name: string): number | null {
+  const rawValue = process.env[name]?.trim()
+
+  if (!rawValue) {
+    return null
+  }
+
+  if (!/^\d+$/.test(rawValue)) {
+    throw new LlmError("config", `Переменная ${name} должна быть положительным числом миллисекунд`)
+  }
+
+  const timeoutMs = Number.parseInt(rawValue, 10)
+
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    throw new LlmError("config", `Переменная ${name} должна быть положительным числом миллисекунд`)
+  }
+
+  return timeoutMs
+}
+
+function getLlmRequestRuntime(target: LlmStructuredRequest["target"]): LlmRequestRuntime {
+  if (target !== "init") {
+    return {
+      timeoutMs: null,
+    }
+  }
+
+  const timeoutMs = parseTimeoutEnvVar("DESENGINE_LLM_INIT_TIMEOUT_MS") ?? DEFAULT_INIT_TIMEOUT_MS
+
+  return {
+    timeoutMs,
+    signal: AbortSignal.timeout(timeoutMs),
+  }
 }
 
 function ensureOpenAIConfig(): ProviderRuntimeConfig {
@@ -365,6 +411,7 @@ function getGeminiModelPath(model: string): string {
 async function callOpenAI(
   request: LlmStructuredRequest,
   config: ProviderRuntimeConfig,
+  runtime: LlmRequestRuntime,
 ): Promise<LlmStructuredResponse> {
   const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
   const startedAt = Date.now()
@@ -385,10 +432,12 @@ async function callOpenAI(
       imageCount: images.length,
       instructionLength: request.instruction.length,
       schemaName: request.schemaName,
+      timeoutMs: runtime.timeoutMs,
     })
 
     res = await fetch(`${config.baseUrl}/responses`, {
       method: "POST",
+      signal: runtime.signal,
       headers: {
         authorization: `Bearer ${config.apiKey}`,
         "content-type": "application/json",
@@ -462,6 +511,7 @@ async function callOpenAI(
 async function callDeepSeek(
   request: LlmStructuredRequest,
   config: ProviderRuntimeConfig,
+  runtime: LlmRequestRuntime,
 ): Promise<LlmStructuredResponse> {
   const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
   const startedAt = Date.now()
@@ -481,6 +531,7 @@ async function callDeepSeek(
       imageCount: images.length,
       instructionLength: instruction.length,
       schemaName: request.schemaName,
+      timeoutMs: runtime.timeoutMs,
     })
 
     if (images.length > 0) {
@@ -493,6 +544,7 @@ async function callDeepSeek(
 
     res = await fetch(`${config.baseUrl}/chat/completions`, {
       method: "POST",
+      signal: runtime.signal,
       headers: {
         authorization: `Bearer ${config.apiKey}`,
         "content-type": "application/json",
@@ -567,6 +619,7 @@ async function callDeepSeek(
 async function callGemini(
   request: LlmStructuredRequest,
   config: ProviderRuntimeConfig,
+  runtime: LlmRequestRuntime,
 ): Promise<LlmStructuredResponse> {
   const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
   const startedAt = Date.now()
@@ -589,10 +642,12 @@ async function callGemini(
       imageCount: images.length,
       instructionLength: request.instruction.length,
       schemaName: request.schemaName,
+      timeoutMs: runtime.timeoutMs,
     })
 
     res = await fetch(`${config.baseUrl}/${getGeminiModelPath(config.model)}:generateContent`, {
       method: "POST",
+      signal: runtime.signal,
       headers: {
         "content-type": "application/json",
         "x-goog-api-key": config.apiKey,
@@ -722,8 +777,9 @@ function listConfiguredProviders(): LlmProvider[] {
 export async function runStructuredLlmRequest(request: LlmStructuredRequest): Promise<LlmStructuredResponse> {
   const adapter = getActiveAdapter()
   const config = adapter.buildConfig()
+  const runtime = getLlmRequestRuntime(request.target)
 
-  return adapter.call(request, config)
+  return adapter.call(request, config, runtime)
 }
 
 export function toLlmErrorResponse(error: unknown) {
