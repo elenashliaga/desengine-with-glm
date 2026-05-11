@@ -1,5 +1,12 @@
+"use client";
+
+import { useState } from "react";
+
 import { BaseProps } from "../Base";
+import { Button } from "@/components/ui/button";
+import { formatPromptHistoryTimestamp, TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt-history";
 import type { TaskData, TaskListItem } from "@/lib/types";
+import { taskWorkbenchFiles } from "@/lib/client";
 
 type PromptProps = BaseProps & {
     taskItem: TaskListItem;
@@ -8,12 +15,40 @@ type PromptProps = BaseProps & {
     error?: string;
 }
 
+const workbenchFileNameById = new Map(taskWorkbenchFiles.map((file) => [file.id, file.fileName]));
+
+function resolveChangedFileNames(entry: TaskData["promptHistory"][number]) {
+    if (entry.changedFileNames?.length) {
+        return entry.changedFileNames;
+    }
+
+    if (entry.changedFileIds?.length) {
+        return entry.changedFileIds.map((fileId) => workbenchFileNameById.get(fileId) ?? fileId);
+    }
+
+    return [];
+}
+
 function Prompt({
     taskItem,
     taskData,
     status = "",
     error = "",
 }: PromptProps) {
+    const [copiedEntryKey, setCopiedEntryKey] = useState<string | null>(null);
+
+    async function handleCopy(text: string, key: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedEntryKey(key);
+            window.setTimeout(() => {
+                setCopiedEntryKey((current) => (current === key ? null : current));
+            }, 1500);
+        } catch {
+            setCopiedEntryKey(null);
+        }
+    }
+
     return (
         <div className="space-y-3">
             {status && <p className="text-muted-foreground">{status}</p>}
@@ -58,26 +93,54 @@ function Prompt({
                     <p className="text-muted-foreground">Пока пусто</p>
                 ) : (
                     <div className="space-y-2">
-                        {taskData.promptHistory.map((entry) => (
-                            <div key={`${entry.createdAt}-${entry.text}`} className="rounded-md border p-3">
-                                <p className="text-muted-foreground">{entry.createdAt}</p>
-                                <p className="text-muted-foreground">
-                                  Уровень: {entry.levelNumber ?? "не указан"}
-                                </p>
-                                <p className="whitespace-pre-wrap">{entry.text}</p>
-                                <p className="text-muted-foreground">
-                                  Изменены: {entry.changedFileIds?.length ? entry.changedFileIds.join(", ") : "нет изменений"}
-                                </p>
-                                {entry.llmCall && (
-                                    <p className="text-muted-foreground">
-                                      LLM: {entry.llmCall.provider} / {entry.llmCall.model}.{" "}
-                                      {entry.llmCall.metrics.status === "available"
-                                        ? `Токены: ${entry.llmCall.metrics.totalTokens ?? "н/д"}`
-                                        : "Метрики не возвращены провайдером"}
+                        {taskData.promptHistory.map((entry, index) => {
+                            const entryKey = `${entry.createdAt}-${entry.text}`;
+                            const changedFileNames = resolveChangedFileNames(entry);
+
+                            return (
+                                <div key={entryKey} className="rounded-md border p-3">
+                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                        <div className="space-y-1">
+                                            <p className="font-medium">
+                                                Запрос #{entry.iterationNumber ?? index + 1}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                                {entry.displayCreatedAt ?? formatPromptHistoryTimestamp(entry.createdAt)}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                              Уровень: {entry.levelNumber ?? "не указан"}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                              Учебная стоимость: {entry.teachingCostCents ?? TEACHING_COST_PER_ITERATION_CENTS} цента
+                                            </p>
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => void handleCopy(entry.text, entryKey)}
+                                        >
+                                          {copiedEntryKey === entryKey ? "Скопировано" : "Скопировать"}
+                                        </Button>
+                                    </div>
+                                    <p className="mt-3 whitespace-pre-wrap">{entry.text}</p>
+                                    <p className="mt-3 text-muted-foreground">
+                                      Отправлены: {entry.selectedFileNames?.length ? entry.selectedFileNames.join(", ") : "нет данных"}
                                     </p>
-                                )}
-                            </div>
-                        ))}
+                                    <p className="text-muted-foreground">
+                                      Изменены: {changedFileNames.length ? changedFileNames.join(", ") : "нет изменений"}
+                                    </p>
+                                    {entry.llmCall && (
+                                        <p className="text-muted-foreground">
+                                          LLM: {entry.llmCall.provider} / {entry.llmCall.model}.{" "}
+                                          {entry.llmCall.metrics.status === "available"
+                                            ? `Токены: ${entry.llmCall.metrics.totalTokens ?? "н/д"}`
+                                            : "Метрики не возвращены провайдером"}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

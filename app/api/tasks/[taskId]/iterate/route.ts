@@ -15,6 +15,7 @@ import {
 } from "@/lib/server"
 import { appConfig } from "@/lib/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm.server"
+import { formatPromptHistoryTimestamp, TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt-history"
 import { readLevelIteratePrompt, readPrompt } from "@/lib/prompts.server"
 import {
   ensureUserTaskDir,
@@ -207,24 +208,37 @@ ${selectedFilesText}
   }
 
   const changedFileIds: string[] = []
+  const changedFileNames: string[] = []
   const filteredPayload = filterWorkbenchPayloadByAllowlist(payload, labContext.editableFileIds)
   await ensureUserTaskDir(taskId)
 
   for (const entry of filteredPayload.allowedEntries) {
     if (typeof entry.content !== "string") continue
 
+    const previousContent = taskData.contentByFileId[entry.fileId] ?? ""
+    if (entry.content === previousContent) {
+      continue
+    }
+
     const filePath = getUserTaskFilePath(taskId, entry.fileName)
     await writeFile(filePath, entry.content, "utf-8")
     changedFileIds.push(entry.fileId)
+    changedFileNames.push(entry.fileName)
   }
 
   const cleanupAfterIteration = await cleanupForbiddenWorkbenchFiles(taskId, labContext.editableFileIds)
 
+  const createdAt = new Date().toISOString()
   await appendPromptHistory(taskId, {
     text: promptText,
-    createdAt: new Date().toISOString(),
+    createdAt,
+    displayCreatedAt: formatPromptHistoryTimestamp(createdAt),
+    iterationNumber: taskData.promptHistory.length + 1,
     levelNumber: taskItem.progress.currentLevel,
+    selectedFileNames: editableFiles.map((file) => file.fileName),
     changedFileIds,
+    changedFileNames,
+    teachingCostCents: TEACHING_COST_PER_ITERATION_CENTS,
     llmCall: {
       provider: llmCall.provider,
       model: llmCall.model,

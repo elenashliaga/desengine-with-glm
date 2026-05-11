@@ -172,8 +172,13 @@ type TaskListItem = {
 export type PromptHistoryEntry = {
   text: string
   createdAt: string
+  displayCreatedAt?: string
+  iterationNumber?: number
   levelNumber?: number
+  selectedFileNames?: string[]
   changedFileIds?: string[]
+  changedFileNames?: string[]
+  teachingCostCents?: number
   llmCall?: LlmCallRecord
 }
 

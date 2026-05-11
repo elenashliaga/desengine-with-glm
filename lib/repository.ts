@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises"
 
 import { appConfig } from "./config.server"
+import { TEACHING_COST_PER_ITERATION_CENTS } from "./prompt-history"
 import { getLevelEditableWorkbenchFiles } from "./task-workbench.server"
 import {
   type TaskLabContext,
@@ -15,7 +16,9 @@ import {
   promptHistoryFileName,
 } from "./user-state.server"
 
-const teachingCostPerIterationCents = 3
+function isStringArray(value: unknown) {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+}
 
 function buildTaskLlmUsageSummary(promptHistory: PromptHistoryEntry[]): TaskLlmUsageSummary {
   const providersUsed = new Set<string>()
@@ -55,7 +58,7 @@ function buildTaskLlmUsageSummary(promptHistory: PromptHistoryEntry[]): TaskLlmU
 
   return {
     totalCalls: promptHistory.length,
-    teachingCostCents: promptHistory.length * teachingCostPerIterationCents,
+    teachingCostCents: promptHistory.length * TEACHING_COST_PER_ITERATION_CENTS,
     providersUsed: [...providersUsed],
     inputTokens: hasInputTokens ? inputTokensTotal : null,
     outputTokens: hasOutputTokens ? outputTokensTotal : null,
@@ -135,14 +138,19 @@ export async function readPromptHistory(taskId: string): Promise<PromptHistoryEn
       const maybeLegacyEntry = entry as PromptHistoryEntry & { selectedFileIds?: unknown }
       const hasLegacySelectedFileIds =
         typeof maybeLegacyEntry.selectedFileIds === "undefined" ||
-        (Array.isArray(maybeLegacyEntry.selectedFileIds) &&
-          maybeLegacyEntry.selectedFileIds.every((item: unknown) => typeof item === "string"))
+        isStringArray(maybeLegacyEntry.selectedFileIds)
 
       return (
         typeof maybeLegacyEntry.text === "string" &&
         typeof maybeLegacyEntry.createdAt === "string" &&
+        (typeof maybeLegacyEntry.displayCreatedAt === "string" || typeof maybeLegacyEntry.displayCreatedAt === "undefined") &&
+        (typeof maybeLegacyEntry.iterationNumber === "number" || typeof maybeLegacyEntry.iterationNumber === "undefined") &&
         (typeof maybeLegacyEntry.levelNumber === "number" || typeof maybeLegacyEntry.levelNumber === "undefined") &&
+        (typeof maybeLegacyEntry.selectedFileNames === "undefined" || isStringArray(maybeLegacyEntry.selectedFileNames)) &&
         hasLegacySelectedFileIds
+        && (typeof maybeLegacyEntry.changedFileIds === "undefined" || isStringArray(maybeLegacyEntry.changedFileIds))
+        && (typeof maybeLegacyEntry.changedFileNames === "undefined" || isStringArray(maybeLegacyEntry.changedFileNames))
+        && (typeof maybeLegacyEntry.teachingCostCents === "number" || typeof maybeLegacyEntry.teachingCostCents === "undefined")
       )
     })
   } catch {

@@ -32,10 +32,22 @@ const taskItem: TaskListItem = {
 const taskData: TaskData = {
   taskId: 'task-1',
   contentByFileId: {},
-  promptHistory: [],
+  promptHistory: [
+    {
+      text: 'Сделай подпись под карточкой компактнее и выровняй кнопку.',
+      createdAt: '2026-05-11T10:15:30.000Z',
+      displayCreatedAt: '2026-05-11 12:15:30',
+      iterationNumber: 1,
+      levelNumber: 1,
+      selectedFileNames: ['Component.tsx', 'Component.stories.ts'],
+      changedFileIds: ['component'],
+      changedFileNames: ['Component.tsx'],
+      teachingCostCents: 3,
+    },
+  ],
   llmUsageSummary: {
-    totalCalls: 0,
-    teachingCostCents: 0,
+    totalCalls: 1,
+    teachingCostCents: 3,
     providersUsed: [],
     inputTokens: null,
     outputTokens: null,
