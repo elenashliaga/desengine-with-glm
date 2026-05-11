@@ -152,6 +152,7 @@ type TaskProgressSummary = {
   currentLevelStarted: boolean
   promptsUsed: number
   promptsLimit: number
+  promptsRemaining: number
   checkAttemptsUsed: number
   checkAttemptsLimit: number
   checkingState: z.infer<typeof CheckingStateSchema>

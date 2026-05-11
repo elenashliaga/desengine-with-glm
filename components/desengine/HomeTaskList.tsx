@@ -54,6 +54,14 @@ function getStatusText(task: TaskListItem) {
   return `Уровень ${task.progress.currentLevel} из ${task.progress.maxLevel}`
 }
 
+function getPromptRemainderText(task: TaskListItem) {
+  if (!task.started) {
+    return `Уточнений на уровне: ${task.progress.promptsLimit}`
+  }
+
+  return `Осталось уточнений на уровне: ${task.progress.promptsRemaining} из ${task.progress.promptsLimit}`
+}
+
 function getLevelBadgeText(task: TaskListItem) {
   if (task.progress.isCompleted) {
     return "Завершена"
@@ -180,6 +188,7 @@ export function HomeTaskList({ initialTasks }: HomeTaskListProps) {
                         <span className="truncate">{task.id}</span>
                       </Link>
                       <p className="text-black/55">{getStatusText(task)}</p>
+                      <p className="text-sm text-black/45">{getPromptRemainderText(task)}</p>
                     </div>
 
                     <div className="flex flex-col gap-3 lg:min-w-[34rem] lg:flex-row lg:items-center lg:justify-end">

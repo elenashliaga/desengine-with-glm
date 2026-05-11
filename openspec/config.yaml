@@ -1,20 +1,37 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Репозиторий: desengine.
+  Все артефакты OpenSpec, документация и пользовательские тексты ведутся на русском языке.
+  Проект использует TypeScript.
+  При изменении поведения системы нужно обновлять `openspec/specs/` и/или changes с дельта-спеками.
+  Новые changes в этом репозитории создаются через `npm run openspec:new -- <name>`.
+  В `.openspec.yaml` каждого change должно быть краткое поле `short`.
+  Без явного указания нельзя менять install-critical стек: Node.js, Next.js, Turbopack и другие критичные части запуска/сборки.
+  Все кастомные UI-компоненты живут в `/components/desengine`.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Пиши на русском языке.
+    - Ясно разделяй Why, What Changes, Capabilities и Impact.
+    - Не предлагай менять install-critical стек без явного разрешения.
+    - Если change про баг, явно фиксируй наблюдаемую проблему и критерий успешного исправления.
+
+  specs:
+    - Пиши на русском языке.
+    - Описывай наблюдаемое поведение системы, а не детали реализации.
+    - Каждый requirement должен иметь минимум один scenario.
+    - Для изменений поведения используй корректные delta-разделы: ADDED, MODIFIED, REMOVED или RENAMED Requirements.
+    - Именуй capability по домену поведения, а не по названию change.
+
+  design:
+    - Пиши на русском языке.
+    - Отделяй goals от non-goals.
+    - Явно фиксируй риски, компромиссы и открытые вопросы.
+    - Не подменяй design списком задач из `tasks.md`.
+
+  tasks:
+    - Пиши на русском языке.
+    - Разбивай работу на короткие проверяемые шаги.
+    - Используй чекбоксы `- [ ]`.
+    - Добавляй отдельные шаги на проверку и обновление документации/OpenSpec, если меняется поведение системы.

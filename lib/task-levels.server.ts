@@ -406,6 +406,7 @@ function summarizeTaskProgress(
     currentLevelStarted: isLevelStarted(levelProgress),
     promptsUsed: levelProgress.promptsUsed,
     promptsLimit: currentLevel.maxPromptsPerTask,
+    promptsRemaining: Math.max(currentLevel.maxPromptsPerTask - levelProgress.promptsUsed, 0),
     checkAttemptsUsed: levelProgress.checkAttemptsUsed ?? 0,
     checkAttemptsLimit: currentLevel.maxCheckAttempts,
     checkingState: levelProgress.checkingState ?? "idle",
