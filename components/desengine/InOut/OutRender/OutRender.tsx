@@ -61,16 +61,16 @@ function OutRender({ task, started, reloadKey, startStatus }: OutRenderProps) {
     }, [moduleUrl, started]);
 
     return (
-        <div className="flex-1">
+        <div className="min-w-0">
             {!started ? (
-                <div className="space-y-2 rounded-md border bg-background p-4">
+                <div className="space-y-2 py-2">
                     <p className="text-muted-foreground">
                         Превью станет доступно после старта уровня.
                     </p>
                     {startStatus === "starting" && <p className="text-muted-foreground">Генерация файлов…</p>}
                 </div>
             ) : (
-                <div className="rounded-md border bg-background p-3 min-h-32">
+                <div className="min-h-32 overflow-hidden">
                     {error ? (
                         <pre className="text-destructive whitespace-pre-wrap">{error}</pre>
                     ) : Component ? (

@@ -428,8 +428,8 @@ function LabWorkbench({
                 gridTemplateRows: "minmax(0, 1fr) auto",
             }}
         >
-            <div className="min-h-0 overflow-y-auto p-4 pb-6">
-                <div className="space-y-4">
+            <div className="min-h-0 overflow-y-auto px-3 pb-5 pt-3 md:px-4 md:pb-6 md:pt-4">
+                <div className="space-y-3 md:space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p>Рабочий стол</p>

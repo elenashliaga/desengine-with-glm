@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { InPictureProps } from "./props";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function ImageCard({
     task,
@@ -11,25 +11,15 @@ function ImageCard({
 }) {
     const [src, setSrc] = useState(image.src);
 
-    useEffect(() => {
-        setSrc(image.src);
-    }, [image.src]);
-
     return (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-                <p className="font-medium">{image.id}.png</p>
-                <p className="text-muted-foreground">
-                    {image.width}x{image.height}
-                </p>
-            </div>
+        <div className="min-w-0">
             <Image
               src={src}
               alt={`${task}-${image.id}`}
               width={Math.max(image.width, 1)}
               height={Math.max(image.height, 1)}
               unoptimized
-              className="h-auto max-w-full rounded-md border"
+              className="h-auto max-w-full rounded-md"
               style={{ width: `${Math.max(image.width, 1)}px` }}
               onError={() => {
                   const fallbackSrc = `/api/tasks/${task}/image`;
@@ -44,17 +34,17 @@ function ImageCard({
 
 function LevelOneInPicture({ task, images }: { task: string; images: Array<{ id: string; src: string; width: number; height: number }> }) {
     return (
-        <div className="flex-1">
-            {images[0] ? <ImageCard task={task} image={images[0]} /> : null}
+        <div className="min-w-0">
+            {images[0] ? <ImageCard key={`${images[0].id}:${images[0].src}`} task={task} image={images[0]} /> : null}
         </div>
     );
 }
 
 function LevelTwoInPicture({ task, images }: { task: string; images: Array<{ id: string; src: string; width: number; height: number }> }) {
     return (
-        <div className="flex-1 space-y-4">
+        <div className="min-w-0 space-y-4">
             {images.map((image) => (
-                <ImageCard key={image.id} task={task} image={image} />
+                <ImageCard key={`${image.id}:${image.src}`} task={task} image={image} />
             ))}
         </div>
     );
@@ -62,9 +52,9 @@ function LevelTwoInPicture({ task, images }: { task: string; images: Array<{ id:
 
 function SharedInPicture({ task, images }: { task: string; images: Array<{ id: string; src: string; width: number; height: number }> }) {
     return (
-        <div className="flex-1 space-y-4">
+        <div className="min-w-0 space-y-4">
             {images.map((image) => (
-                <ImageCard key={image.id} task={task} image={image} />
+                <ImageCard key={`${image.id}:${image.src}`} task={task} image={image} />
             ))}
         </div>
     );
@@ -76,7 +66,7 @@ function InPicture({task, taskData}: InPictureProps) {
 
     if (!labContext || visibleImages.length === 0) {
         return (
-            <div className="flex-1 space-y-4">
+            <div className="min-w-0 space-y-4">
                 <ImageCard
                   task={task}
                   image={{
