@@ -14,12 +14,14 @@
 
 Без явного отдельного распоряжения пользователя нельзя менять технический стек, критичный для установки и запуска проекта. Это ограничение распространяется в том числе на версии `Node.js`, сборщик проекта, `Turbopack` и прочие инфраструктурные и install-critical части. Такие изменения допустимы только если пользователь прямо сказал, что именно можно менять и как именно.
 
-- All custom UI components live in /components/desengine
-- Use TypeScript strictly
-- Prefer shadcn/ui primitives
-- Separate rendering from playground logic
-- Do not inline styles
-- Keep educational file split:
+Любые тестовые прогоны и локальные браузерные проверки, включая `Playwright`, должны использовать `localhost`, а не `127.0.0.1`.
+
+- Все кастомные UI-компоненты живут в `/components/desengine`.
+- Нужно строго использовать `TypeScript`.
+- Нужно предпочитать примитивы `shadcn/ui`.
+- Нужно отделять рендеринг от логики playground/workbench.
+- Не нужно инлайнить стили.
+- Для учебных файлов нужно сохранять такое разделение:
   Component.tsx
   styles.ts
   mock.ts

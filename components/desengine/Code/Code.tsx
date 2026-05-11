@@ -13,21 +13,38 @@ import {
 import { TabsStyles } from "./styles"
 import { taskWorkbenchFiles } from "@/lib/client";
 
-function Code({ id, taskData, onTaskDataChange }: CodeProps & { id: string }) {
+function Code({
+  id,
+  taskData,
+  onTaskDataChange,
+  onFileChange,
+  dirtyFileIds = [],
+}: CodeProps & { id: string }) {
   if (!id) return null;
   const currentFile = taskWorkbenchFiles.find((file) => file.id === id);
+  const isDirty = dirtyFileIds.includes(id);
 
   if (!currentFile) {
     return null;
   }
 
   return (
-    <div className="h-full w-full overflow-hidden rounded-md border border-white/10 bg-[#111111]">
+    <div
+      className={[
+        "h-full w-full overflow-hidden rounded-md border bg-[#111111]",
+        isDirty ? "border-destructive" : "border-white/10",
+      ].join(" ")}
+    >
       <MonacoCodeEditor
         fileId={id}
         fileName={currentFile.fileName}
         value={taskData.contentByFileId[id] ?? ""}
         onChange={(nextValue) => {
+          if (onFileChange) {
+            onFileChange(id, nextValue);
+            return;
+          }
+
           if (!onTaskDataChange) return;
           onTaskDataChange({
             ...taskData,
@@ -42,16 +59,31 @@ function Code({ id, taskData, onTaskDataChange }: CodeProps & { id: string }) {
   );
 }
 
-function CodeTab({ title, file }: { title: string; file: string }) {
+function CodeTab({ title, file, isDirty }: { title: string; file: string; isDirty: boolean }) {
   return(
     <div className="w-full">
-      <p><strong>{title}</strong></p>
+      <div className="flex items-center gap-2">
+        <p><strong>{title}</strong></p>
+        {isDirty ? (
+          <span
+            aria-hidden="true"
+            className="inline-block size-3 rounded-full bg-destructive"
+          />
+        ) : null}
+      </div>
       <p><small><code>{file}</code></small></p>
     </div>
   );
 }
 
-function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChange } : CodeProps) {
+function CodeTabs({
+  taskData,
+  onTaskDataChange,
+  onFileChange,
+  activeFileId,
+  onActiveFileIdChange,
+  dirtyFileIds = [],
+} : CodeProps) {
   const editableFileIds = taskData.labContext?.editableFileIds ?? [];
   const codeFiles = taskWorkbenchFiles.filter((f) => f.edit === true && editableFileIds.includes(f.id));
   const fallbackTab = codeFiles[0]?.id ?? "component"
@@ -78,7 +110,13 @@ function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChan
             value={file.id}
             className={TabsStyles.content}
           >
-            <Code id={file.id} taskData={taskData} onTaskDataChange={onTaskDataChange} />
+            <Code
+              id={file.id}
+              taskData={taskData}
+              onTaskDataChange={onTaskDataChange}
+              onFileChange={onFileChange}
+              dirtyFileIds={dirtyFileIds}
+            />
           </TabsContent>
         ))}
       </div>
@@ -90,7 +128,11 @@ function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChan
             value={file.id}
             className={TabsStyles.trigger}
           >
-            <CodeTab title={file.title} file={file.fileName} />
+            <CodeTab
+              title={file.title}
+              file={file.fileName}
+              isDirty={dirtyFileIds.includes(file.id)}
+            />
           </TabsTrigger>
         ))}
       </TabsList>
@@ -98,13 +140,22 @@ function CodeTabs({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChan
   );
 }
 
-function CodeList({ taskData, onTaskDataChange, activeFileId, onActiveFileIdChange } : CodeProps) {
+function CodeList({
+  taskData,
+  onTaskDataChange,
+  onFileChange,
+  activeFileId,
+  onActiveFileIdChange,
+  dirtyFileIds = [],
+} : CodeProps) {
   return (
     <CodeTabs
       taskData={taskData}
       onTaskDataChange={onTaskDataChange}
+      onFileChange={onFileChange}
       activeFileId={activeFileId}
       onActiveFileIdChange={onActiveFileIdChange}
+      dirtyFileIds={dirtyFileIds}
     />
   );
 }

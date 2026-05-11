@@ -1,6 +1,6 @@
 "use client";
 
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { type LabWorkbenchProps } from "./props";
 
 import { MarkdownContent } from "../MarkdownContent";
@@ -26,6 +26,8 @@ type SaveErrorItem = {
     error: string;
 }
 
+const AUTOSAVE_DELAY_MS = 10_000;
+
 function LabWorkbench({
     taskItem,
     taskData,
@@ -37,7 +39,7 @@ function LabWorkbench({
     activeScreen,
     onScreenChange,
 }: LabWorkbenchProps) {
-    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "error">("idle");
     const [saveError, setSaveError] = useState<string>("");
     const [completePending, setCompletePending] = useState(false);
     const [completeError, setCompleteError] = useState("");
@@ -48,6 +50,17 @@ function LabWorkbench({
     const [promptError, setPromptError] = useState("");
     const [promptPending, setPromptPending] = useState(false);
     const [previewVersion, setPreviewVersion] = useState(0);
+    const [dirtyFileIds, setDirtyFileIds] = useState<string[]>([]);
+    const [autosaveRevision, setAutosaveRevision] = useState(0);
+
+    const savedContentByFileIdRef = useRef<Record<string, string>>({
+        ...taskData.contentByFileId,
+    });
+    const currentContentByFileIdRef = useRef<Record<string, string>>(taskData.contentByFileId);
+    const dirtyFileIdsRef = useRef<string[]>([]);
+    const editableFileIdsRef = useRef<Set<string>>(new Set());
+    const taskIdRef = useRef(taskItem.id);
+    const savePromiseRef = useRef<Promise<boolean> | null>(null);
 
     const editableFileIds = useMemo(() => {
         const editableIds = taskData.labContext?.editableFileIds ?? [];
@@ -58,40 +71,207 @@ function LabWorkbench({
         );
     }, [taskData.labContext?.editableFileIds]);
 
-    async function handleSave() {
-        setSaveStatus("saving");
+    useEffect(() => {
+        currentContentByFileIdRef.current = taskData.contentByFileId;
+    }, [taskData.contentByFileId]);
+
+    useEffect(() => {
+        dirtyFileIdsRef.current = dirtyFileIds;
+    }, [dirtyFileIds]);
+
+    useEffect(() => {
+        editableFileIdsRef.current = editableFileIds;
+    }, [editableFileIds]);
+
+    useEffect(() => {
+        taskIdRef.current = taskItem.id;
+    }, [taskItem.id]);
+
+    function replaceTaskData(nextTaskData: typeof taskData) {
+        savedContentByFileIdRef.current = {
+            ...nextTaskData.contentByFileId,
+        };
+        currentContentByFileIdRef.current = nextTaskData.contentByFileId;
+        dirtyFileIdsRef.current = [];
+        setDirtyFileIds([]);
         setSaveError("");
+        setSaveStatus("idle");
+        onTaskDataChange(nextTaskData);
+    }
 
-        const updates = Object.entries(taskData.contentByFileId)
-            .filter(([fileId]) => editableFileIds.has(fileId))
-            .map(([fileId, content]) => ({ fileId, content }));
+    function markFileDirtyState(fileId: string, nextValue: string) {
+        const savedValue = savedContentByFileIdRef.current[fileId] ?? "";
 
-        const res = await fetch(`/api/tasks/${taskItem.id}/files`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-                updates,
-            }),
+        setDirtyFileIds((current) => {
+            const isDirty = current.includes(fileId);
+            const shouldBeDirty = nextValue !== savedValue;
+
+            if (shouldBeDirty === isDirty) {
+                return current;
+            }
+
+            if (shouldBeDirty) {
+                const next = [...current, fileId];
+                dirtyFileIdsRef.current = next;
+                return next;
+            }
+
+            const next = current.filter((currentFileId) => currentFileId !== fileId);
+            dirtyFileIdsRef.current = next;
+            return next;
         });
+    }
 
-        const data = await res.json().catch(() => null);
+    async function saveDirtyFiles(targetFileIds?: string[]) {
+        while (true) {
+            if (savePromiseRef.current) {
+                const existingSaveSucceeded = await savePromiseRef.current;
+                if (!existingSaveSucceeded) {
+                    return false;
+                }
+                continue;
+            }
 
-        if (!res.ok || !data?.ok) {
-            const err =
-                data?.error ||
-                (Array.isArray(data?.errors) ? data.errors.map((e: SaveErrorItem) => `${e.fileId}: ${e.error}`).join("\n") : "") ||
-                "Ошибка сохранения";
+            const dirtySet = new Set(dirtyFileIdsRef.current);
+            const allowedTargetIds = targetFileIds ? new Set(targetFileIds) : null;
+            const updates = Object.entries(currentContentByFileIdRef.current)
+                .filter(([fileId]) => editableFileIdsRef.current.has(fileId))
+                .filter(([fileId]) => dirtySet.has(fileId))
+                .filter(([fileId]) => (allowedTargetIds ? allowedTargetIds.has(fileId) : true))
+                .map(([fileId, content]) => ({ fileId, content }));
 
-            setSaveError(err);
-            setSaveStatus("error");
+            if (updates.length === 0) {
+                return true;
+            }
+
+            const promise = (async () => {
+                setSaveStatus("saving");
+                setSaveError("");
+
+                const res = await fetch(`/api/tasks/${taskIdRef.current}/files`, {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        updates,
+                    }),
+                });
+
+                const data = await res.json().catch(() => null);
+
+                if (!res.ok || !data?.ok) {
+                    const err =
+                        data?.error ||
+                        (Array.isArray(data?.errors) ? data.errors.map((e: SaveErrorItem) => `${e.fileId}: ${e.error}`).join("\n") : "") ||
+                        "Ошибка сохранения";
+
+                    setSaveError(err);
+                    setSaveStatus("error");
+                    return false;
+                }
+
+                for (const update of updates) {
+                    savedContentByFileIdRef.current[update.fileId] = update.content;
+                }
+
+                setDirtyFileIds((current) => {
+                    const next = current.filter((fileId) => {
+                        const savedValue = savedContentByFileIdRef.current[fileId] ?? "";
+                        const currentValue = currentContentByFileIdRef.current[fileId] ?? "";
+                        return currentValue !== savedValue;
+                    });
+
+                    dirtyFileIdsRef.current = next;
+                    return next;
+                });
+                setSaveStatus("idle");
+                setPreviewVersion((current) => current + 1);
+                return true;
+            })();
+
+            savePromiseRef.current = promise;
+
+            try {
+                const saved = await promise;
+                if (!saved) {
+                    return false;
+                }
+            } finally {
+                savePromiseRef.current = null;
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (dirtyFileIds.length === 0) {
             return;
         }
 
-        setSaveStatus("saved");
-        setPreviewVersion((current) => current + 1);
+        const timeoutId = window.setTimeout(() => {
+            void saveDirtyFiles();
+        }, AUTOSAVE_DELAY_MS);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [autosaveRevision, dirtyFileIds.length]);
+
+    useEffect(() => {
+        function handleWindowKeyDown(event: globalThis.KeyboardEvent) {
+            const isSaveHotkey = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s";
+
+            if (!isSaveHotkey) {
+                return;
+            }
+
+            event.preventDefault();
+            void saveDirtyFiles();
+        }
+
+        window.addEventListener("keydown", handleWindowKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleWindowKeyDown);
+        };
+    }, []);
+
+    async function handleSave() {
+        await saveDirtyFiles();
+    }
+
+    async function saveBeforeAction(targetFileIds?: string[]) {
+        const saved = await saveDirtyFiles(targetFileIds);
+
+        if (!saved) {
+            return false;
+        }
+
+        return true;
+    }
+
+    async function handleBackToLevelList() {
+        const saved = await saveBeforeAction();
+        if (!saved) {
+            return;
+        }
+
+        onBackToLevelList();
+    }
+
+    async function handleFileChange(nextFileId: string) {
+        const saved = await saveBeforeAction(activeScreen ? [activeScreen] : undefined);
+        if (!saved) {
+            return;
+        }
+
+        onScreenChange(nextFileId);
     }
 
     async function handleCheck() {
+        const saved = await saveBeforeAction();
+        if (!saved) {
+            return;
+        }
+
         setCompletePending(true);
         setCompleteError("");
 
@@ -105,6 +285,7 @@ function LabWorkbench({
             return;
         }
 
+        replaceTaskData(data.taskData);
         onCheckResult(
             data.checkResult,
             data.transition ?? null,
@@ -114,6 +295,11 @@ function LabWorkbench({
     }
 
     async function handleReset() {
+        const saved = await saveBeforeAction();
+        if (!saved) {
+            return;
+        }
+
         setResetPending(true);
         setResetError("");
 
@@ -131,7 +317,7 @@ function LabWorkbench({
                 onTaskItemChange(data.taskItem);
             }
             if (data.taskData) {
-                onTaskDataChange(data.taskData);
+                replaceTaskData(data.taskData);
             }
             onTransition(null);
             onScreenChange("component");
@@ -143,6 +329,11 @@ function LabWorkbench({
     }
 
     async function handlePromptRun() {
+        const saved = await saveBeforeAction();
+        if (!saved) {
+            return;
+        }
+
         setPromptStatus("");
         setPromptError("");
 
@@ -175,14 +366,14 @@ function LabWorkbench({
         }
 
         onTaskItemChange(data.taskItem ?? null);
-        onTaskDataChange(data.taskData);
+        replaceTaskData(data.taskData);
         onTransition(data.transition ?? null);
         setPreviewVersion((current) => current + 1);
         setPromptText("");
         setPromptStatus("Уточнение применено");
     }
 
-    function handlePromptKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    function handlePromptKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
         if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
             return;
         }
@@ -208,10 +399,26 @@ function LabWorkbench({
         }
     }
 
+    function handleCodeChange(fileId: string, nextValue: string) {
+        const nextTaskData = {
+            ...taskData,
+            contentByFileId: {
+                ...taskData.contentByFileId,
+                [fileId]: nextValue,
+            },
+        };
+
+        currentContentByFileIdRef.current = nextTaskData.contentByFileId;
+        markFileDirtyState(fileId, nextValue);
+        setAutosaveRevision((current) => current + 1);
+        onTaskDataChange(nextTaskData);
+    }
+
     const canCompleteCurrentLevel = taskItem.progress.currentLevelStarted && taskItem.progress.currentLevelStatus !== "completed";
     const levelReadyForWork = taskItem.progress.currentLevelStarted;
     const promptInputDisabled = promptPending;
     const promptRunDisabled = promptPending;
+    const hasDirtyFiles = dirtyFileIds.length > 0;
 
     return (
         <div
@@ -240,7 +447,7 @@ function LabWorkbench({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            <Button variant="outline" onClick={onBackToLevelList}>
+                            <Button variant="outline" onClick={() => void handleBackToLevelList()}>
                                 К списку задач уровня
                             </Button>
                             <AlertDialog>
@@ -300,14 +507,13 @@ function LabWorkbench({
 
                     {levelReadyForWork && (
                         <div className="space-y-3 pb-4">
-                            <div className="flex items-center gap-2">
-                                <Button onClick={handleSave} variant="secondary" disabled={saveStatus === "saving"}>
-                                    {saveStatus === "saving" ? "Сохранение…" : "Сохранить"}
-                                </Button>
-                                {saveStatus === "saved" && (
-                                    <span className="text-muted-foreground">Сохранено</span>
-                                )}
-                            </div>
+                            {hasDirtyFiles && (
+                                <div className="flex items-center gap-2">
+                                    <Button onClick={() => void handleSave()} variant="secondary" disabled={saveStatus === "saving"}>
+                                        {saveStatus === "saving" ? "Сохранение…" : "Сохранить"}
+                                    </Button>
+                                </div>
+                            )}
 
                             {saveStatus === "error" && (
                                 <pre className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-destructive whitespace-pre-wrap">
@@ -317,9 +523,10 @@ function LabWorkbench({
 
                             <CodeList
                               taskData={taskData}
-                              onTaskDataChange={onTaskDataChange}
+                              onFileChange={handleCodeChange}
                               activeFileId={activeScreen}
-                              onActiveFileIdChange={onScreenChange}
+                              onActiveFileIdChange={(nextFileId) => void handleFileChange(nextFileId)}
+                              dirtyFileIds={dirtyFileIds}
                             />
                             <Prompt
                               taskItem={taskItem}
