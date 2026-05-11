@@ -28,6 +28,21 @@ function createCheckHref(taskId: string) {
     return createTaskCheckPath(taskId);
 }
 
+function replaceTaskUrl(taskId: string, screen?: string | null) {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    const nextHref = createTaskHref(taskId, screen);
+    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (currentHref === nextHref) {
+        return;
+    }
+
+    window.history.replaceState(window.history.state, "", nextHref);
+}
+
 function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabProps) {
     const router = useRouter();
     const [screen, setScreen] = useState<LabScreenState>(initScreen);
@@ -146,7 +161,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     function handleScreenChange(nextScreen: string) {
         if (!taskItem) return;
-        router.push(createTaskHref(taskItem.id, nextScreen));
+        replaceTaskUrl(taskItem.id, nextScreen);
         setScreen({ type: "task", screen: nextScreen });
     }
 

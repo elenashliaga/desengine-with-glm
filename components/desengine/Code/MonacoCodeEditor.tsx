@@ -12,6 +12,7 @@ type MonacoEditorProps = {
 };
 
 type MonacoReactEditorProps = {
+  beforeMount?: (monaco: MonacoInstance) => void;
   defaultLanguage?: string;
   height?: string;
   loading?: ReactNode;
@@ -21,6 +22,8 @@ type MonacoReactEditorProps = {
   theme?: string;
   value?: string;
 };
+
+type MonacoInstance = typeof import("monaco-editor");
 
 function getEditorLanguage(fileName: string) {
   if (fileName.endsWith(".json")) {
@@ -51,11 +54,25 @@ function FallbackCodeEditor({ fileId, value, onChange }: MonacoEditorProps) {
     <Textarea
       id={fileId}
       placeholder={fileId}
-      className="h-full w-full rounded-none border-0 bg-transparent p-3 font-mono text-sm shadow-none focus-visible:ring-0"
+      className="h-full w-full rounded-none border-0 bg-transparent p-3 font-mono text-sm text-black shadow-none focus-visible:ring-0"
       value={value}
       onChange={(event) => onChange(event.target.value)}
     />
   );
+}
+
+function configureLabDiagnostics(monaco: MonacoInstance) {
+  monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: true,
+    noSuggestionDiagnostics: true,
+    noSyntaxValidation: false,
+  });
+
+  monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+    noSemanticValidation: true,
+    noSuggestionDiagnostics: true,
+    noSyntaxValidation: false,
+  });
 }
 
 function MonacoCodeEditor({ fileId, fileName, value, onChange }: MonacoEditorProps) {
@@ -91,9 +108,10 @@ function MonacoCodeEditor({ fileId, fileName, value, onChange }: MonacoEditorPro
   return (
     <Editor
       path={fileName}
+      beforeMount={configureLabDiagnostics}
       defaultLanguage={language}
       height="100%"
-      theme="vs-dark"
+      theme="light"
       value={value}
       loading={
         <FallbackCodeEditor fileId={fileId} fileName={fileName} value={value} onChange={onChange} />
@@ -101,11 +119,19 @@ function MonacoCodeEditor({ fileId, fileName, value, onChange }: MonacoEditorPro
       onChange={(nextValue) => onChange(nextValue ?? "")}
       options={{
         automaticLayout: true,
+        bracketPairColorization: { enabled: false },
         fontSize: 14,
+        guides: {
+          bracketPairs: false,
+          indentation: true,
+        },
         lineNumbers: "on",
         minimap: { enabled: false },
         padding: { top: 12, bottom: 12 },
+        renderLineHighlight: "line",
+        roundedSelection: false,
         scrollBeyondLastLine: false,
+        smoothScrolling: true,
         tabSize: 2,
         wordWrap: "on",
       }}

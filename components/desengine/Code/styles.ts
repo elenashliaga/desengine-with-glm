@@ -1,17 +1,19 @@
 // Tabs.styles.ts
 export const TabsStyles = {
-  list: "w-full flex border-b border-white/10",
-
-  trigger: [
-    "flex-1 w-full px-4 py-2 flex-col",
-    "justify-start text-left",
-    "border-b-2 border-transparent",
-    "transition-colors",
-    "data-[state=active]:text-white",
-    "data-[state=active]:border-white",
-    "bg-black/90 text-white/30",
-    "hover:text-white/80",
+  list: [
+    "w-full flex flex-col gap-2 rounded-2xl border border-black/10 bg-[#f5efe4] p-2",
+    "md:max-w-[18rem]",
   ].join(" "),
 
-  content: "w-full h-full",
+  trigger: [
+    "w-full rounded-xl border border-transparent px-4 py-3",
+    "justify-start text-left",
+    "transition-[border-color,background-color,color,box-shadow]",
+    "text-black/55 hover:text-black/80",
+    "hover:border-black/10 hover:bg-white/70",
+    "data-[state=active]:border-black/10 data-[state=active]:bg-white",
+    "data-[state=active]:text-black data-[state=active]:shadow-sm",
+  ].join(" "),
+
+  content: "w-full h-full mt-0",
 }

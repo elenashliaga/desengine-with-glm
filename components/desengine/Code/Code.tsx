@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Check, Copy } from "lucide-react";
+
 import { CodeProps } from "./props";
 import { BaseStyles } from "../Base";
 import { MonacoCodeEditor } from "./MonacoCodeEditor";
+import { Button } from "@/components/ui/button";
 
 import {
   Tabs,
@@ -20,58 +24,116 @@ function Code({
   onFileChange,
   dirtyFileIds = [],
 }: CodeProps & { id: string }) {
-  if (!id) return null;
-  const currentFile = taskWorkbenchFiles.find((file) => file.id === id);
-  const isDirty = dirtyFileIds.includes(id);
+  const [copied, setCopied] = useState(false);
+  const currentFile = id ? taskWorkbenchFiles.find((file) => file.id === id) : null;
+  const isDirty = id ? dirtyFileIds.includes(id) : false;
 
-  if (!currentFile) {
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCopied(false);
+    }, 1600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [copied]);
+
+  if (!id || !currentFile) {
     return null;
   }
 
-  return (
-    <div
-      className={[
-        "h-full w-full overflow-hidden rounded-md border bg-[#111111]",
-        isDirty ? "border-destructive" : "border-white/10",
-      ].join(" ")}
-    >
-      <MonacoCodeEditor
-        fileId={id}
-        fileName={currentFile.fileName}
-        value={taskData.contentByFileId[id] ?? ""}
-        onChange={(nextValue) => {
-          if (onFileChange) {
-            onFileChange(id, nextValue);
-            return;
-          }
+  const fileContent = taskData.contentByFileId[id] ?? "";
 
-          if (!onTaskDataChange) return;
-          onTaskDataChange({
-            ...taskData,
-            contentByFileId: {
-              ...taskData.contentByFileId,
-              [id]: nextValue,
-            },
-          });
-        }}
-      />
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(fileContent);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-black/10 bg-[#f5efe4] px-4 py-3">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm text-black/80">
+            <strong>{currentFile.title}</strong>
+            {isDirty ? (
+              <span
+                aria-hidden="true"
+                className="inline-block size-2.5 rounded-full bg-destructive"
+              />
+            ) : null}
+          </div>
+          <p className="text-xs text-black/50">
+            <code>{currentFile.fileName}</code>
+          </p>
+          <p className="text-sm text-black/60">
+            Можно скопировать код и показать его в обычном чате ChatGPT, если нужен быстрый внешний взгляд.
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void handleCopy()}
+          className="gap-2 bg-white/85"
+        >
+          {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+          {copied ? "Скопировано" : "Скопировать"}
+        </Button>
+      </div>
+
+      <div
+        className={[
+          "min-h-0 flex-1 overflow-hidden rounded-2xl border bg-[#fbf8f2]",
+          isDirty ? "border-destructive/40" : "border-black/10",
+        ].join(" ")}
+      >
+        <MonacoCodeEditor
+          fileId={id}
+          fileName={currentFile.fileName}
+          value={fileContent}
+          onChange={(nextValue) => {
+            if (onFileChange) {
+              onFileChange(id, nextValue);
+              return;
+            }
+
+            if (!onTaskDataChange) return;
+            onTaskDataChange({
+              ...taskData,
+              contentByFileId: {
+                ...taskData.contentByFileId,
+                [id]: nextValue,
+              },
+            });
+          }}
+        />
+      </div>
     </div>
   );
 }
 
 function CodeTab({ title, file, isDirty }: { title: string; file: string; isDirty: boolean }) {
   return(
-    <div className="w-full">
+    <div className="w-full space-y-1">
       <div className="flex items-center gap-2">
-        <p><strong>{title}</strong></p>
+        <p className="text-sm"><strong>{title}</strong></p>
         {isDirty ? (
           <span
             aria-hidden="true"
-            className="inline-block size-3 rounded-full bg-destructive"
+            className="inline-block size-2.5 rounded-full bg-destructive"
           />
         ) : null}
       </div>
-      <p><small><code>{file}</code></small></p>
+      <p className="text-xs opacity-70"><code>{file}</code></p>
     </div>
   );
 }
@@ -101,9 +163,9 @@ function CodeTabs({
     <Tabs
       value={tab}
       onValueChange={(nextValue) => onActiveFileIdChange?.(nextValue)}
-      className={`${BaseStyles.frameRow} h-96`}
+      className={`${BaseStyles.frameRow} h-[34rem] gap-3 lg:flex-row`}
     >
-      <div className="flex-6 p-0 gap-0">
+      <div className="min-h-0 flex-1 p-0">
         {codeFiles.map((file) => (
           <TabsContent
             key={file.id}
@@ -121,7 +183,7 @@ function CodeTabs({
         ))}
       </div>
 
-      <TabsList className={`${TabsStyles.list} flex flex-2 flex-col`}>
+      <TabsList className={TabsStyles.list}>
         {codeFiles.map((file) => (
           <TabsTrigger
             key={file.id}
