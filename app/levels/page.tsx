@@ -3,7 +3,7 @@ import Link from "next/link"
 import { MarkdownContent } from "@/components/desengine/MarkdownContent"
 import { LevelTaskCard } from "@/components/desengine/LevelTaskCard"
 import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createConfigPath, createHelpPath, createLevelsPath, createTasksPath } from "@/lib/navigation"
+import { createConfigPath, createHelpPath, createLevelAssetPath, createLevelsPath, createTasksPath } from "@/lib/navigation"
 import { getAllLevelOverviews } from "@/lib/server"
 
 export default async function LevelsPage() {
@@ -52,7 +52,11 @@ export default async function LevelsPage() {
                   <p className="text-muted-foreground">
                     Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
                   </p>
-                  <MarkdownContent className="max-w-3xl" content={overview.level.description} />
+                  <MarkdownContent
+                    assetBasePath={createLevelAssetPath(overview.level.id)}
+                    className="max-w-3xl"
+                    content={overview.level.description}
+                  />
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">

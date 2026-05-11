@@ -3,6 +3,7 @@
 import { MarkdownContent } from "@/components/desengine/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { OutRender } from "@/components/desengine/InOut/OutRender/OutRender";
+import { createLevelAssetPath } from "@/lib/navigation";
 import type { TaskTransition } from "@/lib/types";
 
 type TaskLevelTransitionProps = {
@@ -24,6 +25,7 @@ export function TaskLevelTransition({
   const previousLevelTaskText = transition.fromTaskTip
     || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить результат и подготовить переход дальше.`
   const nextLevel = transition.toLevel
+  const previousLevelAssetBasePath = createLevelAssetPath(transition.fromLevel.id)
 
   if (!nextLevel) {
     return null
@@ -31,6 +33,7 @@ export function TaskLevelTransition({
 
   const nextLevelTaskText = transition.toTaskTip
     || `В задаче ${transition.taskId} на уровне ${nextLevel.number} начинается следующий шаг с новым дидактическим фокусом.`
+  const nextLevelAssetBasePath = createLevelAssetPath(nextLevel.id)
 
   return (
     <section className="space-y-4 rounded-md border p-6">
@@ -54,6 +57,7 @@ export function TaskLevelTransition({
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground/80">Общий фокус уровня</p>
               <MarkdownContent
+                assetBasePath={previousLevelAssetBasePath}
                 className="text-sm text-muted-foreground/80"
                 content={transition.fromLevel.description}
               />
@@ -79,6 +83,7 @@ export function TaskLevelTransition({
           <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground/80">Общий фокус уровня</p>
             <MarkdownContent
+              assetBasePath={nextLevelAssetBasePath}
               className="text-sm text-muted-foreground/80"
               content={nextLevel.description}
             />

@@ -2,6 +2,7 @@
 
 import { MarkdownContent } from "@/components/desengine/MarkdownContent"
 import { Button } from "@/components/ui/button"
+import { createLevelAssetPath } from "@/lib/navigation"
 
 import { type TaskLevelStartProps } from "./props"
 
@@ -17,6 +18,7 @@ function TaskLevelStart({
   const isFirstLevel = currentLevel === 1
   const commonExplanation = taskData.labContext?.commonExplanation ?? ""
   const taskTip = taskData.labContext?.taskTip ?? ""
+  const levelAssetBasePath = taskData.labContext ? createLevelAssetPath(taskData.labContext.levelId) : undefined
 
   return (
     <section className="space-y-6 rounded-xl border bg-white p-6 shadow-sm">
@@ -44,7 +46,10 @@ function TaskLevelStart({
 
           <div className="space-y-2">
             <p className="font-medium">Общее пояснение уровня</p>
-            <MarkdownContent content={commonExplanation || "Общее пояснение уровня пока не заполнено."} />
+            <MarkdownContent
+              assetBasePath={levelAssetBasePath}
+              content={commonExplanation || "Общее пояснение уровня пока не заполнено."}
+            />
           </div>
         </div>
 

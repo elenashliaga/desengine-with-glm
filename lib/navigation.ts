@@ -60,6 +60,22 @@ export function createLevelsPath(levelId?: string | null) {
   return `/levels/${encodeURIComponent(levelId)}`
 }
 
+export function createLevelAssetPath(levelId: string, assetPath?: string | null) {
+  const basePath = `/api/levels/${encodeURIComponent(levelId)}/assets`
+
+  if (!assetPath) {
+    return basePath
+  }
+
+  const normalizedAssetPath = assetPath
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/")
+
+  return normalizedAssetPath ? `${basePath}/${normalizedAssetPath}` : basePath
+}
+
 export function createAuthPath() {
   return "/auth"
 }

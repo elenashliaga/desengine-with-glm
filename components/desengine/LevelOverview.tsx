@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { MarkdownContent } from "@/components/desengine/MarkdownContent";
 import { Button } from "@/components/ui/button";
-import { createLevelsPath } from "@/lib/navigation";
+import { createLevelAssetPath, createLevelsPath } from "@/lib/navigation";
 import type { LevelOverview as LevelOverviewData } from "@/lib/types";
 import { LevelTaskCard } from "./LevelTaskCard";
 
@@ -13,6 +13,10 @@ type LevelOverviewProps = {
   onOpenTask: (taskId: string) => void;
   onNavigateLevel: (levelId: string) => void;
 };
+
+function isExternalUrl(url: string) {
+  return /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(url)
+}
 
 export function LevelOverview({
   overview,
@@ -29,10 +33,32 @@ export function LevelOverview({
           <p className="text-muted-foreground">
             Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
           </p>
-          <MarkdownContent className="max-w-3xl" content={overview.level.description} />
-          <Link className="tool-link-inline" href={createLevelsPath()}>
-            Открыть все уровни
-          </Link>
+          <MarkdownContent
+            assetBasePath={createLevelAssetPath(overview.level.id)}
+            className="max-w-3xl"
+            content={overview.level.description}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <Link className="tool-link-inline" href={createLevelsPath()}>
+              Открыть все уровни
+            </Link>
+            {overview.level.url ? (
+              isExternalUrl(overview.level.url) ? (
+                <a
+                  className="tool-link-inline"
+                  href={overview.level.url}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Дополнительные материалы
+                </a>
+              ) : (
+                <Link className="tool-link-inline" href={overview.level.url}>
+                  Дополнительные материалы
+                </Link>
+              )
+            ) : null}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
