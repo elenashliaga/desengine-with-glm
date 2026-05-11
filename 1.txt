@@ -1,6 +1,0 @@
-# GEMINI_API_KEY создаётся в Google AI Studio.
-GEMINI_API_KEY=
-DESENGINE_GEMINI_MODEL=gemini-2.5-flash
-DESENGINE_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
-
-# Доступ по email в рабочую часть лаборатории
