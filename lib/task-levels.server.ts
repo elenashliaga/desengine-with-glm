@@ -5,6 +5,10 @@ import path from "node:path"
 
 import { appConfig } from "./config.server"
 import { readLevelCommonExplanation } from "./prompts.server"
+import {
+  isLevelStarted,
+  summarizeTaskProgress,
+} from "./task-progress-summary"
 import { readPromptHistory } from "./repository"
 import {
   LevelsCatalogSchema,
@@ -17,7 +21,6 @@ import {
   type PromptHistoryEntry,
   type TaskLabContext,
   type TaskConfig,
-  type TaskLevelProgress,
   type TaskListItem,
   type TaskProgress,
   type TaskProgressSummary,
@@ -57,35 +60,6 @@ type FailedTaskCheckMutationResult = {
   attemptNumber: number
   maxCheckAttempts: number
   reset: boolean
-}
-
-function isLevelStarted(levelProgress: TaskLevelProgress | undefined) {
-  if (!levelProgress) {
-    return false
-  }
-
-  return Boolean(
-    levelProgress.initializedAt
-      || levelProgress.completedAt
-      || levelProgress.promptsUsed > 0
-      || levelProgress.status !== "available",
-  )
-}
-
-function getCurrentLevelDisplayStatus(levelProgress: TaskLevelProgress): TaskProgressSummary["currentLevelDisplayStatus"] {
-  if (levelProgress.status === "completed") {
-    return "completed"
-  }
-
-  if (levelProgress.checkingState === "awaiting_retry") {
-    return "awaiting_check_retry"
-  }
-
-  if (levelProgress.status === "in_progress") {
-    return "in_progress"
-  }
-
-  return "available"
 }
 
 async function readLevelsCatalogRaw() {
@@ -383,38 +357,6 @@ async function buildTaskLabContext(
         show: imageConfig.show,
       }
     }),
-  }
-}
-
-function summarizeTaskProgress(
-  levels: LevelConfig[],
-  taskConfig: TaskConfig,
-  taskProgress: TaskProgress,
-): TaskProgressSummary {
-  const currentLevelNumber = Math.min(taskProgress.currentLevel, taskConfig.maxLevel)
-  const currentLevel = requireLevel(levels, currentLevelNumber)
-  const levelProgress = taskProgress.levels[String(currentLevelNumber)] ?? {
-    status: "available" as const,
-    promptsUsed: 0,
-  }
-
-  return {
-    currentLevel: currentLevelNumber,
-    currentLevelId: currentLevel.id,
-    currentLevelStatus: levelProgress.status,
-    currentLevelDisplayStatus: getCurrentLevelDisplayStatus(levelProgress),
-    currentLevelStarted: isLevelStarted(levelProgress),
-    promptsUsed: levelProgress.promptsUsed,
-    promptsLimit: currentLevel.maxPromptsPerTask,
-    promptsRemaining: Math.max(currentLevel.maxPromptsPerTask - levelProgress.promptsUsed, 0),
-    checkAttemptsUsed: levelProgress.checkAttemptsUsed ?? 0,
-    checkAttemptsLimit: currentLevel.maxCheckAttempts,
-    checkingState: levelProgress.checkingState ?? "idle",
-    maxLevel: taskConfig.maxLevel,
-    isCompleted:
-      levelProgress.status === "completed" && currentLevelNumber === taskConfig.maxLevel,
-    hasNextLevel: currentLevelNumber < taskConfig.maxLevel,
-    completionReason: levelProgress.completionReason ?? null,
   }
 }
 
