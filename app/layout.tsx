@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import "./tool-ui.css";
 
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
+const inter = localFont({
+  src: [
+    {
+      path: "./fonts/InterVariable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/InterVariable-Italic.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   display: "swap",
   variable: "--font-ui",
   fallback: ["Segoe UI", "Helvetica Neue", "Arial", "system-ui", "sans-serif"],
