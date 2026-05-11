@@ -1,4 +1,4 @@
-import rawConfig from "@/desengine.config.json"
+import rawConfig from "../desengine.config.json"
 
 const appConfigSource = rawConfig
 
