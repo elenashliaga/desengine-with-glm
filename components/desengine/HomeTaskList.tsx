@@ -7,6 +7,12 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { createConfigPath, createHelpPath, createLevelsPath, createTaskPath } from "@/lib/navigation"
 import {
+  getIndicatorWidth,
+  getLevelBadgeText,
+  getPromptRemainderText,
+  getStatusText,
+} from "@/lib/task-progress-presentation"
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -29,49 +35,6 @@ type PendingAction =
 
 function createTaskHref(taskId: string) {
   return createTaskPath(taskId)
-}
-
-function getIndicatorWidth(task: TaskListItem) {
-  if (!task.started) return "0%"
-  if (task.progress.isCompleted) return "100%"
-
-  const ratio = task.progress.currentLevel / task.progress.maxLevel
-  return `${Math.max(ratio * 100, 8)}%`
-}
-
-function getStatusText(task: TaskListItem) {
-  if (!task.started) return "Не начиналась"
-  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
-    return "Ждёт проверки"
-  }
-  if (task.progress.isCompleted) {
-    if (task.progress.completionReason === "check_passed") {
-      return "Проверка пройдена, задача завершена"
-    }
-
-    return "Задача завершена"
-  }
-  return `Уровень ${task.progress.currentLevel} из ${task.progress.maxLevel}`
-}
-
-function getPromptRemainderText(task: TaskListItem) {
-  if (!task.started) {
-    return `Уточнений на уровне: ${task.progress.promptsLimit}`
-  }
-
-  return `Осталось уточнений на уровне: ${task.progress.promptsRemaining} из ${task.progress.promptsLimit}`
-}
-
-function getLevelBadgeText(task: TaskListItem) {
-  if (task.progress.isCompleted) {
-    return "Завершена"
-  }
-
-  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
-    return "Ждёт проверки"
-  }
-
-  return `Уровень ${task.progress.currentLevel}`
 }
 
 export function HomeTaskList({ initialTasks }: HomeTaskListProps) {

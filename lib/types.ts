@@ -150,6 +150,7 @@ type TaskProgressSummary = {
   currentLevelStatus: TaskLevelProgress["status"]
   currentLevelDisplayStatus: "available" | "in_progress" | "awaiting_check_retry" | "completed"
   currentLevelStarted: boolean
+  currentLevelNotStarted: boolean
   promptsUsed: number
   promptsLimit: number
   promptsRemaining: number
