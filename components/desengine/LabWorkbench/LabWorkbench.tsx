@@ -554,6 +554,9 @@ function LabWorkbench({
             {levelReadyForWork && (
                 <PromptComposer
                   value={promptText}
+                  promptsUsed={taskItem.progress.promptsUsed}
+                  promptsLimit={taskItem.progress.promptsLimit}
+                  teachingCostCents={taskData.llmUsageSummary.teachingCostCents}
                   disabled={promptInputDisabled}
                   pending={promptPending}
                   runDisabled={promptRunDisabled}

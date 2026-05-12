@@ -107,7 +107,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   const onboardingSyncStatusPromise = (async () => {
     let current = await getOnboardingSyncStatus()
 
-    if (!onboardingRepoUrl || current.state === "synced" || Date.now() < onboardingAutoSyncBlockedUntil) {
+    if (!onboardingRepoUrl || current.state !== "missing" || Date.now() < onboardingAutoSyncBlockedUntil) {
       return current
     }
 
