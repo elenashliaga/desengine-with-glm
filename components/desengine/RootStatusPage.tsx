@@ -1,44 +1,107 @@
-import Link from "next/link"
+"use client"
+
+import { FormEvent, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 
 import { SystemStatusPanel, type Instruction, type StatusItem } from "@/components/desengine/SystemStatusPanel"
-import { createAuthPath, createConfigPath, createHelpPath, createTasksPath } from "@/lib/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { createTasksPath } from "@/lib/navigation"
 
 type RootStatusPageProps = {
   accessState: "valid" | "missing" | "expired"
+  configured: boolean
   statusItems: StatusItem[]
   instructions: Instruction[]
 }
 
-export function RootStatusPage({ accessState, statusItems, instructions }: RootStatusPageProps) {
+export function RootStatusPage({ accessState, configured, statusItems, instructions }: RootStatusPageProps) {
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [error, setError] = useState("")
+  const [isPending, startTransition] = useTransition()
   const hasAccess = accessState === "valid"
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError("")
+
+    startTransition(async () => {
+      const response = await fetch("/api/access/verify", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = (await response.json().catch(() => null)) as
+        | { ok?: boolean; error?: string; redirectTo?: string }
+        | null
+
+      if (!response.ok || !data?.ok) {
+        setError(data?.error || "Не удалось проверить доступ.")
+        return
+      }
+
+      router.push(data.redirectTo || createTasksPath())
+      router.refresh()
+    })
+  }
 
   return (
     <main className="tool-shell-page">
       <div className="tool-shell-frame">
         <section className="tool-shell-surface">
-          <div className="flex flex-wrap items-center gap-3 border-b border-black/10 pb-5 text-black/60">
-            <Link className="tool-link" href={createAuthPath()}>
-              {hasAccess ? "Проверить допуск" : "Открыть /auth"}
-            </Link>
-            <Link className="tool-link" href={createConfigPath()}>
-              Открыть /config
-            </Link>
-            <Link className="tool-link" href={createHelpPath()}>
-              Открыть /help
-            </Link>
-            {hasAccess && (
-              <Link className="tool-link" href={createTasksPath()}>
-                Открыть /tasks
-              </Link>
-            )}
+          <div className="tool-panel-strong">
+            <div className="space-y-2">
+              <h2 className="font-semibold text-black">Допуск в лабораторию</h2>
+              <p className="text-black/60">
+                Введите email из allowlist, чтобы сразу открыть защищённую часть desengine.
+              </p>
+            </div>
+
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+              <label className="grid gap-2 text-black/75">
+                Email
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  disabled={isPending || !configured}
+                  className="h-11 rounded-xl border-black/10 bg-[#f7f4ee] px-3 text-black"
+                />
+              </label>
+
+              {error && <p className="tool-notice-error">{error}</p>}
+
+              {!configured && (
+                <p className="tool-notice-warning">
+                  Проверка доступа пока не настроена. Сначала администратор должен задать
+                  `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` в `desengine.config.txt`.
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isPending || !configured}
+                className="h-11"
+              >
+                {isPending ? "Проверяем доступ…" : "Открыть защищённую лабораторию"}
+              </Button>
+            </form>
           </div>
 
           <div className="mt-6">
             <SystemStatusPanel
               statusItems={statusItems}
               instructions={instructions}
-              title="Корень продукта показывает общую страницу состояния системы до входа в защищённую лабораторию."
-              description="Здесь доступны только диагностика и следующие шаги. Каталог задач остаётся на `/tasks` и открывается только после успешной allowlist-проверки."
+              title="Начало работы"
+              description="Важно указать LLM-ключ и ввести email"
             />
           </div>
 

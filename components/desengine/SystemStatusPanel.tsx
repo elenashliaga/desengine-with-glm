@@ -48,14 +48,12 @@ export function SystemStatusPanel({
 }: SystemStatusPanelProps) {
   return (
     <div className="space-y-7">
-      <div className="space-y-4">
-        <h1 className="max-w-3xl font-semibold text-black">
+        <h1 className="text-8xl">
           {title}
         </h1>
-        <p className="max-w-2xl text-black/65">
+        <h2 className="text-6xl">
           {description}
-        </p>
-      </div>
+        </h2>
 
       <div className="tool-status-grid">
         {statusItems.map((item) => {

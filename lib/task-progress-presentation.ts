@@ -8,6 +8,12 @@ export function getIndicatorWidth(task: TaskListItem) {
   return `${Math.max(ratio * 100, 8)}%`
 }
 
+export function getLevelBadgeText(task: TaskListItem) {
+  if (!task.started) return "lvl 0"
+  if (task.progress.isCompleted) return "done"
+  return `lvl ${task.progress.currentLevel}`
+}
+
 export function getStatusText(task: TaskListItem) {
   if (!task.started) return "Не начиналась"
   if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
@@ -37,20 +43,4 @@ export function getPromptRemainderText(task: TaskListItem) {
   }
 
   return `Осталось уточнений на уровне: ${task.progress.promptsRemaining} из ${task.progress.promptsLimit}`
-}
-
-export function getLevelBadgeText(task: TaskListItem) {
-  if (task.progress.isCompleted) {
-    return "Завершена"
-  }
-
-  if (task.progress.currentLevelDisplayStatus === "awaiting_check_retry") {
-    return "Ждёт проверки"
-  }
-
-  if (task.progress.currentLevelNotStarted) {
-    return `Уровень ${task.progress.currentLevel} не начат`
-  }
-
-  return `Уровень ${task.progress.currentLevel}`
 }

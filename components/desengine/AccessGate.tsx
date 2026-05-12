@@ -52,20 +52,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
     <main className="tool-shell-page">
       <div className="tool-shell-frame-center">
         <section className="tool-shell-surface-split">
-          <div>
-            <div className="tool-eyebrow">desengine lab</div>
-
-            <div className="mt-7">
-              <SystemStatusPanel
-                statusItems={statusItems}
-                instructions={instructions}
-                title="Страница допуска показывает, что уже готово для запуска лаборатории, а что ещё нужно настроить."
-                description="До допуска здесь доступны только диагностика и инструкция. Список задач и рабочая часть лаборатории откроются только после успешной allowlist-проверки по email."
-              />
-            </div>
-          </div>
-
-          <div className="tool-panel-strong">
+                    <div className="tool-panel-strong">
             <div className="space-y-2">
               <h2 className="font-semibold text-black">Допуск в лабораторию</h2>
               <p className="text-black/60">
@@ -127,6 +114,21 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
               </div>
             </div>
           </div>
+          
+          <div>
+            <div className="tool-eyebrow">desengine lab</div>
+
+            <div className="mt-7">
+              <SystemStatusPanel
+                statusItems={statusItems}
+                instructions={instructions}
+                title="Страница допуска показывает, что уже готово для запуска лаборатории, а что ещё нужно настроить."
+                description="До допуска здесь доступны только диагностика и инструкция. Список задач и рабочая часть лаборатории откроются только после успешной allowlist-проверки по email."
+              />
+            </div>
+          </div>
+
+
         </section>
       </div>
     </main>

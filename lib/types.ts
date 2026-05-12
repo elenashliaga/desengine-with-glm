@@ -6,65 +6,29 @@ const TaskImageSchema = z.object({
   height: z.number(),
 })
 
-const LegacyTaskConfigSchema = z.union([
-  z.object({
-    image: TaskImageSchema,
-    maxLevel: z.number().int().min(1),
-  }),
-  z.object({
-    base: TaskImageSchema,
-    variants: TaskImageSchema.optional(),
-    maxLevel: z.number().int().min(1),
-  }),
-])
+const TaskConfigRawSchema = z.object({
+  images: z
+    .object({
+      base: TaskImageSchema,
+      variants: TaskImageSchema.optional(),
+    })
+    .catchall(TaskImageSchema),
 
-const ModernTaskConfigSchema = z.object({
-  images: z.record(z.string().min(1), TaskImageSchema),
   maxLevel: z.number().int().min(1),
 })
 
-const TaskConfigSchema = z
-  .union([ModernTaskConfigSchema, LegacyTaskConfigSchema])
-  .transform((value) => {
-    if ("images" in value) {
-      const base = value.images.base
-      const variants = value.images.variants ?? null
+const TaskConfigSchema = TaskConfigRawSchema.transform((value) => {
+  const base = value.images.base
+  const variants = value.images.variants ?? null
 
-      return {
-        image: base,
-        base,
-        variants,
-        images: {
-          ...value.images,
-          ...(variants ? { variants } : {}),
-        },
-        maxLevel: value.maxLevel,
-      }
-    }
-
-    if ("image" in value) {
-      return {
-        image: value.image,
-        base: value.image,
-        variants: null,
-        images: {
-          base: value.image,
-        },
-        maxLevel: value.maxLevel,
-      }
-    }
-
-    return {
-      image: value.base,
-      base: value.base,
-      variants: value.variants ?? null,
-      images: {
-        base: value.base,
-        ...(value.variants ? { variants: value.variants } : {}),
-      },
-      maxLevel: value.maxLevel,
-    }
-  })
+  return {
+    image: base,
+    base,
+    variants,
+    images: value.images,
+    maxLevel: value.maxLevel,
+  }
+})
 
 type TaskConfig = z.infer<typeof TaskConfigSchema>
 

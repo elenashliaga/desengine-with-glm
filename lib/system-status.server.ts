@@ -133,6 +133,36 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   const items: SystemStatusItem[] = []
   const instructions: SystemInstruction[] = []
 
+
+  items.push({
+    id: "access-session",
+    label: "Доступ в лабораторию",
+    tone: hasAccess ? "ready" : accessState === "expired" ? "warning" : "blocked",
+    summary: hasAccess
+      ? "Допуск уже выдан"
+      : accessState === "expired"
+        ? "Допуск истёк"
+        : "Допуск ещё не выдан",
+    detail: hasAccess
+      ? "Можно открыть защищённую часть лаборатории."
+      : accessState === "expired"
+        ? "Нужно снова пройти allowlist-проверку на `/auth`, чтобы открыть защищённую часть лаборатории."
+      : accessConfig.isConfigured
+        ? "Введите email из allowlist, чтобы открыть задачи и рабочую часть лаборатории."
+        : "Сначала администратор должен настроить allowlist, после этого пользователь сможет пройти допуск.",
+  })
+
+  if (!hasAccess && accessConfig.isConfigured) {
+    instructions.push({
+      id: "access-session",
+      actor: "Пользователь",
+      text:
+        accessState === "expired"
+          ? "Предыдущий допуск истёк. Повторно введите email из allowlist на `/auth`, чтобы открыть задачи и рабочую часть лаборатории."
+          : "Введите email, который уже добавлен в allowlist, чтобы открыть задачи и рабочую часть лаборатории.",
+    })
+  }
+  
   items.push({
     id: "local-config-file",
     label: "Локальный конфиг",
@@ -331,34 +361,6 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     })
   }
 
-  items.push({
-    id: "access-session",
-    label: "Доступ в лабораторию",
-    tone: hasAccess ? "ready" : accessState === "expired" ? "warning" : "blocked",
-    summary: hasAccess
-      ? "Допуск уже выдан"
-      : accessState === "expired"
-        ? "Допуск истёк"
-        : "Допуск ещё не выдан",
-    detail: hasAccess
-      ? "Можно открыть защищённую часть лаборатории."
-      : accessState === "expired"
-        ? "Нужно снова пройти allowlist-проверку на `/auth`, чтобы открыть защищённую часть лаборатории."
-      : accessConfig.isConfigured
-        ? "Введите email из allowlist, чтобы открыть задачи и рабочую часть лаборатории."
-        : "Сначала администратор должен настроить allowlist, после этого пользователь сможет пройти допуск.",
-  })
-
-  if (!hasAccess && accessConfig.isConfigured) {
-    instructions.push({
-      id: "access-session",
-      actor: "Пользователь",
-      text:
-        accessState === "expired"
-          ? "Предыдущий допуск истёк. Повторно введите email из allowlist на `/auth`, чтобы открыть задачи и рабочую часть лаборатории."
-          : "Введите email, который уже добавлен в allowlist, чтобы открыть задачи и рабочую часть лаборатории.",
-    })
-  }
 
   return {
     llmStatus,

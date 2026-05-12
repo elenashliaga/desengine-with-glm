@@ -7,6 +7,7 @@ export default async function Page() {
   return (
     <RootStatusPage
       accessState={status.accessState}
+      configured={status.allowlistConfigured}
       statusItems={status.items}
       instructions={status.instructions}
     />
