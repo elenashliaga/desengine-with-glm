@@ -58,44 +58,37 @@ function Code({
   }
 
   return (
-    <div className="flex h-full w-full flex-col gap-3">
-      <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-black/10 bg-[#f5efe4] px-4 py-3">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-black/80">
-            <strong>{currentFile.title}</strong>
-            {isDirty ? (
-              <span
-                aria-hidden="true"
-                className="inline-block size-2.5 rounded-full bg-destructive"
-              />
-            ) : null}
-          </div>
-          <p className="text-xs text-black/50">
-            <code>{currentFile.fileName}</code>
-          </p>
-          <p className="text-sm text-black/60">
-            Можно скопировать код и показать его в обычном чате ChatGPT, если нужен быстрый внешний взгляд.
-          </p>
-        </div>
+    <div className="flex h-full w-full flex-col gap-2">
+      <div className="flex items-center gap-2 px-1 text-sm text-black/80">
+        <strong>{currentFile.title}</strong>
+        {isDirty ? (
+          <span
+            aria-hidden="true"
+            className="inline-block size-2.5 rounded-full bg-destructive"
+          />
+        ) : null}
+        <span className="text-xs text-black/50">
+          <code>{currentFile.fileName}</code>
+        </span>
+      </div>
 
+      <div
+        className={[
+          "relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-[#fbf8f2]",
+          isDirty ? "border-destructive/40" : "border-black/10",
+        ].join(" ")}
+      >
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={() => void handleCopy()}
-          className="gap-2 bg-white/85"
+          className="absolute right-3 top-3 z-10 gap-2 border-black bg-black text-white shadow-sm hover:bg-black/90 hover:text-white"
         >
           {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
           {copied ? "Скопировано" : "Скопировать"}
         </Button>
-      </div>
 
-      <div
-        className={[
-          "min-h-0 flex-1 overflow-hidden rounded-2xl border bg-[#fbf8f2]",
-          isDirty ? "border-destructive/40" : "border-black/10",
-        ].join(" ")}
-      >
         <MonacoCodeEditor
           fileId={id}
           fileName={currentFile.fileName}

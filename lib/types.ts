@@ -184,35 +184,6 @@ export type PromptHistoryEntry = {
   llmCall?: LlmCallRecord
 }
 
-const SnapshotFileEntrySchema = z.object({
-  fileId: z.string().min(1),
-  fileName: z.string().min(1),
-  content: z.string(),
-})
-
-const SnapshotPromptEntrySchema = z.object({
-  text: z.string(),
-  createdAt: z.string(),
-  displayCreatedAt: z.string().optional(),
-  iterationNumber: z.number().int().min(1).optional(),
-  levelNumber: z.number().int().min(1).optional(),
-  selectedFileNames: z.array(z.string().min(1)).optional(),
-  changedFileNames: z.array(z.string().min(1)).optional(),
-})
-
-const PublishedSnapshotSchema = z.object({
-  id: z.string().min(1),
-  version: z.literal(1),
-  taskId: z.string().min(1),
-  publishedAt: z.string(),
-  files: z.array(SnapshotFileEntrySchema),
-  promptHistory: z.array(SnapshotPromptEntrySchema),
-})
-
-export type SnapshotFileEntry = z.infer<typeof SnapshotFileEntrySchema>
-export type SnapshotPromptEntry = z.infer<typeof SnapshotPromptEntrySchema>
-export type PublishedSnapshot = z.infer<typeof PublishedSnapshotSchema>
-
 export type TaskLlmUsageSummary = {
   totalCalls: number
   teachingCostCents: number
@@ -303,9 +274,6 @@ export {
     type TaskProgress,
     type UserProgressStore,
     type TaskProgressSummary,
-    SnapshotFileEntrySchema,
-    SnapshotPromptEntrySchema,
-    PublishedSnapshotSchema,
     TaskConfigSchema,
     LevelConfigSchema,
     LevelsCatalogSchema,

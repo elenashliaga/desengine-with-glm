@@ -11,8 +11,11 @@ import {
 import { getLlmStatus } from "@/lib/llm.server"
 import localConfig from "@/lib/local-config.cjs"
 import { getOnboardingSyncStatus } from "@/lib/onboarding-status.server"
+import { updateOnboardingFromConfig } from "@/lib/onboarding-update.server"
 
 localConfig.loadLocalConfig()
+const ONBOARDING_AUTO_SYNC_RETRY_COOLDOWN_MS = 30_000
+let onboardingAutoSyncBlockedUntil = 0
 
 type SystemStatusTone = "ready" | "warning" | "blocked"
 
@@ -100,10 +103,29 @@ async function fetchReachability(url: string, init?: RequestInit): Promise<{ ok:
 }
 
 export async function getSystemStatusModel(): Promise<SystemStatusModel> {
+  const onboardingRepoUrl = process.env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
+  const onboardingSyncStatusPromise = (async () => {
+    let current = await getOnboardingSyncStatus()
+
+    if (!onboardingRepoUrl || current.state === "synced" || Date.now() < onboardingAutoSyncBlockedUntil) {
+      return current
+    }
+
+    try {
+      await updateOnboardingFromConfig()
+      current = await getOnboardingSyncStatus()
+      onboardingAutoSyncBlockedUntil = 0
+    } catch {
+      onboardingAutoSyncBlockedUntil = Date.now() + ONBOARDING_AUTO_SYNC_RETRY_COOLDOWN_MS
+    }
+
+    return current
+  })()
+
   const [llmStatus, accessState, onboardingContent] = await Promise.all([
     getLlmStatus(),
     getAccessSessionState(),
-    getOnboardingSyncStatus(),
+    onboardingSyncStatusPromise,
   ])
   const hasAccess = accessState === "valid"
   const accessConfig = getAccessControlConfig()
@@ -228,8 +250,6 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     })
   }
 
-  const onboardingRepoUrl = process.env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
-
   items.push({
     id: "onboarding-config",
     label: "Onboarding-репозиторий",
@@ -264,7 +284,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
       id: "onboarding-content",
       actor: "Администратор",
       text: onboardingRepoUrl
-        ? "Используйте кнопку `Обновить onboarding` на `/config` или `npm run smoke`, чтобы синхронизировать локальный `/onboarding` из канонического репозитория."
+        ? "Система пытается синхронизировать `/onboarding` автоматически. Если статус не меняется, используйте `Обновить onboarding` на `/config` или `npm run smoke`."
         : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, затем запустите повторную синхронизацию `/onboarding`.",
     })
   }

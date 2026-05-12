@@ -6,7 +6,6 @@ export async function POST() {
 
     return Response.json({
       ok: true,
-      backupPath: result.backupPath,
       commitHash: result.commitHash,
       repoUrl: result.repoUrl,
     })

@@ -30,21 +30,18 @@ export function OnboardingUpdateCard({ canUpdate, detail, syncState }: Onboardin
           method: "POST",
         })
         const payload = await response.json().catch(() => null) as
-          | { ok?: boolean; error?: string; backupPath?: string | null; commitHash?: string | null }
+          | { ok?: boolean; error?: string; commitHash?: string | null }
           | null
 
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error || "Не удалось обновить onboarding-контент.")
         }
 
-        const backupText = payload.backupPath
-          ? ` Предыдущая версия сохранена в ${payload.backupPath}.`
-          : ""
         const commitText = payload.commitHash ? ` Коммит: ${payload.commitHash}.` : ""
 
         setUpdateState({
           kind: "success",
-          message: `Onboarding-контент обновлён.${backupText}${commitText}`,
+          message: `Onboarding-контент обновлён.${commitText}`,
         })
         router.refresh()
       } catch (error) {

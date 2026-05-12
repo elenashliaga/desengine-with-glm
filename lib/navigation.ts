@@ -52,14 +52,6 @@ export function createTaskCheckPath(taskId: string) {
   return `/tasks/${encodeURIComponent(taskId)}/check`
 }
 
-export function createSnapshotPath(snapshotId: string) {
-  return `/snapshots/${encodeURIComponent(snapshotId)}`
-}
-
-export function createSnapshotDataPath(snapshotId: string) {
-  return `/snapshots/${encodeURIComponent(snapshotId)}/data`
-}
-
 export function createLevelsPath(levelId?: string | null) {
   if (!levelId) {
     return "/levels"

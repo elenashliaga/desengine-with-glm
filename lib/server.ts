@@ -7,7 +7,6 @@ import {
   readPromptHistory,
   readTaskData,
 } from "./repository"
-import { publishTaskSnapshot, readPublishedSnapshot } from "./snapshot.server"
 import {
   cleanupForbiddenWorkbenchFiles,
   filterWorkbenchPayloadByAllowlist,
@@ -62,9 +61,7 @@ export {
   markCurrentTaskLevelCheckTechnicalError,
   markTaskLevelInProgress,
   passCurrentTaskLevelCheck,
-  publishTaskSnapshot,
   readPromptHistory,
-  readPublishedSnapshot,
   readTaskData,
   resetTask,
   registerPromptForCurrentLevel,

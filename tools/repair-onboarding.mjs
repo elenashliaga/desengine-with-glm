@@ -79,11 +79,6 @@ async function runGit(args, cwd) {
   }
 }
 
-function buildBackupPath() {
-  const stamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-")
-  return path.join(rootDir, `onboarding.backup-${stamp}`)
-}
-
 async function main() {
   loadLocalConfig({ forceReload: true })
   const fileEnv = readLocalConfig(envPath)
@@ -102,7 +97,6 @@ async function main() {
   const appConfig = readAppConfig()
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "desengine-onboarding-repair-"))
   const checkoutDir = path.join(tempRoot, "repo")
-  let backupPath = null
 
   try {
     await runGit(["clone", "--depth", "1", repoUrl, checkoutDir])
@@ -117,23 +111,12 @@ async function main() {
     )
 
     if (await pathExists(appConfig.onboardingRoot)) {
-      backupPath = buildBackupPath()
-      await rename(appConfig.onboardingRoot, backupPath)
+      await rm(appConfig.onboardingRoot, { recursive: true, force: true })
     }
-
-    try {
-      await rename(checkoutDir, appConfig.onboardingRoot)
-    } catch (error) {
-      if (backupPath && !(await pathExists(appConfig.onboardingRoot)) && await pathExists(backupPath)) {
-        await rename(backupPath, appConfig.onboardingRoot)
-        backupPath = null
-      }
-
-      throw error
-    }
+    await rename(checkoutDir, appConfig.onboardingRoot)
 
     process.stdout.write(
-      `${JSON.stringify({ ok: true, repoUrl, commitHash, backupPath }, null, 2)}\n`,
+      `${JSON.stringify({ ok: true, repoUrl, commitHash }, null, 2)}\n`,
     )
   } finally {
     await rm(tempRoot, { recursive: true, force: true })

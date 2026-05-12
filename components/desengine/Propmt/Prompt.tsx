@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { BaseProps } from "../Base";
 import { Button } from "@/components/ui/button";
-import { formatPromptHistoryTimestamp, TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt-history";
+import { formatPromptHistoryTimestamp } from "@/lib/prompt-history";
 import type { TaskData, TaskListItem } from "@/lib/types";
 import { taskWorkbenchFiles } from "@/lib/client";
 
@@ -64,12 +64,6 @@ function Prompt({
 
             <div className="rounded-md border p-3">
                 <p>
-                    <strong>Учебная стоимость:</strong> {taskData.llmUsageSummary.teachingCostCents} центов.
-                </p>
-                <p className="text-muted-foreground">
-                    Это отдельный учебный индикатор и не заменяет реальные метрики провайдера.
-                </p>
-                <p className="mt-2">
                     <strong>Реальные метрики LLM:</strong>{" "}
                     {taskData.llmUsageSummary.totalCalls === 0
                       ? "ещё не накоплены."
@@ -98,46 +92,41 @@ function Prompt({
                             const changedFileNames = resolveChangedFileNames(entry);
 
                             return (
-                                <div key={entryKey} className="rounded-md border p-3">
-                                    <div className="flex flex-wrap items-start justify-between gap-2">
-                                        <div className="space-y-1">
-                                            <p className="font-medium">
-                                                Запрос #{entry.iterationNumber ?? index + 1}
-                                            </p>
-                                            <p className="text-muted-foreground">
-                                                {entry.displayCreatedAt ?? formatPromptHistoryTimestamp(entry.createdAt)}
-                                            </p>
-                                            <p className="text-muted-foreground">
-                                              Уровень: {entry.levelNumber ?? "не указан"}
-                                            </p>
-                                            <p className="text-muted-foreground">
-                                              Учебная стоимость: {entry.teachingCostCents ?? TEACHING_COST_PER_ITERATION_CENTS} цента
-                                            </p>
+                                <div key={entryKey} className="grid gap-3 py-2 grid-cols-[minmax(0,1fr)_20rem]">
+                                    <p className="whitespace-pre-wrap">{entry.text}</p>
+
+                                    <div className="space-y-1">
+                                        <div className="flex justify-end">
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => void handleCopy(entry.text, entryKey)}
+                                            >
+                                              {copiedEntryKey === entryKey ? "Скопировано" : "Скопировать"}
+                                            </Button>
                                         </div>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => void handleCopy(entry.text, entryKey)}
-                                        >
-                                          {copiedEntryKey === entryKey ? "Скопировано" : "Скопировать"}
-                                        </Button>
-                                    </div>
-                                    <p className="mt-3 whitespace-pre-wrap">{entry.text}</p>
-                                    <p className="mt-3 text-muted-foreground">
-                                      Отправлены: {entry.selectedFileNames?.length ? entry.selectedFileNames.join(", ") : "нет данных"}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                      Изменены: {changedFileNames.length ? changedFileNames.join(", ") : "нет изменений"}
-                                    </p>
-                                    {entry.llmCall && (
                                         <p className="text-muted-foreground">
-                                          LLM: {entry.llmCall.provider} / {entry.llmCall.model}.{" "}
-                                          {entry.llmCall.metrics.status === "available"
-                                            ? `Токены: ${entry.llmCall.metrics.totalTokens ?? "н/д"}`
-                                            : "Метрики не возвращены провайдером"}
+                                            Запрос #{entry.iterationNumber ?? index + 1}
                                         </p>
-                                    )}
+                                        <p className="text-muted-foreground">
+                                            {entry.displayCreatedAt ?? formatPromptHistoryTimestamp(entry.createdAt)}
+                                        </p>
+                                        <p className="text-muted-foreground">
+                                          Уровень: {entry.levelNumber ?? "не указан"}
+                                        </p>
+                                        <p className="text-muted-foreground">
+                                          Изменены: {changedFileNames.length ? changedFileNames.join(", ") : "нет изменений"}
+                                        </p>
+                                        {entry.llmCall && (
+                                            <p className="text-muted-foreground">
+                                              LLM: {entry.llmCall.provider} / {entry.llmCall.model}.{" "}
+                                              {entry.llmCall.metrics.status === "available"
+                                                ? `Токены: ${entry.llmCall.metrics.totalTokens ?? "н/д"}`
+                                                : "Метрики не возвращены провайдером"}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })}

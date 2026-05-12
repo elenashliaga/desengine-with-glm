@@ -46,10 +46,6 @@ export function getUserCheckResultsRoot() {
   return path.join(appConfig.userRoot, "check-results")
 }
 
-export function getUserSnapshotsRoot() {
-  return path.join(appConfig.userRoot, "snapshots")
-}
-
 export function getUserTaskDir(taskId: string) {
   return path.join(getUserTasksRoot(), taskId)
 }
@@ -62,10 +58,6 @@ export function getTaskCheckResultPath(taskId: string) {
   return path.join(getUserCheckResultsRoot(), `${taskId}.json`)
 }
 
-export function getSnapshotFilePath(snapshotId: string) {
-  return path.join(getUserSnapshotsRoot(), `${snapshotId}.json`)
-}
-
 export async function ensureUserRoot() {
   await ensureDir(appConfig.userRoot)
 }
@@ -76,10 +68,6 @@ export async function ensureUserTaskDir(taskId: string) {
 
 export async function ensureUserCheckResultsDir() {
   await ensureDir(getUserCheckResultsRoot())
-}
-
-export async function ensureUserSnapshotsDir() {
-  await ensureDir(getUserSnapshotsRoot())
 }
 
 export async function ensureUserProgressStorage() {

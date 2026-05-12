@@ -212,7 +212,6 @@ async function ensureOnboardingReady(env) {
         maxBuffer: 10 * 1024 * 1024,
       })
       const payload = JSON.parse(stdout)
-      const backupText = payload.backupPath ? ` Предыдущая версия сохранена в ${payload.backupPath}.` : ""
       const commitText = payload.commitHash ? ` Коммит: ${payload.commitHash}.` : ""
 
       return createCheck(
@@ -221,7 +220,7 @@ async function ensureOnboardingReady(env) {
         beforeRepair.state === "missing"
           ? "Onboarding загружен из канонического репозитория"
           : "Onboarding пересинхронизирован из канонического репозитория",
-        `Источник: ${payload.repoUrl}.${commitText}${backupText}`,
+        `Источник: ${payload.repoUrl}.${commitText}`,
       )
     } catch (error) {
       const detail = error.stderr?.trim() || error.stdout?.trim() || error.message

@@ -16,7 +16,6 @@ import {
 const execFileAsync = promisify(execFile)
 
 type OnboardingUpdateResult = {
-  backupPath: string | null
   commitHash: string | null
   repoUrl: string
 }
@@ -45,11 +44,6 @@ async function runGit(args: string[], cwd?: string) {
   }
 }
 
-function buildBackupPath() {
-  const stamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-")
-  return path.join(process.cwd(), `onboarding.backup-${stamp}`)
-}
-
 export async function updateOnboardingFromConfig(): Promise<OnboardingUpdateResult> {
   const repoUrl = getConfiguredOnboardingRepoUrl()
   if (!repoUrl) {
@@ -58,7 +52,6 @@ export async function updateOnboardingFromConfig(): Promise<OnboardingUpdateResu
 
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), "desengine-onboarding-"))
   const checkoutDir = path.join(tempRoot, "repo")
-  let backupPath: string | null = null
   let commitHash: string | null = null
 
   try {
@@ -78,23 +71,11 @@ export async function updateOnboardingFromConfig(): Promise<OnboardingUpdateResu
     })
 
     if (await pathExists(appConfig.onboardingRoot)) {
-      backupPath = buildBackupPath()
-      await rename(appConfig.onboardingRoot, backupPath)
+      await rm(appConfig.onboardingRoot, { recursive: true, force: true })
     }
-
-    try {
-      await rename(checkoutDir, appConfig.onboardingRoot)
-    } catch (error) {
-      if (backupPath && !(await pathExists(appConfig.onboardingRoot)) && await pathExists(backupPath)) {
-        await rename(backupPath, appConfig.onboardingRoot)
-        backupPath = null
-      }
-
-      throw error
-    }
+    await rename(checkoutDir, appConfig.onboardingRoot)
 
     return {
-      backupPath,
       commitHash,
       repoUrl,
     }
