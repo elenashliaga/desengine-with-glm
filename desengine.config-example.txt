@@ -4,7 +4,7 @@
 
 # LLM
 # Активный провайдер можно переключать без правок кода и без изменений desengine.config.json.
-DESENGINE_LLM_PROVIDER=openai
+DESENGINE_LLM_PROVIDER=deepseek
 #
 # OPENAI_API_KEY создаётся в OpenAI Platform на экране View API keys.
 OPENAI_API_KEY=
