@@ -7,22 +7,6 @@
   font-family: var(--font-ui), "Segoe UI", "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
 }
 
-@utility tool-global-nav-bleed {
-  @apply -mx-[10px] -mt-[10px] mb-0 w-[calc(100%+20px)];
-}
-
-@utility tool-global-nav {
-  @apply flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-1 bg-black px-3 py-1.5 text-[13px] leading-tight text-white sm:px-4;
-}
-
-@utility tool-global-nav-group {
-  @apply flex flex-wrap items-center gap-x-3 gap-y-1;
-}
-
-@utility tool-global-nav-link {
-  @apply underline underline-offset-2 transition-opacity hover:opacity-75;
-}
-
 @utility tool-shell-frame {
   @apply mx-auto flex min-h-screen max-w-6xl px-6 py-10;
 }

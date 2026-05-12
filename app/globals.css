@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@source inline("bg-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,100,200,300,400,500,600,700,800,900,950}");
+@source inline("text-{slate,gray,zinc,neutral,stone,red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose}-{50,100,200,300,400,500,600,700,800,900,950}");
+@source inline("{!,}p{x,y,t,b,l,r}-{0,1,2,3,4,5,6,8,10,12,16,20}");
+
 @source "../app";
 @source "../components";
 @source "../lib";
@@ -22,7 +26,7 @@ html,
 body {
   height: 100%;
   margin: 0;
-  padding: 10px;
+  padding: 0;
   font-family: var(--font-ui), "Segoe UI", "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -31,6 +35,5 @@ body {
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
 }
