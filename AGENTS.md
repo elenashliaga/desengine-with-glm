@@ -30,9 +30,3 @@
 - Нужно предпочитать примитивы `shadcn/ui`.
 - Нужно отделять рендеринг от логики playground/workbench.
 - Не нужно инлайнить стили.
-- Для учебных файлов нужно сохранять такое разделение:
-  Component.tsx
-  styles.ts
-  mock.ts
-  props.ts
-  variants.ts

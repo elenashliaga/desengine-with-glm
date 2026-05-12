@@ -1,5 +1,12 @@
 # Admin Tools
 
+## Аудитория
+
+- Администратор локальной установки.
+- Инженер сопровождения.
+
+Browser-only пользователь не должен проходить по этому документу для обычной работы с лабораторией.
+
 Канонический каталог админских утилит проекта — `/tools`.
 
 Этот каталог фиксирует:
@@ -36,6 +43,8 @@
 | `utils/generate_task_folders.sh` | `tools/import-task-assets.mjs` | `npm run admin:tasks:import -- --variants-root=... --base-root=...` |
 
 ## Канонические команды
+
+Этот файл фиксирует только CLI-утилиты из `/tools`. Ручное обновление локального `/onboarding` через кнопку `Обновить onboarding` на `/config` относится к административному контуру, но не считается CLI-admin-tool из `/tools`. Подробности по этому потоку собраны в [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1).
 
 ### `npm run smoke`
 
@@ -117,3 +126,4 @@ npm run admin:tasks:import -- --variants-root=incoming/variants --base-root=inco
 - Официальный способ запуска admin tools — через `npm run ...`.
 - Bash-скрипты не считаются официальным entry point для админского контура.
 - Утилиты админского контура не должны зависеть от абсолютных путей конкретной машины.
+- Root-документы и профильные docs могут ссылаться на эти команды, но не должны переопределять их форму.

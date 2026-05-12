@@ -1,12 +1,16 @@
 import "server-only"
 
-import { access, readdir } from "node:fs/promises"
-import path from "node:path"
-
+import {
+  checkAllowlistSystemReachability,
+  summarizeAllowlistSystemStatus,
+} from "./allowlist.server"
+import {
+  getAccessControlConfig,
+  getAccessSessionState,
+} from "@/lib/access-control.server"
 import { getLlmStatus } from "@/lib/llm.server"
-import { getAccessControlConfig, getAccessSessionState } from "@/lib/access-control.server"
-import { appConfig } from "@/lib/config.server"
 import localConfig from "@/lib/local-config.cjs"
+import { getOnboardingSyncStatus } from "@/lib/onboarding-status.server"
 
 localConfig.loadLocalConfig()
 
@@ -42,6 +46,7 @@ type SystemStatusModel = {
   accessState: "valid" | "missing" | "expired"
   hasAccess: boolean
   onboardingRepoConfigured: boolean
+  onboardingSyncState: "missing" | "unconfirmed" | "synced"
   readyForProtectedLab: boolean
 }
 
@@ -73,14 +78,7 @@ function summarizeHttpStatus(serviceLabel: string, status: number): {
   }
 }
 
-async function fetchReachability(
-  url: string,
-  init?: RequestInit,
-): Promise<{
-  ok: boolean
-  status?: number
-  message: string
-}> {
+async function fetchReachability(url: string, init?: RequestInit): Promise<{ ok: boolean; status?: number; message: string }> {
   try {
     const response = await fetch(url, {
       ...init,
@@ -101,89 +99,11 @@ async function fetchReachability(
   }
 }
 
-async function getOnboardingContentStatus() {
-  const missing: string[] = []
-  const expectedDirs = [
-    appConfig.onboardingRoot,
-    appConfig.levelsCatalogRoot,
-    appConfig.taskCatalogRoot,
-    appConfig.onboardingPromptsRoot,
-    path.join(appConfig.onboardingPromptsRoot, "levels"),
-    appConfig.promptsRoot,
-  ]
-
-  for (const root of expectedDirs) {
-    try {
-      await readdir(root)
-    } catch {
-      missing.push(path.relative(process.cwd(), root) || root)
-    }
-  }
-
-  if (missing.length > 0) {
-    return {
-      tone: "blocked" as const,
-      summary: "Onboarding-контент недоступен",
-      detail: `Не найдены обязательные каталоги: ${missing.join(", ")}.`,
-      missing,
-    }
-  }
-
-  const [levelEntries, taskEntries] = await Promise.all([
-    readdir(appConfig.levelsCatalogRoot, { withFileTypes: true }),
-    readdir(appConfig.taskCatalogRoot, { withFileTypes: true }),
-  ])
-
-  if (!levelEntries.some((entry) => entry.isDirectory())) {
-    return {
-      tone: "blocked" as const,
-      summary: "Onboarding-контент неполон",
-      detail: "В `/onboarding/levels` не найдено ни одного каталога уровня.",
-      missing: ["onboarding/levels/*"],
-    }
-  }
-
-  if (!taskEntries.some((entry) => entry.isDirectory())) {
-    return {
-      tone: "blocked" as const,
-      summary: "Onboarding-контент неполон",
-      detail: "В `/onboarding/tasks` не найдено ни одного каталога задачи.",
-      missing: ["onboarding/tasks/*"],
-    }
-  }
-
-  const requiredFiles = [
-    path.join(appConfig.onboardingPromptsRoot, "default.md"),
-    path.join(appConfig.promptsRoot, "default.md"),
-    path.join(appConfig.promptsRoot, "iterate-component.md"),
-  ]
-
-  for (const filePath of requiredFiles) {
-    try {
-      await access(filePath)
-    } catch {
-      return {
-        tone: "blocked" as const,
-        summary: "Onboarding-контент неполон",
-        detail: `Не найден обязательный файл: ${path.relative(process.cwd(), filePath)}.`,
-        missing: [path.relative(process.cwd(), filePath)],
-      }
-    }
-  }
-
-  return {
-    tone: "ready" as const,
-    summary: "Onboarding-контент найден",
-    detail: "Обязательные каталоги /onboarding доступны для чтения.",
-    missing,
-  }
-}
-
 export async function getSystemStatusModel(): Promise<SystemStatusModel> {
   const [llmStatus, accessState, onboardingContent] = await Promise.all([
     getLlmStatus(),
     getAccessSessionState(),
-    getOnboardingContentStatus(),
+    getOnboardingSyncStatus(),
   ])
   const hasAccess = accessState === "valid"
   const accessConfig = getAccessControlConfig()
@@ -333,32 +253,27 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     label: "Onboarding-контент",
     tone: onboardingContent.tone,
     summary: onboardingContent.summary,
-    detail: onboardingContent.detail,
+    detail:
+      onboardingContent.legacyPaths.length > 0
+        ? `${onboardingContent.detail} Legacy-каталоги ${onboardingContent.legacyPaths.join(", ")} не используются как fallback.`
+        : onboardingContent.detail,
   })
 
-  if (onboardingContent.missing.length > 0) {
+  if (onboardingContent.state !== "synced") {
     instructions.push({
       id: "onboarding-content",
       actor: "Администратор",
       text: onboardingRepoUrl
-        ? "Используйте кнопку `Обновить onboarding` на `/config`, чтобы заново загрузить локальный каталог `/onboarding`."
-        : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, затем используйте кнопку `Обновить onboarding` на `/config`.",
+        ? "Используйте кнопку `Обновить onboarding` на `/config` или `npm run smoke`, чтобы синхронизировать локальный `/onboarding` из канонического репозитория."
+        : "Сначала задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, затем запустите повторную синхронизацию `/onboarding`.",
     })
   }
 
   if (accessConfig.isConfigured) {
-    let allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
-      method: "HEAD",
-    })
-
-    if (allowlistNetwork.status && allowlistNetwork.status !== 200 && allowlistNetwork.status !== 404) {
-      allowlistNetwork = await fetchReachability(accessConfig.baseUrl, {
-        method: "GET",
-      })
-    }
+    const allowlistNetwork = await checkAllowlistSystemReachability(accessConfig.baseUrl)
 
     const allowlistSummary = allowlistNetwork.status
-      ? summarizeHttpStatus("Allowlist-хранилище", allowlistNetwork.status)
+      ? summarizeAllowlistSystemStatus(allowlistNetwork.status)
       : {
           tone: "warning" as const,
           summary: "Allowlist-хранилище недоступно по сети",
@@ -378,6 +293,12 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
         id: "allowlist-network",
         actor: "Администратор",
         text: "Проверьте доступность удалённого allowlist-хранилища и корректность `DESENGINE_ALLOWLIST_BASE_URL`.",
+      })
+    } else if (allowlistNetwork.status !== 200) {
+      instructions.push({
+        id: "allowlist-network",
+        actor: "Администратор",
+        text: "Базовый URL allowlist должен отвечать `200`. Проверьте корневой маршрут публикации или добавьте health-entry для `DESENGINE_ALLOWLIST_BASE_URL`.",
       })
     }
   } else {
@@ -427,6 +348,7 @@ export async function getSystemStatusModel(): Promise<SystemStatusModel> {
     accessState,
     hasAccess,
     onboardingRepoConfigured: Boolean(onboardingRepoUrl),
+    onboardingSyncState: onboardingContent.state,
     readyForProtectedLab: hasAccess,
   }
 }

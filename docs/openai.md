@@ -1,5 +1,10 @@
 # ChatGPT API (OpenAI) — локальная настройка
 
+## Аудитория
+
+- Администратор локальной установки.
+- Инженер сопровождения, который настраивает активного LLM-провайдера.
+
 Эта лаборатория использует общий LLM-слой. OpenAI можно держать рядом с другими провайдерами в одном `desengine.config.txt`, а активный провайдер выбирается через `DESENGINE_LLM_PROVIDER`.
 
 Эта настройка относится к админскому контуру. Пользователь без `OPENAI_API_KEY` всё равно сможет открыть страницу состояния в браузере, но рабочие LLM-сценарии останутся недоступны.
@@ -8,9 +13,7 @@
 
 - `OPENAI_API_KEY` — ключ OpenAI API.
 
-## Опциональное
-
-Нет.
+## Отдельно важно
 
 `DESENGINE_OPENAI_MODEL` — обязательная настройка модели для всей лаборатории. Она задаётся через `desengine.config.txt` и не имеет fallback в `desengine.config.json`.
 
@@ -27,4 +30,5 @@ DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 `DESENGINE_OPENAI_MODEL` должен быть задан явно в `desengine.config.txt`.
 
 Для доступа по email см. [access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1).
+Для onboarding-источника и ручного обновления см. [onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1).
 Админские команды сопровождения и smoke-check собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Navigation } from "@/components/desengine/Navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import "./tool-ui.css";
@@ -35,7 +36,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className={inter.variable} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          <div className="min-h-screen">
+            <Navigation />
+            {children}
+          </div>
+        </TooltipProvider>
       </body>
     </html>
   );

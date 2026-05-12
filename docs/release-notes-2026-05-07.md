@@ -1,5 +1,9 @@
 # Release Notes — 2026-05-07
 
+## Роль документа
+
+Это исторические release notes. Они помогают понять, что менялось в продукте, но не заменяют [README.md](/Users/op/dev/sobakapav/desengine/README.md:1), [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) и профильные инструкции из `docs/**`.
+
 ## Новое
 
 - В системе появились более понятные страницы: отдельные страницы для задач, уровней, входа, настроек и помощи.

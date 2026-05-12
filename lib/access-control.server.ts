@@ -2,6 +2,7 @@ import "server-only"
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { checkAllowlistMarkerReachability } from "./allowlist.server"
 import localConfig from "@/lib/local-config.cjs"
 
 import {
@@ -46,17 +47,7 @@ async function verifyAllowlistAccess(email: string): Promise<{
   const markerUrl = new URL(marker, `${baseUrl.replace(/\/+$/, "")}/`).toString()
 
   try {
-    let response = await fetch(markerUrl, {
-      method: "HEAD",
-      cache: "no-store",
-    })
-
-    if (response.status !== 200 && response.status !== 404) {
-      response = await fetch(markerUrl, {
-        method: "GET",
-        cache: "no-store",
-      })
-    }
+    const response = await checkAllowlistMarkerReachability(markerUrl)
 
     if (response.status === 200) {
       return { ok: true }

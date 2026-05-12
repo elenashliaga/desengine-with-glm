@@ -1,5 +1,10 @@
 # Google Gemini API — локальная настройка
 
+## Аудитория
+
+- Администратор локальной установки.
+- Инженер сопровождения, который настраивает активного LLM-провайдера.
+
 Эта лаборатория использует общий LLM-слой. Google Gemini можно держать рядом с OpenAI и DeepSeek в одном `desengine.config.txt`, а активный провайдер выбирается через `DESENGINE_LLM_PROVIDER`.
 
 Эта настройка относится к админскому контуру. Пользователь без ключа активного провайдера всё равно сможет открыть страницу состояния в браузере, но рабочие LLM-сценарии останутся недоступны.
@@ -29,4 +34,5 @@ DESENGINE_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 Текущая версия адаптера Gemini поддерживает те же входы лаборатории, что и другие сетевые адаптеры: текстовый запрос, изображения уровня и structured JSON-ответ.
 
 Для доступа по email см. [access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1).
+Для onboarding-источника и ручного обновления см. [onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1).
 Админские команды сопровождения и smoke-check собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).

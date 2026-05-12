@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 
 type OnboardingUpdateCardProps = {
   canUpdate: boolean
+  detail: string
+  syncState: "missing" | "unconfirmed" | "synced"
 }
 
 type UpdateState =
@@ -14,21 +16,21 @@ type UpdateState =
   | { kind: "success"; message: string }
   | { kind: "error"; message: string }
 
-export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
+export function OnboardingUpdateCard({ canUpdate, detail, syncState }: OnboardingUpdateCardProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [state, setState] = useState<UpdateState>({ kind: "idle" })
+  const [updateState, setUpdateState] = useState<UpdateState>({ kind: "idle" })
 
   function handleUpdate() {
     startTransition(async () => {
-      setState({ kind: "idle" })
+      setUpdateState({ kind: "idle" })
 
       try {
         const response = await fetch("/api/onboarding/update", {
           method: "POST",
         })
         const payload = await response.json().catch(() => null) as
-          | { ok?: boolean; error?: string; backupPath?: string | null }
+          | { ok?: boolean; error?: string; backupPath?: string | null; commitHash?: string | null }
           | null
 
         if (!response.ok || !payload?.ok) {
@@ -38,14 +40,15 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
         const backupText = payload.backupPath
           ? ` Предыдущая версия сохранена в ${payload.backupPath}.`
           : ""
+        const commitText = payload.commitHash ? ` Коммит: ${payload.commitHash}.` : ""
 
-        setState({
+        setUpdateState({
           kind: "success",
-          message: `Onboarding-контент обновлён.${backupText}`,
+          message: `Onboarding-контент обновлён.${backupText}${commitText}`,
         })
         router.refresh()
       } catch (error) {
-        setState({
+        setUpdateState({
           kind: "error",
           message: error instanceof Error ? error.message : "Не удалось обновить onboarding-контент.",
         })
@@ -61,6 +64,9 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
           <p className="max-w-2xl text-black/60">
             Эта кнопка вручную заново загружает локальный `/onboarding` из внешнего репозитория,
             указанного в `DESENGINE_ONBOARDING_REPO_URL`.
+          </p>
+          <p className={syncState === "synced" ? "tool-notice-success" : "tool-notice-warning"}>
+            {detail}
           </p>
         </div>
 
@@ -80,12 +86,12 @@ export function OnboardingUpdateCard({ canUpdate }: OnboardingUpdateCardProps) {
         </p>
       ) : null}
 
-      {state.kind === "success" ? (
-        <p className="tool-notice-success mt-4">{state.message}</p>
+      {updateState.kind === "success" ? (
+        <p className="tool-notice-success mt-4">{updateState.message}</p>
       ) : null}
 
-      {state.kind === "error" ? (
-        <p className="tool-notice-error mt-4">{state.message}</p>
+      {updateState.kind === "error" ? (
+        <p className="tool-notice-error mt-4">{updateState.message}</p>
       ) : null}
     </section>
   )

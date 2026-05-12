@@ -1,10 +1,55 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { type ErrorInfo, useEffect, useMemo, useState } from "react";
 import { OutRenderProps } from "./props";
-import React from "react";
 
 type PreviewComponent = React.ComponentType<Record<string, unknown>>;
+
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+    return error instanceof Error && error.message ? error.message : fallbackMessage;
+}
+
+function PreviewErrorNotice({ message }: { message: string }) {
+    return (
+        <div className="space-y-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+            <p className="font-medium text-destructive">Не удалось показать превью компонента.</p>
+            <pre className="text-destructive whitespace-pre-wrap break-words">{message}</pre>
+        </div>
+    );
+}
+
+type PreviewRenderBoundaryProps = {
+    children: React.ReactNode;
+};
+
+type PreviewRenderBoundaryState = {
+    errorMessage: string | null;
+};
+
+class PreviewRenderBoundary extends React.Component<PreviewRenderBoundaryProps, PreviewRenderBoundaryState> {
+    state: PreviewRenderBoundaryState = {
+        errorMessage: null,
+    };
+
+    static getDerivedStateFromError(error: unknown): PreviewRenderBoundaryState {
+        return {
+            errorMessage: getErrorMessage(error, "Ошибка React-рендера"),
+        };
+    }
+
+    componentDidCatch(error: unknown, errorInfo: ErrorInfo) {
+        console.error("Preview render failed", error);
+        console.error(errorInfo.componentStack);
+    }
+
+    render() {
+        if (this.state.errorMessage) {
+            return <PreviewErrorNotice message={this.state.errorMessage} />;
+        }
+
+        return this.props.children;
+    }
+}
 
 function OutRender({ task, started, reloadKey, startStatus }: OutRenderProps) {
     const [error, setError] = useState<string>("");
@@ -52,7 +97,7 @@ function OutRender({ task, started, reloadKey, startStatus }: OutRenderProps) {
                 setProps((data.props && typeof data.props === "object") ? data.props : {});
             } catch (e) {
                 if (cancelled) return;
-                setError(e instanceof Error ? e.message : "Ошибка рендера");
+                setError(getErrorMessage(e, "Ошибка загрузки превью"));
             }
         }
 
@@ -72,9 +117,11 @@ function OutRender({ task, started, reloadKey, startStatus }: OutRenderProps) {
             ) : (
                 <div className="min-h-32 overflow-hidden">
                     {error ? (
-                        <pre className="text-destructive whitespace-pre-wrap">{error}</pre>
+                        <PreviewErrorNotice message={error} />
                     ) : Component ? (
-                        <Component {...props} />
+                        <PreviewRenderBoundary key={moduleUrl}>
+                            <Component {...props} />
+                        </PreviewRenderBoundary>
                     ) : (
                         <p className="text-muted-foreground">Загрузка рендера…</p>
                     )}

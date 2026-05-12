@@ -1,6 +1,13 @@
 # Установка desengine
 
-Этот документ описывает локальную установку desengine для пользователя, который сам поднимает систему на своей машине.
+Этот документ описывает локальную установку desengine для администратора, который сам поднимает систему на своей машине.
+
+## Аудитория и роль
+
+- Администратор: это каноническая пошаговая инструкция локального запуска.
+- Пользователь: этот файл полезен только для понимания того, что делает администратор; сам browser-only сценарий описан короче в [README.md](/Users/op/dev/sobakapav/desengine/README.md:1) и `/help`.
+
+Этот документ не дублирует целиком инструкции по allowlist, onboarding и LLM-провайдерам. Для деталей он отправляет в профильные документы.
 
 ## Что понадобится
 
@@ -80,6 +87,7 @@ DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 - DeepSeek: [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1)
 - Google Gemini: [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1)
 - allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
+- onboarding: [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1)
 
 ## 4. Запустите приложение
 
@@ -93,12 +101,13 @@ npm run dev
 
 ## 5. Что вы увидите
 
-- На `/` приложение сразу переведёт вас на `/tasks`.
+- На `/` приложение покажет страницу состояния системы, список следующих шагов и ссылки на `/auth`, `/config`, `/help` и защищённые маршруты.
 - Если допуска ещё нет, защищённые маршруты переведут на `/auth`, где показаны статусы системы и allowlist-форма.
 - До успешной allowlist-проверки рабочая часть лаборатории не откроется.
 - Даже если `OPENAI_API_KEY` не задан, `/auth` и `/config` всё равно должны открываться.
 - Если `/onboarding` отсутствует или неполон, приложение должно явно показать проблему с onboarding-контентом вместо тихого fallback к старым корневым каталогам.
 - После настройки `DESENGINE_ONBOARDING_REPO_URL` локальный onboarding-контент можно вручную обновить кнопкой `Обновить onboarding` на `/config`.
+- Пользовательский browser-only сценарий после этого выглядит так: `/` → `/auth` → `/tasks` или `/levels`.
 
 ## 6. Что важно про каталог `user/`
 
@@ -123,6 +132,13 @@ npm run smoke
 ```
 
 Канонические административные утилиты, их команды и карта миграции собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
+
+Отдельные профильные документы:
+
+- allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
+- onboarding: [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1)
+- LLM-провайдеры: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1), [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1), [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1)
+- platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)
 
 ## Протокол пользовательского прогона
 
@@ -180,4 +196,4 @@ npm -v
 - не настроен allowlist;
 - email ещё не прошёл allowlist-допуск.
 
-Сейчас таким «статусным» entry point обычно является `/auth` или `/config`, а не список задач.
+Сейчас таким статусным entry point по умолчанию является `/`, а диагностические детали также доступны на `/auth` и `/config`. Список задач на `/tasks` остаётся защищённым маршрутом.

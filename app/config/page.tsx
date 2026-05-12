@@ -7,6 +7,7 @@ import { getSystemStatusModel } from "@/lib/system-status.server"
 
 export default async function ConfigPage() {
   const status = await getSystemStatusModel()
+  const onboardingStatus = status.items.find((item) => item.id === "onboarding-content")
 
   return (
     <main className="tool-shell-page">
@@ -33,7 +34,11 @@ export default async function ConfigPage() {
             />
           </div>
 
-          <OnboardingUpdateCard canUpdate={status.onboardingRepoConfigured} />
+          <OnboardingUpdateCard
+            canUpdate={status.onboardingRepoConfigured}
+            detail={onboardingStatus?.detail ?? "Статус onboarding-контента пока недоступен."}
+            syncState={status.onboardingSyncState}
+          />
         </section>
       </div>
     </main>
