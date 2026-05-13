@@ -12,7 +12,7 @@
 
 В репозитории настроен Vitest (`vitest.config.ts`) с проектами:
 
-- `unit`: Node-окружение, тесты ищутся по шаблону `lib/**/*.test.ts`
+- `unit`: Node-окружение, тесты ищутся по шаблону `test/unit/**/*.test.ts`
 - `storybook`: браузерные тесты Storybook (Playwright provider)
 
 ## Быстрый старт: локальный запуск

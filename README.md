@@ -11,7 +11,8 @@
 
 1. Установите обычный `Node.js` вместе с `npm`.
 2. Пройдите локальную установку по [INSTALL.md](INSTALL.md).
-3. Откройте [http://localhost:3000](http://localhost:3000).
+3. Для уже установленной инстанции используйте отдельную инструкцию обновления [UPDATE.md](UPDATE.md).
+4. Откройте [http://localhost:3000](http://localhost:3000).
 
 До допуска по allowlist корневой маршрут `/` показывает страницу состояния системы и следующие шаги. Даже без `OPENAI_API_KEY` оболочка откроется, но рабочие LLM-сценарии останутся недоступны.
 
@@ -62,6 +63,7 @@ npm run admin:tasks:import -- --variants-root=... --base-root=...
 ## Документация
 
 - [INSTALL.md](INSTALL.md) — каноническая пошаговая инструкция локальной установки для администратора.
+- [UPDATE.md](UPDATE.md) — каноническая пошаговая инструкция обновления существующей локальной установки.
 - [docs/access-control.md](docs/access-control.md) — allowlist-контур: базовый URL, marker-check и допуск по email.
 - [docs/onboarding.md](docs/onboarding.md) — канонический источник onboarding-контента и ручное обновление `/onboarding`.
 - [docs/openai.md](docs/openai.md) — настройка OpenAI как активного LLM-провайдера.
