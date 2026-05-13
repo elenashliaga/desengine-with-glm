@@ -44,7 +44,7 @@ Browser-only пользователь не должен проходить по 
 
 ## Канонические команды
 
-Этот файл фиксирует только CLI-утилиты из `/tools`. Ручное обновление локального `/onboarding` через кнопку `Обновить onboarding` на `/config` относится к административному контуру, но не считается CLI-admin-tool из `/tools`. Подробности по этому потоку собраны в [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1).
+Этот файл фиксирует только CLI-утилиты из `/tools`. Ручное обновление локального `/onboarding` через кнопку `Обновить onboarding` на `/config` относится к административному контуру, но не считается CLI-admin-tool из `/tools`. Подробности по этому потоку собраны в [docs/onboarding.md](docs/onboarding.md).
 
 ### `npm run smoke`
 

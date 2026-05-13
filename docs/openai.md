@@ -19,7 +19,7 @@
 
 ## Как задать
 
-Переименуй [desengine.config-example.txt](/Users/op/dev/sobakapav/desengine/desengine.config-example.txt:1) в `desengine.config.txt` и укажи в нём актуальный ключ OpenAI:
+Переименуй [desengine.config-example.txt](desengine.config-example.txt:1) в `desengine.config.txt` и укажи в нём актуальный ключ OpenAI:
 
 ```
 DESENGINE_LLM_PROVIDER=openai
@@ -29,6 +29,6 @@ DESENGINE_OPENAI_MODEL=gpt-4.1-nano
 
 `DESENGINE_OPENAI_MODEL` должен быть задан явно в `desengine.config.txt`.
 
-Для доступа по email см. [access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1).
-Для onboarding-источника и ручного обновления см. [onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1).
-Админские команды сопровождения и smoke-check собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
+Для доступа по email см. [access-control.md](docs/access-control.md).
+Для onboarding-источника и ручного обновления см. [onboarding.md](docs/onboarding.md).
+Админские команды сопровождения и smoke-check собраны в [tools/README.md](tools/README.md).

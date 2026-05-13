@@ -9,7 +9,7 @@
 
 ## Роль документа
 
-Этот файл углубляет [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) и фиксирует канонический контракт для локального каталога `/onboarding`, его внешнего источника, автоматической синхронизации и ручного обновления через `/config`.
+Этот файл углубляет [INSTALL.md](INSTALL.md) и фиксирует канонический контракт для локального каталога `/onboarding`, его внешнего источника, автоматической синхронизации и ручного обновления через `/config`.
 
 ## Что считается каноническим источником
 
@@ -51,6 +51,6 @@ DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.
 
 ## Связанные документы
 
-- [README.md](/Users/op/dev/sobakapav/desengine/README.md:1) — общая карта ролей и entry points.
-- [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) — пошаговый локальный запуск.
-- [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1) — канонические CLI-утилиты административного контура.
+- [README.md](README.md) — общая карта ролей и entry points.
+- [INSTALL.md](INSTALL.md) — пошаговый локальный запуск.
+- [tools/README.md](tools/README.md) — канонические CLI-утилиты административного контура.

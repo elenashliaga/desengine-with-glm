@@ -10,7 +10,7 @@
 ## Быстрый старт
 
 1. Установите обычный `Node.js` вместе с `npm`.
-2. Пройдите локальную установку по [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1).
+2. Пройдите локальную установку по [INSTALL.md](INSTALL.md).
 3. Откройте [http://localhost:3000](http://localhost:3000).
 
 До допуска по allowlist корневой маршрут `/` показывает страницу состояния системы и следующие шаги. Даже без `OPENAI_API_KEY` оболочка откроется, но рабочие LLM-сценарии останутся недоступны.
@@ -33,7 +33,7 @@ Onboarding-контент runtime читает из каталога `/onboardin
 - Администратор поднимает локальное приложение, настраивает `desengine.config.txt`, LLM-провайдера, allowlist и onboarding-источник.
 - Администратор отвечает за здоровье базового URL allowlist-хранилища, за наличие email-маркеров и за доступность `/onboarding`.
 - Администратор может вручную обновить локальный `/onboarding` через кнопку `Обновить onboarding` на `/config`.
-- Канонические служебные команды и утилиты собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
+- Канонические служебные команды и утилиты собраны в [tools/README.md](tools/README.md).
 
 ## Project Data и User State
 
@@ -57,16 +57,16 @@ npm run admin:tasks:configs
 npm run admin:tasks:import -- --variants-root=... --base-root=...
 ```
 
-`npm run build` проверяет production-сборку. `npm run smoke` делает базовую preflight-проверку env и build. Полный канонический каталог админских утилит и команд собран в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
+`npm run build` проверяет production-сборку. `npm run smoke` делает базовую preflight-проверку env и build. Полный канонический каталог админских утилит и команд собран в [tools/README.md](tools/README.md).
 
 ## Документация
 
-- [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) — каноническая пошаговая инструкция локальной установки для администратора.
-- [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1) — allowlist-контур: базовый URL, marker-check и допуск по email.
-- [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1) — канонический источник onboarding-контента и ручное обновление `/onboarding`.
-- [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1) — настройка OpenAI как активного LLM-провайдера.
-- [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1) — настройка DeepSeek как активного LLM-провайдера.
-- [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1) — настройка Gemini как активного LLM-провайдера.
-- [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1) — platform-specific примечания и общие ограничения по среде.
-- [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1) — канонический каталог административных утилит и `npm run ...` команд.
-- [docs/release-notes-2026-05-07.md](/Users/op/dev/sobakapav/desengine/docs/release-notes-2026-05-07.md:1) — исторические release notes, а не инструкция первого запуска.
+- [INSTALL.md](INSTALL.md) — каноническая пошаговая инструкция локальной установки для администратора.
+- [docs/access-control.md](docs/access-control.md) — allowlist-контур: базовый URL, marker-check и допуск по email.
+- [docs/onboarding.md](docs/onboarding.md) — канонический источник onboarding-контента и ручное обновление `/onboarding`.
+- [docs/openai.md](docs/openai.md) — настройка OpenAI как активного LLM-провайдера.
+- [docs/deepseek.md](docs/deepseek.md) — настройка DeepSeek как активного LLM-провайдера.
+- [docs/gemini.md](docs/gemini.md) — настройка Gemini как активного LLM-провайдера.
+- [docs/platform-notes.md](docs/platform-notes.md) — platform-specific примечания и общие ограничения по среде.
+- [tools/README.md](tools/README.md) — канонический каталог административных утилит и `npm run ...` команд.
+- [docs/release-notes-2026-05-07.md](docs/release-notes-2026-05-07.md) — исторические release notes, а не инструкция первого запуска.

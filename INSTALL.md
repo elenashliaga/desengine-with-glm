@@ -5,7 +5,7 @@
 ## Аудитория и роль
 
 - Администратор: это каноническая пошаговая инструкция локального запуска.
-- Пользователь: этот файл полезен только для понимания того, что делает администратор; сам browser-only сценарий описан короче в [README.md](/Users/op/dev/sobakapav/desengine/README.md:1) и `/help`.
+- Пользователь: этот файл полезен только для понимания того, что делает администратор; сам browser-only сценарий описан короче в [README.md](README.md) и `/help`.
 
 Этот документ не дублирует целиком инструкции по allowlist, onboarding и LLM-провайдерам. Для деталей он отправляет в профильные документы.
 
@@ -54,7 +54,7 @@ npm install
 
 ## 3. Создайте локальную конфигурацию
 
-Переименуйте [desengine.config-example.txt](/Users/op/dev/sobakapav/desengine/desengine.config-example.txt:1) в `desengine.config.txt`.
+Переименуйте [desengine.config-example.txt](desengine.config-example.txt) в `desengine.config.txt`.
 
 Это можно сделать любым привычным способом:
 
@@ -83,11 +83,11 @@ DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 
 Подробности:
 
-- OpenAI: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1)
-- DeepSeek: [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1)
-- Google Gemini: [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1)
-- allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
-- onboarding: [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1)
+- OpenAI: [docs/openai.md](docs/openai.md)
+- DeepSeek: [docs/deepseek.md](docs/deepseek.md)
+- Google Gemini: [docs/gemini.md](docs/gemini.md)
+- allowlist: [docs/access-control.md](docs/access-control.md)
+- onboarding: [docs/onboarding.md](docs/onboarding.md)
 
 ## 4. Запустите приложение
 
@@ -131,14 +131,14 @@ npm run build
 npm run smoke
 ```
 
-Канонические административные утилиты, их команды и карта миграции собраны в [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1).
+Канонические административные утилиты, их команды и карта миграции собраны в [tools/README.md](tools/README.md).
 
 Отдельные профильные документы:
 
-- allowlist: [docs/access-control.md](/Users/op/dev/sobakapav/desengine/docs/access-control.md:1)
-- onboarding: [docs/onboarding.md](/Users/op/dev/sobakapav/desengine/docs/onboarding.md:1)
-- LLM-провайдеры: [docs/openai.md](/Users/op/dev/sobakapav/desengine/docs/openai.md:1), [docs/deepseek.md](/Users/op/dev/sobakapav/desengine/docs/deepseek.md:1), [docs/gemini.md](/Users/op/dev/sobakapav/desengine/docs/gemini.md:1)
-- platform notes: [docs/platform-notes.md](/Users/op/dev/sobakapav/desengine/docs/platform-notes.md:1)
+- allowlist: [docs/access-control.md](docs/access-control.md)
+- onboarding: [docs/onboarding.md](docs/onboarding.md)
+- LLM-провайдеры: [docs/openai.md](docs/openai.md), [docs/deepseek.md](docs/deepseek.md), [docs/gemini.md](docs/gemini.md)
+- platform notes: [docs/platform-notes.md](docs/platform-notes.md)
 
 ## Протокол пользовательского прогона
 

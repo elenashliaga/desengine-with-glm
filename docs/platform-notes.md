@@ -39,6 +39,6 @@
 
 ## Связанные документы
 
-- [README.md](/Users/op/dev/sobakapav/desengine/README.md:1) — карта ролей и точек входа.
-- [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) — канонический первый запуск.
-- [tools/README.md](/Users/op/dev/sobakapav/desengine/tools/README.md:1) — административные команды и утилиты.
+- [README.md](README.md) — карта ролей и точек входа.
+- [INSTALL.md](INSTALL.md) — канонический первый запуск.
+- [tools/README.md](tools/README.md) — административные команды и утилиты.

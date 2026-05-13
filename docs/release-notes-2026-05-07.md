@@ -2,7 +2,7 @@
 
 ## Роль документа
 
-Это исторические release notes. Они помогают понять, что менялось в продукте, но не заменяют [README.md](/Users/op/dev/sobakapav/desengine/README.md:1), [INSTALL.md](/Users/op/dev/sobakapav/desengine/INSTALL.md:1) и профильные инструкции из `docs/**`.
+Это исторические release notes. Они помогают понять, что менялось в продукте, но не заменяют [README.md](README.md), [INSTALL.md](INSTALL.md) и профильные инструкции из `docs/**`.
 
 ## Новое
 

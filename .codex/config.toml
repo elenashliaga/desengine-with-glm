@@ -3,5 +3,5 @@ sandbox_mode = "workspace-write"
 [sandbox_workspace_write]
 network_access = true
 writable_roots = [
-  "/Users/op/dev/olgapavlova/desengine"
+  "/Users/op/dev/sobakapav/desengine"
 ]
