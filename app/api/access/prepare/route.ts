@@ -1,9 +1,9 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-import { shouldUseSecureCookies } from "@/lib/access-control"
-import { ACCESS_RETURN_PATH_COOKIE_NAME } from "@/lib/access-control.server"
-import { createAuthPath, sanitizeReturnPath } from "@/lib/navigation"
+import { shouldUseSecureCookies } from "@/lib/access/access-control"
+import { ACCESS_RETURN_PATH_COOKIE_NAME } from "@/lib/access/access-control.server"
+import { createAuthPath, sanitizeReturnPath } from "@/lib/platform/navigation"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)

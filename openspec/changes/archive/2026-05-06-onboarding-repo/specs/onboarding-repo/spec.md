@@ -10,11 +10,11 @@
 
 ### Requirement: Адрес onboarding-репозитория задаётся в config.txt
 
-Система SHALL брать адрес внешнего onboarding-репозитория из `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
+Система SHALL брать адрес внешнего onboarding-репозитория из `config.txt` через `ONBOARDING_REPO_URL`.
 
 #### Scenario: Система определяет источник onboarding-контента
 - **WHEN** системе нужен адрес внешнего onboarding-репозитория
-- **THEN** она читает `DESENGINE_ONBOARDING_REPO_URL` из `config.txt`
+- **THEN** она читает `ONBOARDING_REPO_URL` из `config.txt`
 
 ### Requirement: Onboarding-контент собирается под единым корнем `/onboarding`
 

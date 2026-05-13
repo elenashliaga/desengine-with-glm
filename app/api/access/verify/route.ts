@@ -5,12 +5,12 @@ import {
   isPlausibleEmail,
   normalizeEmail,
   shouldUseSecureCookies,
-} from "@/lib/access-control"
+} from "@/lib/access/access-control"
 import {
   consumeReturnPathCookie,
   createAccessCookieValue,
   verifyAllowlistAccess,
-} from "@/lib/access-control.server"
+} from "@/lib/access/access-control.server"
 
 type Body = {
   email?: string
@@ -32,9 +32,10 @@ export async function POST(request: Request) {
   if (!result.ok) {
     const status =
       result.reason === "forbidden" ? 403 : result.reason === "misconfigured" ? 500 : 503
+    const debug = process.env.NODE_ENV === "development" ? result.debug : undefined
 
     return Response.json(
-      { ok: false, error: result.error || "Доступ не разрешён." },
+      { ok: false, error: result.error || "Доступ не разрешён.", debug },
       { status },
     )
   }

@@ -1,4 +1,10 @@
-## ADDED Requirements
+# UI foundation
+
+## Purpose
+
+Зафиксировать базовые shell-паттерны интерфейса: канонический `Navigation`, его визуальный контракт и подход к локальным boundary/fallback для рискованных render-островков.
+
+## Requirements
 
 ### Requirement: Глобальная навигационная полоса является каноническим shell-паттерном
 

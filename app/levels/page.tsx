@@ -1,10 +1,10 @@
 import Link from "next/link"
 
-import { MarkdownContent } from "@/components/desengine/MarkdownContent"
-import { LevelTaskCard } from "@/components/desengine/LevelTaskCard"
-import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createConfigPath, createHelpPath, createLevelAssetPath, createLevelsPath, createTasksPath } from "@/lib/navigation"
-import { getAllLevelOverviews } from "@/lib/server"
+import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
+import { LevelTaskCard } from "@/components/desengine/levels/LevelTaskCard"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { createConfigPath, createHelpPath, createLevelAssetPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
+import { getAllLevelOverviews } from "@/lib/platform/server"
 
 export default async function LevelsPage() {
   await requireAccessOrRedirect(createLevelsPath())

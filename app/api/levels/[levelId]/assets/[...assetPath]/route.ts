@@ -3,7 +3,7 @@ import path from "node:path"
 
 import { NextResponse } from "next/server"
 
-import { appConfig } from "@/lib/config.server"
+import { appConfig } from "@/lib/config/config.server"
 
 const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
   ".gif": "image/gif",

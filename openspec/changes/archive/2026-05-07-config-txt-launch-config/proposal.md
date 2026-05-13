@@ -8,7 +8,7 @@
 
 - Фиксируем `desengine.config.txt` как новый канонический локальный конфиг-файл запуска вместо `.env.local`.
 - Фиксируем `desengine.config-example.txt` как единственный версионируемый шаблон локальной конфигурации.
-- Фиксируем, что в `desengine.config-example.txt` очищается только `OPENAI_API_KEY`, а значения `DESENGINE_OPENAI_MODEL`, `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT` остаются предзаполненными как в актуальном рабочем конфиге.
+- Фиксируем, что в `desengine.config-example.txt` очищается только `OPENAI_API_KEY`, а значения `OPENAI_MODEL`, `ALLOWLIST_BASE_URL` и `ALLOWLIST_SALT` остаются предзаполненными как в актуальном рабочем конфиге.
 - Фиксируем, что в шаблоне есть короткие комментарии:
   - в первой строке — что файл нужно переименовать в `desengine.config.txt`;
   - возле ключа OpenAI — где взять `OPENAI_API_KEY`.

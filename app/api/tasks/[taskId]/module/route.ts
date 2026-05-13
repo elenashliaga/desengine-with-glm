@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises"
 
 import ts from "typescript"
 
-import { getUserTaskFilePath } from "@/lib/user-state.server"
+import { getUserTaskFilePath } from "@/lib/platform/user-state.server"
 
 type Params = { taskId: string }
 
@@ -117,7 +117,7 @@ function buildClientRuntimeModule(files: {
   propsJs: string
 }) {
   return `
-const __DESENGINE_UI_BARREL__ = (() => {
+const __UI_BARREL__ = (() => {
   const button = { Button: ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children) };
   const input = { Input: (props) => React.createElement("input", props) };
   const textarea = { Textarea: (props) => React.createElement("textarea", props) };
@@ -152,15 +152,15 @@ const __DESENGINE_UI_BARREL__ = (() => {
   };
 })();
 
-const __DESENGINE_BUILTINS__ = {
+const __BUILTINS__ = {
   "@/components/shadcn/ui": (() => {
-    return __DESENGINE_UI_BARREL__;
+    return __UI_BARREL__;
   })(),
   "@/components/ui": (() => {
-    return __DESENGINE_UI_BARREL__;
+    return __UI_BARREL__;
   })(),
   "@/components/ui/": (() => {
-    return __DESENGINE_UI_BARREL__;
+    return __UI_BARREL__;
   })(),
   "@/components/ui/button": (() => {
     const Button = ({ children, type = "button", ...props }) => React.createElement("button", { type, ...props }, children);
@@ -210,7 +210,7 @@ const __DESENGINE_BUILTINS__ = {
   })(),
 };
 
-const __DESENGINE_MODULES__ = {
+const __MODULES__ = {
   "./Component": function(module, exports, require) {
 ${files.componentJs}
   },
@@ -225,32 +225,32 @@ ${files.propsJs}
   }
 };
 
-const __DESENGINE_CACHE__ = {};
+const __CACHE__ = {};
 
 function __desengineLoad(specifier) {
   if (specifier === "react") {
     return { ...React, default: React };
   }
 
-  if (Object.prototype.hasOwnProperty.call(__DESENGINE_BUILTINS__, specifier)) {
-    return __DESENGINE_BUILTINS__[specifier];
+  if (Object.prototype.hasOwnProperty.call(__BUILTINS__, specifier)) {
+    return __BUILTINS__[specifier];
   }
 
   if (specifier.endsWith(".css")) {
     return {};
   }
 
-  if (!Object.prototype.hasOwnProperty.call(__DESENGINE_MODULES__, specifier)) {
+  if (!Object.prototype.hasOwnProperty.call(__MODULES__, specifier)) {
     throw new Error("Неподдерживаемая зависимость: " + specifier);
   }
 
-  if (__DESENGINE_CACHE__[specifier]) {
-    return __DESENGINE_CACHE__[specifier].exports;
+  if (__CACHE__[specifier]) {
+    return __CACHE__[specifier].exports;
   }
 
   const localModule = { exports: {} };
-  __DESENGINE_CACHE__[specifier] = localModule;
-  __DESENGINE_MODULES__[specifier](localModule, localModule.exports, __desengineLoad);
+  __CACHE__[specifier] = localModule;
+  __MODULES__[specifier](localModule, localModule.exports, __desengineLoad);
   return localModule.exports;
 }
 

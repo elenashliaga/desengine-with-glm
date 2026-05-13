@@ -30,7 +30,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['lib/**/*.test.ts'],
+          include: ['test/unit/**/*.test.ts'],
         },
       },
       {

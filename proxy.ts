@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-import { ACCESS_COOKIE_NAME, getAccessControlConfig, verifyAccessSessionValue } from "@/lib/access-control"
+import { ACCESS_COOKIE_NAME, getAccessControlConfig, verifyAccessSessionValue } from "@/lib/access/access-control"
 
 function isProtectedApiPath(pathname: string): boolean {
   return pathname.startsWith("/api/") && !pathname.startsWith("/api/access/")

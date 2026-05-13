@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { createAuthPath, createConfigPath, createLevelsPath, createTasksPath } from "@/lib/navigation"
+import { createAuthPath, createConfigPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
 
 const helpCards = [
   {

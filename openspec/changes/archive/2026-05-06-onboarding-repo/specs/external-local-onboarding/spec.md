@@ -11,12 +11,12 @@
 
 ### Requirement: Локальная конфигурация хранит адрес onboarding-репозитория
 
-Система SHALL хранить адрес onboarding-репозитория в `config.txt` как часть локальной конфигурации запуска через переменную `DESENGINE_ONBOARDING_REPO_URL`.
+Система SHALL хранить адрес onboarding-репозитория в `config.txt` как часть локальной конфигурации запуска через переменную `ONBOARDING_REPO_URL`.
 
 #### Scenario: Оператор настраивает источник onboarding-контента
 - **WHEN** оператор задаёт, откуда брать onboarding-контент
 - **THEN** он делает это через `config.txt`
-- **AND** указывает значение в `DESENGINE_ONBOARDING_REPO_URL`
+- **AND** указывает значение в `ONBOARDING_REPO_URL`
 
 ### Requirement: Локальная система читает onboarding-контент только из `/onboarding`
 

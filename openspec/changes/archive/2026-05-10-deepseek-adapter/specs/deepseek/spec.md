@@ -17,8 +17,8 @@
 - **THEN** система использует их без изменения кода
 
 #### Scenario: DeepSeek включён как активный провайдер
-- **WHEN** оператор задаёт `DESENGINE_LLM_PROVIDER=deepseek`
-- **AND** задаёт `DEEPSEEK_API_KEY`, `DESENGINE_DEEPSEEK_MODEL` и при необходимости `DESENGINE_DEEPSEEK_BASE_URL`
+- **WHEN** оператор задаёт `LLM_PROVIDER=deepseek`
+- **AND** задаёт `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` и при необходимости `DEEPSEEK_BASE_URL`
 - **THEN** лаборатория использует именно эти параметры для LLM-вызовов
 
 ### Requirement: Ошибки DeepSeek различаются по типам

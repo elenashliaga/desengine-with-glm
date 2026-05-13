@@ -88,7 +88,7 @@ npm run openspec:new -- add-level-badges --description "Пробный change"
 
 ### `npm run allowlist:marker -- user@example.com`
 
-Печатает hex-маркер для allowlist по email и `DESENGINE_ALLOWLIST_SALT`.
+Печатает hex-маркер для allowlist по email и `ALLOWLIST_SALT`.
 
 Дополнительно можно явно передать salt:
 

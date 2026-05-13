@@ -1,1 +1,0 @@
-export { LabSelect } from "./LabSelect";

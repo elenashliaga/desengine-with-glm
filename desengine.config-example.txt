@@ -1,28 +1,40 @@
 # Переименуйте этот файл в desengine.config.txt перед первым локальным запуском.
-# Пользовательский браузерный запуск всё равно откроет страницу состояния,
-# даже если часть переменных ниже ещё не задана.
+
+# # # # # # # # # # # # # # # # # # # # #
 
 # LLM
-# Активный провайдер можно переключать без правок кода и без изменений desengine.config.json.
-DESENGINE_LLM_PROVIDER=deepseek
-#
-# OPENAI_API_KEY создаётся в OpenAI Platform на экране View API keys.
+# Можно выбирать, какой LLM пользоваться
+# Варианты: openai | deepseek | gemini
+# Конечно, у вас должен быть ключ к этой LLM
+# И ключ этот надо записать в одну из переменных ниже
+LLM_PROVIDER=deepseek
+
+# OPENAI_API_KEY создаётся в OpenAI Platform
+# Модель выбирайте попроще, чтобы не тратить токены зря
 OPENAI_API_KEY=
-DESENGINE_OPENAI_MODEL=gpt-4.1-nano
-#
-# DEEPSEEK_API_KEY создаётся в DeepSeek Platform.
+OPENAI_MODEL=gpt-4.1-nano
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# DEEPSEEK_API_KEY создаётся в DeepSeek Platform
+# Доступ без танцев с бубном + очень дёшево
 DEEPSEEK_API_KEY=
-DESENGINE_DEEPSEEK_MODEL=deepseek-v4-flash
-DESENGINE_DEEPSEEK_BASE_URL=https://api.deepseek.com
-#
-# GEMINI_API_KEY создаётся в Google AI Studio.
+DEEPSEEK_MODEL=deepseek-v4-flash
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+
+# GEMINI_API_KEY создаётся в Google AI Studio
+# Сейчас это единственный бесплатный вариант
 GEMINI_API_KEY=
-DESENGINE_GEMINI_MODEL=gemini-2.5-flash
-DESENGINE_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+
+# # # # # # # # # # # # # # # # # # # # #
+
+# Ниже всё уже настроено, можно не менять
 
 # Доступ по email в рабочую часть лаборатории
-DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
-DESENGINE_ALLOWLIST_SALT=68vBN7EWDTDsMLzoTyOghApJ5zDBI/Mg1ZNGpbrxvIY=
+ALLOWLIST_BASE_URL=https://sobakapav.ru/allowlist/
+ALLOWLIST_SALT=68vBN7EWDTDsMLzoTyOghApJ5zDBI/Mg1ZNGpbrxvIY=
 
-# Источник onboarding-контента
-DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git
+# Источник обучающего контента
+# Вы можете собрать свой собственный
+ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git

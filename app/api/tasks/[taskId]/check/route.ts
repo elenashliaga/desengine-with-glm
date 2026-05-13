@@ -12,11 +12,11 @@ import {
   passCurrentTaskLevelCheck,
   readTaskData,
   saveTaskCheckResult,
-} from "@/lib/server"
-import { runStructuredLlmRequest } from "@/lib/llm.server"
-import { readLevelCheckPrompt, readPrompt } from "@/lib/prompts.server"
-import { getTaskCatalogFilePath } from "@/lib/user-state.server"
-import type { TaskCheckResult, TaskData, TaskListItem } from "@/lib/types"
+} from "@/lib/platform/server"
+import { runStructuredLlmRequest } from "@/lib/llm/llm.server"
+import { readLevelCheckPrompt, readPrompt } from "@/lib/llm/prompts.server"
+import { getTaskCatalogFilePath } from "@/lib/platform/user-state.server"
+import type { TaskCheckResult, TaskData, TaskListItem } from "@/lib/platform/types"
 
 type Params = { taskId: string }
 

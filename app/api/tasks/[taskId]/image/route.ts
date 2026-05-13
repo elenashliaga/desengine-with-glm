@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises"
 
-import { getTaskCatalogFilePath } from "@/lib/user-state.server"
+import { getTaskCatalogFilePath } from "@/lib/platform/user-state.server"
 
 type Params = { taskId: string }
 

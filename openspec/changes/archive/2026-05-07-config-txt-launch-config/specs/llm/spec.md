@@ -14,10 +14,10 @@
 #### Scenario: Пользователь готовит шаблон локальной LLM-конфигурации
 - **WHEN** пользователь открывает `desengine.config-example.txt`
 - **THEN** поле `OPENAI_API_KEY` остаётся незаполненным
-- **AND** типовое значение `DESENGINE_OPENAI_MODEL` уже присутствует в шаблоне
+- **AND** типовое значение `OPENAI_MODEL` уже присутствует в шаблоне
 - **AND** рядом с `OPENAI_API_KEY` есть короткая подсказка, что ключ берётся в OpenAI Platform на экране API keys
 
 #### Scenario: Система выбирает модель OpenAI
 - **WHEN** runtime определяет модель для LLM-вызова
-- **THEN** он читает `DESENGINE_OPENAI_MODEL` из `desengine.config.txt` или env процесса
+- **THEN** он читает `OPENAI_MODEL` из `desengine.config.txt` или env процесса
 - **AND** не использует `desengine.config.json` как fallback для имени модели

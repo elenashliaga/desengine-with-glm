@@ -65,21 +65,21 @@ npm install
 Что нужно проверить в файле:
 
 ```env
-DESENGINE_LLM_PROVIDER=openai
+LLM_PROVIDER=openai
 OPENAI_API_KEY=...
-DESENGINE_OPENAI_MODEL=gpt-4.1-nano
+OPENAI_MODEL=gpt-4.1-nano
 DEEPSEEK_API_KEY=
-DESENGINE_DEEPSEEK_MODEL=deepseek-v4-flash
-DESENGINE_DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-v4-flash
+DEEPSEEK_BASE_URL=https://api.deepseek.com
 GEMINI_API_KEY=
-DESENGINE_GEMINI_MODEL=gemini-2.5-flash
-DESENGINE_GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
-DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
-DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
-DESENGINE_ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+ALLOWLIST_BASE_URL=https://example.com/allowlist/
+ALLOWLIST_SALT=replace-with-random-secret
+ONBOARDING_REPO_URL=https://example.com/desengine-onboarding.git
 ```
 
-В шаблоне уже оставлены типовые значения для моделей, allowlist-настроек и URL onboarding-репозитория. Обычно вручную меняются `DESENGINE_LLM_PROVIDER`, ключ выбранного провайдера и реальный адрес onboarding-репозитория.
+В шаблоне уже оставлены типовые значения для моделей, allowlist-настроек и URL onboarding-репозитория. Обычно вручную меняются `LLM_PROVIDER`, ключ выбранного провайдера и реальный адрес onboarding-репозитория.
 
 Подробности:
 
@@ -106,7 +106,7 @@ npm run dev
 - До успешной allowlist-проверки рабочая часть лаборатории не откроется.
 - Даже если `OPENAI_API_KEY` не задан, `/auth` и `/config` всё равно должны открываться.
 - Если `/onboarding` отсутствует или неполон, приложение должно явно показать проблему с onboarding-контентом вместо тихого fallback к старым корневым каталогам.
-- После настройки `DESENGINE_ONBOARDING_REPO_URL` локальный onboarding-контент можно вручную обновить кнопкой `Обновить onboarding` на `/config`.
+- После настройки `ONBOARDING_REPO_URL` локальный onboarding-контент можно вручную обновить кнопкой `Обновить onboarding` на `/config`.
 - Пользовательский browser-only сценарий после этого выглядит так: `/` → `/auth` → `/tasks` или `/levels`.
 
 ## 6. Что важно про каталог `user/`

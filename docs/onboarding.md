@@ -14,13 +14,13 @@
 ## Что считается каноническим источником
 
 - Runtime читает учебные материалы из локального каталога `/onboarding`.
-- Канонический внешний источник этого каталога задаётся через `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`.
+- Канонический внешний источник этого каталога задаётся через `ONBOARDING_REPO_URL` в `desengine.config.txt`.
 - Если URL не задан, система должна явно показывать, что источник onboarding-контента не настроен.
 
 Минимальный фрагмент конфига:
 
 ```env
-DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git
+ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git
 ```
 
 ## Что должно лежать в `/onboarding`
@@ -36,7 +36,7 @@ DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.
 
 ## Как вручную обновить `/onboarding`
 
-1. Убедитесь, что в `desengine.config.txt` задан `DESENGINE_ONBOARDING_REPO_URL`.
+1. Убедитесь, что в `desengine.config.txt` задан `ONBOARDING_REPO_URL`.
 2. Запустите приложение и откройте [http://localhost:3000/config](http://localhost:3000/config).
 3. Нажмите кнопку `Обновить onboarding`.
 4. Дождитесь завершения операции и повторно проверьте блок диагностики onboarding-контента.

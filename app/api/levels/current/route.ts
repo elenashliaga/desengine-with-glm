@@ -1,4 +1,4 @@
-import { getLevelOverview } from "@/lib/server"
+import { getLevelOverview } from "@/lib/platform/server"
 
 export async function GET() {
   const overview = await getLevelOverview()

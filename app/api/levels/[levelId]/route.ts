@@ -1,4 +1,4 @@
-import { getLevelOverview } from "@/lib/server"
+import { getLevelOverview } from "@/lib/platform/server"
 
 type Params = { levelId: string }
 

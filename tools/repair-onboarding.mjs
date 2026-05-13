@@ -89,9 +89,9 @@ async function main() {
     }
   }
 
-  const repoUrl = process.env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
+  const repoUrl = process.env.ONBOARDING_REPO_URL?.trim() ?? ""
   if (!repoUrl) {
-    throw new Error("Не задан `DESENGINE_ONBOARDING_REPO_URL` в desengine.config.txt.")
+    throw new Error("Не задан `ONBOARDING_REPO_URL` в desengine.config.txt.")
   }
 
   const appConfig = readAppConfig()

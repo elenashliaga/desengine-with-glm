@@ -4,8 +4,8 @@ import {
   getLevelEditableWorkbenchFileMap,
   getTaskLabContext,
   getTaskListItemById,
-} from "@/lib/server"
-import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/user-state.server"
+} from "@/lib/platform/server"
+import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/platform/user-state.server"
 
 type Params = { taskId: string }
 

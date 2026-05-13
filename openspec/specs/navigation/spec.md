@@ -1,4 +1,10 @@
-## ADDED Requirements
+# Навигация
+
+## Purpose
+
+Зафиксировать каноническую top-level карту пользовательских URL и единый глобальный `Navigation` для product-shell страниц.
+
+## Requirements
 
 ### Requirement: Product-shell имеет единый глобальный Navigation для top-level точек входа
 
@@ -25,8 +31,6 @@
 #### Scenario: Пользователь смотрит на правую часть Navigation
 - **WHEN** product-shell страница отрисована
 - **THEN** в правой части `Navigation` видны ссылки на Telegram-бот и email-контакт
-
-## MODIFIED Requirements
 
 ### Requirement: Продукт имеет фиксированную top-level карту пользовательских URL
 

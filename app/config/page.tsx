@@ -1,9 +1,9 @@
 import Link from "next/link"
 
-import { OnboardingUpdateCard } from "@/components/desengine/OnboardingUpdateCard"
-import { SystemStatusPanel } from "@/components/desengine/SystemStatusPanel"
-import { createAuthPath, createHelpPath, createTasksPath } from "@/lib/navigation"
-import { getSystemStatusModel } from "@/lib/system-status.server"
+import { OnboardingUpdateCard } from "@/components/desengine/platform/OnboardingUpdateCard"
+import { SystemStatusPanel } from "@/components/desengine/platform/SystemStatusPanel"
+import { createAuthPath, createHelpPath, createTasksPath } from "@/lib/platform/navigation"
+import { getSystemStatusModel } from "@/lib/config/system-status.server"
 
 export default async function ConfigPage() {
   const status = await getSystemStatusModel()

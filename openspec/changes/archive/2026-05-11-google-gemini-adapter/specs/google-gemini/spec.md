@@ -17,8 +17,8 @@
 - **THEN** система использует их без изменения кода
 
 #### Scenario: Google Gemini включён как активный провайдер
-- **WHEN** оператор задаёт `DESENGINE_LLM_PROVIDER=gemini`
-- **AND** задаёт `GEMINI_API_KEY`, `DESENGINE_GEMINI_MODEL` и при необходимости `DESENGINE_GEMINI_BASE_URL`
+- **WHEN** оператор задаёт `LLM_PROVIDER=gemini`
+- **AND** задаёт `GEMINI_API_KEY`, `GEMINI_MODEL` и при необходимости `GEMINI_BASE_URL`
 - **THEN** лаборатория использует именно эти параметры для LLM-вызовов
 
 ### Requirement: Google Gemini принимает изображения уровня

@@ -59,8 +59,8 @@
   - Salt не публикуется рядом с allowlist-маркерами.
 
 - Конфигурация `lab` для MVP задаётся через переменные окружения.
-  - `DESENGINE_ALLOWLIST_BASE_URL` задаёт базовый URL статического allowlist-хранилища.
-  - `DESENGINE_ALLOWLIST_SALT` задаёт salt для вычисления имён allowlist-маркеров.
+  - `ALLOWLIST_BASE_URL` задаёт базовый URL статического allowlist-хранилища.
+  - `ALLOWLIST_SALT` задаёт salt для вычисления имён allowlist-маркеров.
 
 - Операционный формат allowlist-хранилища: один файл на один разрешённый email.
   - Имя файла равно `sha256(normalizedEmail + ":" + salt)` в hex.

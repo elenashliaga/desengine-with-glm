@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation"
 
-import { Lab } from "@/components/desengine/Lab"
-import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createLevelsPath } from "@/lib/navigation"
-import { getLevelOverview } from "@/lib/server"
+import { Lab } from "@/components/desengine/lab/LabScreen"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { createLevelsPath } from "@/lib/platform/navigation"
+import { getLevelOverview } from "@/lib/platform/server"
 
 type Params = {
   levelId: string

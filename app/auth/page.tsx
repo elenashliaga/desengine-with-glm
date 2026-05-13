@@ -1,8 +1,8 @@
-import { AccessGate } from "@/components/desengine/AccessGate"
+import { AccessGate } from "@/components/desengine/platform/AccessGate"
 import { redirect } from "next/navigation"
 
-import { createTasksPath } from "@/lib/navigation"
-import { getSystemStatusModel } from "@/lib/system-status.server"
+import { createTasksPath } from "@/lib/platform/navigation"
+import { getSystemStatusModel } from "@/lib/config/system-status.server"
 
 export default async function AuthPage() {
   const status = await getSystemStatusModel()

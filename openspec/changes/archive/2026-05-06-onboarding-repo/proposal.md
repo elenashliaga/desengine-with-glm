@@ -16,7 +16,7 @@
 
 - Фиксируем `/onboarding` как единый контентный корень для onboarding-слоя продукта.
 - Фиксируем, что `/onboarding` подгружается из отдельного репозитория.
-- Фиксируем, что адрес внешнего onboarding-репозитория задаётся в `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
+- Фиксируем, что адрес внешнего onboarding-репозитория задаётся в `config.txt` через `ONBOARDING_REPO_URL`.
 - Фиксируем состав внешнего onboarding-контента:
   - `levels/**`
   - только `config.json`, `base.png`, `variants.png` из `tasks/**`
@@ -43,6 +43,6 @@
 
 - Архитектура контента: появится единый внешний корень `/onboarding` вместо разрозненных внутренних каталогов.
 - Граница владения: основной репозиторий станет хозяином runtime и production-prompts, а onboarding-репозиторий — хозяином уровней, задач и didactic-prompts.
-- Config/runtime: продукту потребуется читать URL onboarding-репозитория из `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
+- Config/runtime: продукту потребуется читать URL onboarding-репозитория из `config.txt` через `ONBOARDING_REPO_URL`.
 - Runtime flow: продукт должен считать `/onboarding` обязательным источником onboarding-данных и явно показывать ошибку, если каталог отсутствует или неполон.
 - Diagnostics: понадобится явный статус доступности onboarding-контента на случай, если он не подгрузился.

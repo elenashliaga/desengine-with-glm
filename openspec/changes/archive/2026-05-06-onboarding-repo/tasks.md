@@ -1,7 +1,7 @@
 ## 1. Контракт onboarding-слоя
 
 - [x] 1.1 Зафиксировать `/onboarding` как единый внешний контентный корень продукта
-- [x] 1.2 Зафиксировать, что адрес onboarding-репозитория задаётся в `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`
+- [x] 1.2 Зафиксировать, что адрес onboarding-репозитория задаётся в `config.txt` через `ONBOARDING_REPO_URL`
 - [x] 1.3 Зафиксировать, что в onboarding-репозиторий входят `levels/**`, `tasks/**/{config.json,base.png,variants.png}` и `prompts/didactic/**`
 - [x] 1.4 Зафиксировать, что `prompts/production/**` остаются в основном репозитории
 - [x] 1.5 Зафиксировать, что legacy-рабочие исходники и `prompt-history.json` не входят в onboarding-контент

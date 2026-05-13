@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation"
 
-import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createTaskNextPath, createTaskPath } from "@/lib/navigation"
-import { getTaskListItemById, getTaskPendingTransition } from "@/lib/server"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { createTaskNextPath, createTaskPath } from "@/lib/platform/navigation"
+import { getTaskListItemById, getTaskPendingTransition } from "@/lib/platform/server"
 
 type Params = {
   taskId: string

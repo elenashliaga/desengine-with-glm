@@ -2,7 +2,7 @@
 
 - [x] 1.1 Перевести проект с `.env.local` на `desengine.config.txt` как на канонический локальный конфиг-файл
 - [x] 1.2 Добавить или переименовать шаблон в `desengine.config-example.txt`
-- [x] 1.3 Обновить содержимое шаблона: оставить заполненными `DESENGINE_OPENAI_MODEL`, `DESENGINE_ALLOWLIST_BASE_URL` и `DESENGINE_ALLOWLIST_SALT`, очистить только `OPENAI_API_KEY`
+- [x] 1.3 Обновить содержимое шаблона: оставить заполненными `OPENAI_MODEL`, `ALLOWLIST_BASE_URL` и `ALLOWLIST_SALT`, очистить только `OPENAI_API_KEY`
 - [x] 1.4 Добавить в первой строке шаблона комментарий о переименовании файла в `desengine.config.txt`
 - [x] 1.5 Добавить короткий комментарий рядом с `OPENAI_API_KEY`, где взять ключ OpenAI
 

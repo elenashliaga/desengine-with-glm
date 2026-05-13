@@ -14,7 +14,7 @@
 Текущая постановка точнее:
 - нужен не просто “репозиторий дидактики”, а единый внешний onboarding-слой;
 - этот слой должен монтироваться/подгружаться в продукт как `/onboarding`;
-- адрес репозитория onboarding-контента должен задаваться через уже существующий `config.txt` переменной `DESENGINE_ONBOARDING_REPO_URL`;
+- адрес репозитория onboarding-контента должен задаваться через уже существующий `config.txt` переменной `ONBOARDING_REPO_URL`;
 - в него входят уровни, только `config.json`, `base.png`, `variants.png` из `tasks/**`, а также didactic-промпты;
 - production-prompts остаются в основном репозитории;
 - в этой фазе продукт должен читать onboarding-слой только из `/onboarding` без fallback к старым корневым каталогам;
@@ -42,7 +42,7 @@
   - `/onboarding` — это не просто папка, а отдельный контентный слой продукта.
   - Канонический источник этого слоя — отдельный репозиторий.
 
-- URL onboarding-репозитория задаётся в `config.txt` через `DESENGINE_ONBOARDING_REPO_URL`.
+- URL onboarding-репозитория задаётся в `config.txt` через `ONBOARDING_REPO_URL`.
   - Продукт не должен хардкодить адрес внешнего onboarding-репозитория в коде.
   - Конфигурация подключения onboarding-контента становится частью локального конфигурационного файла системы.
 
@@ -102,7 +102,7 @@
 ## Pre-Implementation Checklist
 
 - Сопоставить существующие каталоги `levels/**`, `tasks/**`, `prompts/didactic/**`, `prompts/production/**` с новой моделью `/onboarding`.
-- Зафиксировать имя `DESENGINE_ONBOARDING_REPO_URL` и его роль в `config.txt`.
+- Зафиксировать имя `ONBOARDING_REPO_URL` и его роль в `config.txt`.
 - Для `tasks/**` отделить onboarding-owned содержимое (`config.json`, `base.png`, `variants.png`) от runtime/user-owned артефактов.
 - Проверить пересечение с уже существующими change:
   - `externalize-didactics-repo`

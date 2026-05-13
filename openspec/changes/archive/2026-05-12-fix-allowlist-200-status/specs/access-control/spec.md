@@ -2,14 +2,14 @@
 
 ### Requirement: Базовый URL allowlist-системы в штатной ситуации отвечает 200
 
-Система SHALL считать allowlist-систему корректно доступной только если базовый URL, заданный в `DESENGINE_ALLOWLIST_BASE_URL`, в штатной ситуации отвечает `200`.
+Система SHALL считать allowlist-систему корректно доступной только если базовый URL, заданный в `ALLOWLIST_BASE_URL`, в штатной ситуации отвечает `200`.
 
 #### Scenario: Диагностика проверяет базовый URL allowlist-системы
-- **WHEN** система проверяет сетевую доступность allowlist по `DESENGINE_ALLOWLIST_BASE_URL`
+- **WHEN** система проверяет сетевую доступность allowlist по `ALLOWLIST_BASE_URL`
 - **THEN** штатным успешным ответом считается `200`
 
 #### Scenario: Базовый URL allowlist-системы отвечает 404
-- **WHEN** система проверяет сетевую доступность allowlist по `DESENGINE_ALLOWLIST_BASE_URL`
+- **WHEN** система проверяет сетевую доступность allowlist по `ALLOWLIST_BASE_URL`
 - **AND** базовый URL отвечает `404`
 - **THEN** система не считает allowlist-систему корректно развёрнутой
 - **AND** явно показывает проблему конфигурации или публикации allowlist-системы
@@ -27,6 +27,6 @@
 - **AND** принимает `200` как успешный допуск
 
 #### Scenario: Проверка базового URL allowlist-системы не подменяется marker-check логикой
-- **WHEN** система проверяет сетевую доступность allowlist по `DESENGINE_ALLOWLIST_BASE_URL`
+- **WHEN** система проверяет сетевую доступность allowlist по `ALLOWLIST_BASE_URL`
 - **THEN** она не трактует `404` как штатный успешный ответ
 - **AND** использует отдельный контракт готовности allowlist-системы

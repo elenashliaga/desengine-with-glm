@@ -188,14 +188,14 @@ async function inspectOnboardingState(repoUrl) {
 }
 
 async function ensureOnboardingReady(env) {
-  const repoUrl = env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
+  const repoUrl = env.ONBOARDING_REPO_URL?.trim() ?? ""
 
   if (!repoUrl) {
     return createCheck(
       "onboarding-sync",
       false,
       "Onboarding-репозиторий не настроен",
-      "Задайте `DESENGINE_ONBOARDING_REPO_URL` в `desengine.config.txt`, иначе установка не сможет подтвердить источник `/onboarding`.",
+      "Задайте `ONBOARDING_REPO_URL` в `desengine.config.txt`, иначе установка не сможет подтвердить источник `/onboarding`.",
     )
   }
 
@@ -313,17 +313,17 @@ async function main() {
   checks.push(
     createCheck(
       "llm-provider",
-      Boolean(env.DESENGINE_LLM_PROVIDER || env.OPENAI_API_KEY),
-      env.DESENGINE_LLM_PROVIDER
-        ? `Активный LLM-провайдер: ${env.DESENGINE_LLM_PROVIDER}`
+      Boolean(env.LLM_PROVIDER || env.OPENAI_API_KEY),
+      env.LLM_PROVIDER
+        ? `Активный LLM-провайдер: ${env.LLM_PROVIDER}`
         : "Активный LLM-провайдер не задан",
-      env.DESENGINE_LLM_PROVIDER
-        ? "Проверьте, что для этого провайдера заданы его ключ и модель."
-        : "Задайте `DESENGINE_LLM_PROVIDER` в `desengine.config.txt`. Для обратной совместимости старый OpenAI-конфиг всё ещё может подхватиться по умолчанию.",
+      env.LLM_PROVIDER
+        ? "Проверьте, что для этого провайдера заданы ключ, модель и базовый URL."
+        : "Задайте `LLM_PROVIDER` в `desengine.config.txt`.",
     ),
   )
 
-  const activeProvider = (env.DESENGINE_LLM_PROVIDER || "openai").trim().toLowerCase()
+  const activeProvider = (env.LLM_PROVIDER || "openai").trim().toLowerCase()
   const hasActiveProviderCredentials =
     activeProvider === "deepseek"
       ? Boolean(env.DEEPSEEK_API_KEY)
@@ -332,10 +332,16 @@ async function main() {
         : Boolean(env.OPENAI_API_KEY)
   const hasActiveProviderModel =
     activeProvider === "deepseek"
-      ? Boolean(env.DESENGINE_DEEPSEEK_MODEL)
+      ? Boolean(env.DEEPSEEK_MODEL)
       : activeProvider === "gemini"
-        ? Boolean(env.DESENGINE_GEMINI_MODEL)
-        : Boolean(env.DESENGINE_OPENAI_MODEL)
+        ? Boolean(env.GEMINI_MODEL)
+        : Boolean(env.OPENAI_MODEL)
+  const hasActiveProviderBaseUrl =
+    activeProvider === "deepseek"
+      ? Boolean(env.DEEPSEEK_BASE_URL)
+      : activeProvider === "gemini"
+        ? Boolean(env.GEMINI_BASE_URL)
+        : Boolean(env.OPENAI_BASE_URL)
 
   checks.push(
     createCheck(
@@ -363,7 +369,20 @@ async function main() {
     ),
   )
 
-  const allowlistConfigured = Boolean(env.DESENGINE_ALLOWLIST_BASE_URL && env.DESENGINE_ALLOWLIST_SALT)
+  checks.push(
+    createCheck(
+      "llm-base-url",
+      hasActiveProviderBaseUrl,
+      hasActiveProviderBaseUrl
+        ? `BASE_URL активного провайдера ${activeProvider} задан`
+        : `BASE_URL активного провайдера ${activeProvider} не задан`,
+      hasActiveProviderBaseUrl
+        ? "Сетевой endpoint активного провайдера задан явно."
+        : `Задайте BASE_URL для активного провайдера ${activeProvider} в desengine.config.txt.`,
+    ),
+  )
+
+  const allowlistConfigured = Boolean(env.ALLOWLIST_BASE_URL && env.ALLOWLIST_SALT)
   checks.push(
     createCheck(
       "allowlist-config",

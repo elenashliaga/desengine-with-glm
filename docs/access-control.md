@@ -13,16 +13,16 @@
 
 ## Обязательное
 
-- `DESENGINE_ALLOWLIST_BASE_URL` — базовый URL, по которому приложение ищет allowlist-маркеры.
-- `DESENGINE_ALLOWLIST_SALT` — salt для вычисления `sha256(normalizedEmail + ":" + salt)`.
+- `ALLOWLIST_BASE_URL` — базовый URL, по которому приложение ищет allowlist-маркеры.
+- `ALLOWLIST_SALT` — salt для вычисления `sha256(normalizedEmail + ":" + salt)`.
 
 ## Как задать
 
 Переименуй [desengine.config-example.txt](desengine.config-example.txt:1) в `desengine.config.txt` и проверь значения блока доступа по email:
 
 ```bash
-DESENGINE_ALLOWLIST_BASE_URL=https://example.com/allowlist/
-DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
+ALLOWLIST_BASE_URL=https://example.com/allowlist/
+ALLOWLIST_SALT=replace-with-random-secret
 ```
 
 Оба значения уже предзаполнены в шаблоне. Для локального знакомства этого достаточно, а для рабочего окружения salt нужно заменить на реальный секрет.
@@ -35,7 +35,9 @@ DESENGINE_ALLOWLIST_SALT=replace-with-random-secret
 4. Приложение проверяет наличие файла по адресу `<baseUrl>/<hash>`.
 5. `200` означает допуск, `404` означает отказ.
 
-Отдельно от marker-check сам базовый URL `DESENGINE_ALLOWLIST_BASE_URL` в штатной конфигурации должен отвечать как живое allowlist-хранилище, а не как отсутствующий ресурс. Это нужно для понятной диагностики на `/config`.
+Отдельно от marker-check сам базовый URL `ALLOWLIST_BASE_URL` в штатной конфигурации должен отвечать как живое allowlist-хранилище, а не как отсутствующий ресурс. Это нужно для понятной диагностики на `/config`.
+
+Проверка маркера выполняется с fallback: если `HEAD` не подтверждает доступ (включая `404`), система делает повторный `GET` по тому же marker URL. Это защищает от ложного отказа на хостингах, где `HEAD` и `GET` ведут себя по-разному.
 
 Если allowlist ещё не настроен, приложение не ломается: оно показывает `/auth` и `/config` и объясняет, что именно должен доделать администратор.
 
@@ -65,11 +67,11 @@ allowlist/
 2. Сгенерируй имя маркера:
 
 ```bash
-DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
+ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
 ```
 
 3. Создай на статическом хостинге пустой файл с этим именем.
-4. Убедись, что URL `<DESENGINE_ALLOWLIST_BASE_URL>/<marker>` возвращает `200`.
+4. Убедись, что URL `<ALLOWLIST_BASE_URL>/<marker>` возвращает `200`.
 
 Каноническая инструкция по admin tools собрана в [tools/README.md](tools/README.md).
 Пошаговый первый запуск собран в [INSTALL.md](INSTALL.md).
@@ -78,4 +80,4 @@ DESENGINE_ALLOWLIST_SALT=... npm run allowlist:marker -- user@example.com
 
 1. Сгенерируй то же имя маркера для email.
 2. Удали одноимённый файл из статического хранилища.
-3. Убедись, что URL `<DESENGINE_ALLOWLIST_BASE_URL>/<marker>` возвращает `404`.
+3. Убедись, что URL `<ALLOWLIST_BASE_URL>/<marker>` возвращает `404`.

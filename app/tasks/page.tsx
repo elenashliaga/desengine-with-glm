@@ -1,9 +1,9 @@
-import { HomeTaskListPage } from "@/components/desengine/HomeTaskListPage"
-import { requireAccessOrRedirect } from "@/lib/access-control.server"
-import { createTasksPath } from "@/lib/navigation"
+import { TasksPage } from "@/components/desengine/tasks/TasksPage"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { createTasksPath } from "@/lib/platform/navigation"
 
-export default async function TasksPage() {
+export default async function Page() {
   await requireAccessOrRedirect(createTasksPath())
 
-  return <HomeTaskListPage canonicalPath={createTasksPath()} />
+  return <TasksPage canonicalPath={createTasksPath()} />
 }
