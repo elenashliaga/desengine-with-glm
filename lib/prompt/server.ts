@@ -5,8 +5,7 @@ import path from "node:path"
 
 import { appConfig } from "@/lib/config/config.server"
 
-type PromptName = "default" | "iterate-component" | "start-component"
-type PromptKind = "production" | "didactic"
+import type { PromptKind, PromptName } from "./types"
 
 export async function readPrompt(kind: PromptKind, name: PromptName) {
   const root = kind === "production" ? appConfig.promptsRoot : appConfig.onboardingPromptsRoot

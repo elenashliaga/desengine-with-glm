@@ -90,7 +90,7 @@ describe("Google Gemini adapter", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    const { runStructuredLlmRequest } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest } = await import("../../lib/llm/server")
 
     const result = await runStructuredLlmRequest({
       target: "init",
@@ -168,7 +168,7 @@ describe("Google Gemini adapter", () => {
       }),
     )
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     await expect(
       runStructuredLlmRequest({
@@ -195,7 +195,7 @@ describe("Google Gemini adapter", () => {
   })
 
   it("показывает готовый статус Gemini при полном конфиге", async () => {
-    const { getLlmStatus } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus } = await import("../../lib/llm/server")
 
     const status = await getLlmStatus()
 
@@ -239,7 +239,7 @@ describe("Google Gemini adapter", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    const { runStructuredLlmRequest } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest } = await import("../../lib/llm/server")
 
     await runStructuredLlmRequest({
       instruction: "Обычный запрос",
@@ -275,7 +275,7 @@ describe("Google Gemini adapter", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const timeoutSpy = vi.spyOn(AbortSignal, "timeout")
-    const { runStructuredLlmRequest } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest } = await import("../../lib/llm/server")
 
     await runStructuredLlmRequest({
       target: "init",
@@ -300,7 +300,7 @@ describe("Google Gemini adapter", () => {
       }),
     )
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     const error = await runStructuredLlmRequest({
       target: "init",
@@ -322,7 +322,7 @@ describe("Google Gemini adapter", () => {
   it("ругается на некорректный LLM_INIT_TIMEOUT_MS", async () => {
     process.env.LLM_INIT_TIMEOUT_MS = "abc"
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     const error = await runStructuredLlmRequest({
       target: "init",
@@ -344,7 +344,7 @@ describe("Google Gemini adapter", () => {
   it("требует явный GEMINI_BASE_URL для активного провайдера", async () => {
     process.env.GEMINI_BASE_URL = ""
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     const error = await runStructuredLlmRequest({
       instruction: "Проверка конфига",
@@ -380,7 +380,7 @@ describe("Google Gemini adapter", () => {
       }),
     )
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     const error = await runStructuredLlmRequest({
       instruction: "Проверка авторизации",
@@ -425,7 +425,7 @@ describe("Google Gemini adapter", () => {
     })
     vi.stubGlobal("fetch", fetchMock)
 
-    const { getLlmStatus, runStructuredLlmRequest } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus, runStructuredLlmRequest } = await import("../../lib/llm/server")
 
     await expect(getLlmStatus()).resolves.toMatchObject({
       provider: "deepseek",
@@ -496,7 +496,7 @@ describe("Google Gemini adapter", () => {
       }),
     )
 
-    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest, toLlmErrorResponse } = await import("../../lib/llm/server")
 
     const error = await runStructuredLlmRequest({
       instruction: "Проверка авторизации",
@@ -524,7 +524,7 @@ describe("Google Gemini adapter", () => {
     process.env.GEMINI_MODEL = "gemini-test"
     process.env.GEMINI_BASE_URL = "https://gemini.example/v1beta"
 
-    const { getLlmStatus } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus } = await import("../../lib/llm/server")
 
     const status = await getLlmStatus()
 
@@ -545,7 +545,7 @@ describe("Google Gemini adapter", () => {
     process.env.OPENAI_MODEL = ""
     process.env.OPENAI_BASE_URL = "http://127.0.0.1:11434/v1"
 
-    const { getLlmStatus } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus } = await import("../../lib/llm/server")
 
     await expect(getLlmStatus()).resolves.toMatchObject({
       provider: "openai",
@@ -584,7 +584,7 @@ describe("Google Gemini adapter", () => {
       }),
     )
 
-    const { runStructuredLlmRequest } = await import("../../lib/llm/llm.server")
+    const { runStructuredLlmRequest } = await import("../../lib/llm/server")
 
     const result = await runStructuredLlmRequest({
       instruction: "Верни JSON",

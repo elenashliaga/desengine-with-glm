@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
-import { LevelTaskCard } from "@/components/desengine/levels/LevelTaskCard"
+import { LevelTaskCard } from "@/components/desengine/level/LevelTaskCard"
 import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
 import { createConfigPath, createHelpPath, createLevelAssetPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
 import { getAllLevelOverviews } from "@/lib/platform/server"

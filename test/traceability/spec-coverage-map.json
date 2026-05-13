@@ -16,7 +16,7 @@
     "admin-tools": {
       "priority": "P2",
       "primaryLevels": ["static", "unit"],
-      "status": "planned",
+      "status": "ready",
       "requiredScenarios": [
         "Root-документ упоминает административную команду",
         "Читатель открывает `tools/README.md` или admin-раздел root-документации",
@@ -50,7 +50,7 @@
     "external-local-onboarding": {
       "priority": "P2",
       "primaryLevels": ["static", "integration"],
-      "status": "partial",
+      "status": "ready",
       "requiredScenarios": [
         "Пользователь открывает шаблон конфигурации",
         "Локальная установка ещё не получила полный `/onboarding`",
@@ -221,7 +221,7 @@
     "navigation": {
       "priority": "P2",
       "primaryLevels": ["component", "e2e-smoke"],
-      "status": "planned",
+      "status": "partial",
       "requiredScenarios": [
         "Пользователь открывает product-shell страницу",
         "Пользователь смотрит на левую часть Navigation",
@@ -232,7 +232,7 @@
     "onboarding-repo": {
       "priority": "P2",
       "primaryLevels": ["unit", "integration"],
-      "status": "planned",
+      "status": "partial",
       "requiredScenarios": [
         "Система определяет источник onboarding-контента",
         "Пользователь хочет повторно обновить onboarding-контент"
@@ -287,7 +287,7 @@
     "ui-foundation": {
       "priority": "P2",
       "primaryLevels": ["component", "e2e-smoke"],
-      "status": "planned",
+      "status": "partial",
       "requiredScenarios": [
         "Команда добавляет или меняет product-shell страницу",
         "Пользователь видит верхнюю навигационную полосу",

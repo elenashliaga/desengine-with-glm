@@ -41,7 +41,7 @@ describe("LLM flow source contracts", () => {
   })
 
   it("prompt lookup строит hidden level prompt path только по levelId", () => {
-    const source = readProjectFile("lib", "llm", "prompts.server.ts")
+    const source = readProjectFile("lib", "prompt", "server.ts")
 
     expect(source).toContain('path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "start.md")')
     expect(source).toContain('path.join(appConfig.onboardingPromptsRoot, "levels", levelId, "iterate.md")')

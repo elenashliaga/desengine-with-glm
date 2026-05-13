@@ -1,16 +1,32 @@
 "use client";
 
+/** Типы доменной области */
+import type { LevelOverview as LevelOverviewData } from "@/lib/level/types"
+import type { TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/task/types";
+
+/** Функции */
+import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createTaskPath } from "@/lib/platform/navigation";
+
+/** Пропсы */
+import { LabProps } from "./props"
+
+/** Состояния */
+import { LabScreenState } from "./states"
+
+/** Хэндлеры */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+/** Компоненты */
 import { Workbench } from "../Workbench";
-import { LevelOverview } from "../../levels/LevelOverview";
-import { TaskCheckResult } from "../../tasks/TaskCheckResult";
-import { TaskDone } from "../../tasks/TaskDone";
-import { TaskLevelStart } from "../../tasks/TaskLevelStart/TaskLevelStart";
-import { TaskLevelTransition } from "../../tasks/TaskLevelTransition";
-import { LabProps } from "./props"
-import type { LabScreenState, LevelOverview as LevelOverviewData, TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/platform/types";
-import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createTaskPath } from "@/lib/platform/navigation";
+import { LevelOverview } from "../../level/LevelOverview";
+import { TaskCheckResult } from "../../task/TaskCheckResult";
+import { TaskDone } from "../../task/TaskDone";
+import { TaskLevelStart } from "../../task/TaskLevelStart";
+import { TaskLevelTransition } from "../../task/TaskLevelTransition";
+
+
+
 
 function createLevelHref(levelId?: string | null) {
     return createLevelsPath(levelId);

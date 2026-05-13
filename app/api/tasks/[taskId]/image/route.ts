@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises"
 
 import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { getTaskCatalogFilePath } from "@/lib/platform/user-state.server"
+import { getTaskCatalogFilePath } from "@/lib/user/user-state.server"
 
 type Params = { taskId: string }
 

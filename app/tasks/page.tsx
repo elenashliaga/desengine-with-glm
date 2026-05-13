@@ -1,4 +1,4 @@
-import { TasksScreen } from "@/components/desengine/tasks/TasksScreen"
+import { TasksScreen } from "@/components/desengine/task/TasksScreen"
 import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
 import { getTaskListItems } from "@/lib/platform/server"
 import { createTasksPath } from "@/lib/platform/navigation"

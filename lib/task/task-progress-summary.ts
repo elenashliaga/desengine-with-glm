@@ -1,10 +1,13 @@
 import type {
-  LevelConfig,
   TaskConfig,
   TaskLevelProgress,
   TaskProgress,
   TaskProgressSummary,
-} from "@/lib/platform/types"
+} from "./types"
+
+import type {
+    LevelConfig,
+} from "../level/types"
 
 function requireLevel(levels: LevelConfig[], levelNumber: number) {
   const level = levels.find((item) => item.number === levelNumber)
@@ -76,6 +79,5 @@ export function summarizeTaskProgress(
     isCompleted:
       levelProgress.status === "completed" && currentLevelNumber === taskConfig.maxLevel,
     hasNextLevel: currentLevelNumber < taskConfig.maxLevel,
-    completionReason: levelProgress.completionReason ?? null,
   }
 }

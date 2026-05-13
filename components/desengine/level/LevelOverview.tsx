@@ -4,8 +4,8 @@ import Link from "next/link";
 import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { createLevelAssetPath, createLevelsPath } from "@/lib/platform/navigation";
-import type { LevelOverview as LevelOverviewData } from "@/lib/platform/types";
-import { LevelTaskCard } from "../LevelTaskCard";
+import type { LevelOverview as LevelOverviewData } from "@/lib/level/types";
+import { LevelTaskCard } from "../level/LevelTaskCard";
 
 type LevelOverviewProps = {
   overview: LevelOverviewData;

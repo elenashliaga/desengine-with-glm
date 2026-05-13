@@ -15,13 +15,13 @@ import {
 } from "@/lib/platform/server"
 import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { appConfig } from "@/lib/config/config.server"
-import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/llm.server"
-import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/llm/prompts.server"
+import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/server"
+import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/prompt/server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
   getUserTaskFilePath,
-} from "@/lib/platform/user-state.server"
+} from "@/lib/user/user-state.server"
 import { validateGeneratedFilesPayload } from "@/lib/task/workbench-output.server"
 
 type Params = { taskId: string }

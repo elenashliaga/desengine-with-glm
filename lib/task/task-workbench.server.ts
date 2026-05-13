@@ -3,7 +3,7 @@ import "server-only"
 import { access, rm } from "node:fs/promises"
 
 import { appConfig } from "@/lib/config/config.server"
-import { getUserTaskFilePath } from "@/lib/platform/user-state.server"
+import { getUserTaskFilePath } from "@/lib/user/user-state.server"
 
 type WorkbenchFile = (typeof appConfig.taskWorkbenchFiles)[number]
 

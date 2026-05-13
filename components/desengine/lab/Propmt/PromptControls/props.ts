@@ -1,4 +1,4 @@
-import { BaseProps } from "../../Base";
+import { BaseProps } from "@/components/desengine/platform/Base";
 
 type PromptControlsProps = BaseProps & {
     disabled?: boolean;

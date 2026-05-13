@@ -8,7 +8,7 @@ import {
   getAccessControlConfig,
   getAccessSessionState,
 } from "@/lib/access/access-control.server"
-import { getLlmStatus } from "@/lib/llm/llm.server"
+import { getLlmStatus } from "@/lib/llm/server"
 import localConfig from "./local-config.cjs"
 import { getOnboardingSyncStatus } from "@/lib/onboarding/onboarding-status.server"
 import { updateOnboardingFromConfig } from "@/lib/onboarding/onboarding-update.server"

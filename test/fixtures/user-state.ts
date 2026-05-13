@@ -1,4 +1,4 @@
-import type { UserProgressStore } from "../../lib/platform/types"
+import type { UserProgressStore } from "../../lib/user/types"
 
 const FIXTURE_NOW = "2026-05-13T12:00:00.000Z"
 

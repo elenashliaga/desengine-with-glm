@@ -1,4 +1,4 @@
-import type { TaskListItem } from "@/lib/platform/types"
+import type { TaskListItem } from "@/lib/task/types"
 
 export function getIndicatorWidth(task: TaskListItem) {
   if (!task.started) return "0%"
@@ -20,10 +20,6 @@ export function getStatusText(task: TaskListItem) {
     return "Ждёт проверки"
   }
   if (task.progress.isCompleted) {
-    if (task.progress.completionReason === "check_passed") {
-      return "Проверка пройдена, задача завершена"
-    }
-
     return "Задача завершена"
   }
   if (task.progress.currentLevelNotStarted) {

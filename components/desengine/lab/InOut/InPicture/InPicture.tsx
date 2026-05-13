@@ -1,6 +1,7 @@
 import Image from "next/image";
-import { InPictureProps } from "./props";
 import { useState } from "react";
+import type { InPictureProps } from "./props";
+import type { TaskLabImage } from "@/lib/platform/types";
 
 function ImageCard({
     task,
@@ -62,7 +63,8 @@ function SharedInPicture({ task, images }: { task: string; images: Array<{ id: s
 
 function InPicture({task, taskData}: InPictureProps) {
     const labContext = taskData.labContext;
-    const visibleImages = labContext?.images.filter((image) => image.show) ?? [];
+    const visibleImages: TaskLabImage[] =
+        labContext?.images.filter((image: TaskLabImage) => image.show) ?? [];
 
     if (!labContext || visibleImages.length === 0) {
         return (

@@ -5,6 +5,13 @@
 - создавать новый change через `npm run openspec:new -- <name>`, если меняется или добавляется отдельная возможность.
 - при создании change добавлять требования и задачи, обеспечивающие интеграцию тестирования этого change в единый слой тестирования системы (включая команды запуска, при необходимости credentials и mock-данные).
 
+Тестовая часть behavior-change обязательна и должна быть понятной человеку:
+- указать затронутые OpenSpec capability/scenarios;
+- выбрать уровень проверки: static/contract, unit, component/browser, integration, e2e smoke или live/provider;
+- указать команду запуска (`npm run test:unit`, `npm run test:e2e`, `npm run test:traceability`, `npm run test:full` и т.п.);
+- описать mock/fixture-данные и live credentials, если они нужны;
+- если покрытие откладывается, добавить запись в `test/traceability/coverage-plan.json` с причиной и этапом закрытия.
+
 Если для change нужна отдельная ветка, используй одну ветку формата `codex/<name-change>` и для проработки, и для реализации.
 
 Без явного разрешения пользователя нельзя менять install-critical инфраструктуру: `Node.js`, сборщик, `Turbopack` и другие критичные для запуска части стека.

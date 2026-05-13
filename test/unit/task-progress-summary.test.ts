@@ -4,6 +4,8 @@
 // @openSpec  - "Проверка завершилась техническим сбоем"
 // @openSpec  - "Пользователь видит задачу после технического сбоя проверки"
 // @openSpec  - "Исчерпан лимит содержательных проверок уровня"
+// @openSpec  - "Уровень успешно завершён"
+// @openSpec  - "Runtime читает локальный task-progress"
 // @openSpec  - "Следующий уровень уже стал текущим, но ещё не начат"
 // @openSpec  - "У задачи более высокий уровень"
 // @openSpec  - "Пользователь сбрасывает задачу"
@@ -17,7 +19,8 @@
 import { describe, expect, it } from "vitest"
 
 import { summarizeTaskProgress } from "../../lib/task/task-progress-summary"
-import type { LevelConfig, TaskConfig, TaskProgress } from "../../lib/platform/types"
+import type { LevelConfig } from "../../lib/level/types"
+import type { TaskConfig, TaskProgress } from "../../lib/task/types"
 
 const levels: LevelConfig[] = [
   {
@@ -66,7 +69,6 @@ describe("summarizeTaskProgress", () => {
           promptsUsed: 2,
           initializedAt: "2026-05-11T10:00:00.000Z",
           completedAt: "2026-05-11T10:05:00.000Z",
-          completionReason: "check_passed",
           checkAttemptsUsed: 1,
           checkingState: "idle",
         },
@@ -99,7 +101,6 @@ describe("summarizeTaskProgress", () => {
           promptsUsed: 2,
           initializedAt: "2026-05-11T10:00:00.000Z",
           completedAt: "2026-05-11T10:05:00.000Z",
-          completionReason: "check_passed",
           checkAttemptsUsed: 1,
           checkingState: "idle",
         },
@@ -166,7 +167,6 @@ describe("summarizeTaskProgress", () => {
           promptsUsed: 3,
           initializedAt: "2026-05-11T10:00:00.000Z",
           completedAt: "2026-05-11T10:30:00.000Z",
-          completionReason: "check_passed",
           checkAttemptsUsed: 2,
           checkingState: "idle",
         },
@@ -177,7 +177,6 @@ describe("summarizeTaskProgress", () => {
 
     expect(summary.isCompleted).toBe(true)
     expect(summary.hasNextLevel).toBe(false)
-    expect(summary.completionReason).toBe("check_passed")
     expect(summary.checkAttemptsUsed).toBe(2)
   })
 })

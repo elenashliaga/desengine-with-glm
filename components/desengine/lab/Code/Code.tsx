@@ -4,7 +4,7 @@ import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useState } from "r
 import { Check, Copy } from "lucide-react";
 
 import { CodeProps } from "./props";
-import { BaseStyles } from "../Base";
+import { BaseStyles } from "@/components/desengine/platform/Base";
 import { MonacoCodeEditor } from "./MonacoCodeEditor";
 import { Button } from "@/components/ui/button";
 

@@ -4,7 +4,7 @@ import { access, mkdir, rm } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "@/lib/config/config.server"
-import type { UserProgressStore } from "@/lib/platform/types"
+import type { UserProgressStore } from "./types"
 
 const promptHistoryFileName = "prompt-history.json"
 const taskCheckResultFileName = "check-result.json"

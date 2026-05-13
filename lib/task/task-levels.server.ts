@@ -3,30 +3,39 @@ import "server-only"
 import { readdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import { TaskConfigSchema } from "./schema"
+
+import { LevelsCatalogSchema } from "../level/schema"
+
 import { appConfig } from "@/lib/config/config.server"
-import { readLevelCommonExplanation } from "@/lib/llm/prompts.server"
+import { readLevelCommonExplanation } from "@/lib/prompt/server"
 import {
   isLevelStarted,
   summarizeTaskProgress,
 } from "@/lib/task/task-progress-summary"
 import { readPromptHistory } from "@/lib/onboarding/repository"
+import type {
+  TaskCheckResult,
+  TaskLabContext,
+  TaskConfig,
+  TaskListItem,
+  TaskProgress,
+  TaskProgressSummary,
+  TaskTransition,
+} from "./types"
 import {
-  LevelsCatalogSchema,
-  TaskConfigSchema,
-  UserProgressStoreSchema,
   type LevelConfig,
   type LevelOverview,
-  type TaskCheckResult,
   type LevelOverviewTaskItem,
-  type PromptHistoryEntry,
-  type TaskLabContext,
-  type TaskConfig,
-  type TaskListItem,
-  type TaskProgress,
-  type TaskProgressSummary,
-  type TaskTransition,
-  type UserProgressStore,
-} from "@/lib/platform/types"
+} from "../level/types"
+
+import type {
+    PromptHistoryEntry,
+} from "../prompt/types"
+import type {
+    UserProgressStore,
+} from "../user/types"
+import { UserProgressStoreSchema } from "../user/schema"
 import {
   defaultUserProgressStore,
   ensureUserProgressStorage,
@@ -35,9 +44,8 @@ import {
   getTaskCheckResultPath,
   removeUserTaskDir,
   removeTaskCheckResult,
-} from "@/lib/platform/user-state.server"
+} from "@/lib/user/user-state.server"
 
-type CompletionReason = "check_passed"
 type TaskCatalogItem = {
   id: string
   config: TaskConfig
@@ -91,7 +99,20 @@ async function readLevelsCatalogRaw() {
 async function readUserProgressStore() {
   try {
     const raw = await readFile(appConfig.userProgressFile, "utf-8")
-    return UserProgressStoreSchema.parse(JSON.parse(raw))
+    const store = UserProgressStoreSchema.parse(JSON.parse(raw))
+    let changed = false
+
+    for (const [taskId, taskProgress] of Object.entries(store.tasks)) {
+      const normalizedFlags = normalizePassedFlags(taskProgress)
+      const repairedFromCheckResult = await repairProgressFromCheckResult(taskId, taskProgress)
+      changed = changed || normalizedFlags || repairedFromCheckResult
+    }
+
+    if (changed) {
+      await writeUserProgressStore(store)
+    }
+
+    return store
   } catch {
     return defaultUserProgressStore()
   }
@@ -150,6 +171,7 @@ function buildInitialTaskProgress(maxLevel: number): TaskProgress {
         String(levelNumber),
         {
           status: "available" as const,
+          isPassed: false,
           promptsUsed: 0,
           checkAttemptsUsed: 0,
           checkingState: "idle" as const,
@@ -172,6 +194,7 @@ function normalizeTaskProgress(taskProgress: TaskProgress, maxLevel: number): Ta
     if (!nextLevels[key]) {
       nextLevels[key] = {
         status: "available",
+        isPassed: false,
         promptsUsed: 0,
         checkAttemptsUsed: 0,
         checkingState: "idle",
@@ -193,6 +216,7 @@ function normalizeTaskProgress(taskProgress: TaskProgress, maxLevel: number): Ta
         key,
         {
           ...level,
+          isPassed: level.isPassed ?? level.status === "completed",
           checkAttemptsUsed: level.checkAttemptsUsed ?? 0,
           checkingState: level.checkingState ?? "idle",
         },
@@ -200,6 +224,100 @@ function normalizeTaskProgress(taskProgress: TaskProgress, maxLevel: number): Ta
     ),
     updatedAt: taskProgress.updatedAt,
   }
+}
+
+function normalizePassedFlags(taskProgress: TaskProgress) {
+  let changed = false
+
+  for (const levelProgress of Object.values(taskProgress.levels)) {
+    const isPassed = Boolean(levelProgress.isPassed || levelProgress.status === "completed")
+
+    if (levelProgress.isPassed !== isPassed) {
+      levelProgress.isPassed = isPassed
+      changed = true
+    }
+
+    if (isPassed && levelProgress.status !== "completed") {
+      levelProgress.status = "completed"
+      changed = true
+    }
+  }
+
+  const sortedLevelNumbers = Object.keys(taskProgress.levels)
+    .map((key) => Number(key))
+    .filter((value) => Number.isFinite(value))
+    .sort((a, b) => a - b)
+  const maxLevel = sortedLevelNumbers.at(-1) ?? 1
+
+  let highestContiguousPassed = 0
+  for (const levelNumber of sortedLevelNumbers) {
+    const levelProgress = taskProgress.levels[String(levelNumber)]
+    if (levelNumber === highestContiguousPassed + 1 && levelProgress?.isPassed) {
+      highestContiguousPassed = levelNumber
+      continue
+    }
+
+    if (levelNumber > highestContiguousPassed + 1) {
+      break
+    }
+  }
+
+  const expectedCurrentLevel = Math.min(highestContiguousPassed + 1, maxLevel)
+  if (expectedCurrentLevel > taskProgress.currentLevel) {
+    taskProgress.currentLevel = expectedCurrentLevel
+    changed = true
+  }
+
+  return changed
+}
+
+async function repairProgressFromCheckResult(taskId: string, taskProgress: TaskProgress) {
+  const checkResult = await readTaskCheckResult(taskId)
+  if (!checkResult || !checkResult.passed || checkResult.kind !== "passed") {
+    return false
+  }
+
+  const levelProgress = taskProgress.levels[String(checkResult.levelNumber)]
+  if (!levelProgress) {
+    return false
+  }
+
+  let changed = false
+
+  if (levelProgress.status !== "completed") {
+    levelProgress.status = "completed"
+    changed = true
+  }
+
+  if (!levelProgress.isPassed) {
+    levelProgress.isPassed = true
+    changed = true
+  }
+
+  if (!levelProgress.completedAt) {
+    levelProgress.completedAt = checkResult.createdAt
+    changed = true
+  }
+
+  const attemptNumber = Math.max(0, checkResult.attemptNumber || 0)
+  if ((levelProgress.checkAttemptsUsed ?? 0) < attemptNumber) {
+    levelProgress.checkAttemptsUsed = attemptNumber
+    changed = true
+  }
+
+  const maxLevel = Math.max(
+    1,
+    ...Object.keys(taskProgress.levels)
+      .map((key) => Number(key))
+      .filter((value) => Number.isFinite(value)),
+  )
+  const expectedCurrentLevel = Math.min(checkResult.levelNumber + 1, maxLevel)
+  if (taskProgress.currentLevel < expectedCurrentLevel) {
+    taskProgress.currentLevel = expectedCurrentLevel
+    changed = true
+  }
+
+  return changed
 }
 
 function ensureTaskProgress(
@@ -549,7 +667,6 @@ export async function getTaskPendingTransition(taskId: string): Promise<TaskTran
     taskId,
     previousLevelNumber,
     currentLevelNumber,
-    "check_passed",
   )
 }
 
@@ -576,7 +693,6 @@ export async function getTaskDoneTransition(taskId: string): Promise<TaskTransit
     taskId,
     currentLevelNumber,
     null,
-    "check_passed",
   )
 }
 
@@ -595,7 +711,6 @@ async function buildTransition(
   taskId: string,
   fromLevelNumber: number,
   toLevelNumber: number | null,
-  reason: CompletionReason,
 ): Promise<TaskTransition> {
   const fromLevel = requireLevel(levels, fromLevelNumber)
   const toLevel = toLevelNumber === null ? null : requireLevel(levels, toLevelNumber)
@@ -610,7 +725,6 @@ async function buildTransition(
     toLevel,
     fromTaskTip,
     toTaskTip,
-    reason,
   }
 }
 
@@ -753,17 +867,17 @@ export async function passCurrentTaskLevelCheck(taskId: string): Promise<TaskChe
   levelProgress.checkAttemptsUsed = (levelProgress.checkAttemptsUsed ?? 0) + 1
   levelProgress.checkingState = "idle"
   levelProgress.status = "completed"
+  levelProgress.isPassed = true
   levelProgress.completedAt = new Date().toISOString()
-  levelProgress.completionReason = "check_passed"
   taskProgress.updatedAt = new Date().toISOString()
 
   let transition: TaskTransition | null
 
   if (currentLevelNumber < taskConfig.maxLevel) {
     taskProgress.currentLevel = currentLevelNumber + 1
-    transition = await buildTransition(levels, taskId, currentLevelNumber, currentLevelNumber + 1, "check_passed")
+    transition = await buildTransition(levels, taskId, currentLevelNumber, currentLevelNumber + 1)
   } else {
-    transition = await buildTransition(levels, taskId, currentLevelNumber, null, "check_passed")
+    transition = await buildTransition(levels, taskId, currentLevelNumber, null)
   }
 
   await writeUserProgressStore(store)

@@ -1,20 +1,20 @@
 import { readFile, writeFile } from "node:fs/promises"
 
 import { appConfig } from "@/lib/config/config.server"
-import { TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/task/prompt-history"
+import { TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt/history"
 import { getLevelEditableWorkbenchFiles } from "@/lib/task/task-workbench.server"
 import {
   type TaskLabContext,
-  type PromptHistoryEntry,
   type TaskData,
   type TaskLlmUsageSummary,
-} from "@/lib/platform/types"
+} from "@/lib/task/types"
+import type { PromptHistoryEntry } from "@/lib/prompt/types"
 import {
   ensureParentDir,
   getUserTaskFilePath,
   pathExists,
   promptHistoryFileName,
-} from "@/lib/platform/user-state.server"
+} from "@/lib/user/user-state.server"
 
 function isStringArray(value: unknown) {
   return Array.isArray(value) && value.every((item) => typeof item === "string")

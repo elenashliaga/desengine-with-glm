@@ -3,6 +3,17 @@ import path from "node:path"
 import { spawnSync } from "node:child_process"
 
 const METADATA_FILE = ".openspec.yaml"
+const TASKS_FILE = "tasks.md"
+const TEST_CHECKLIST_HEADING = "## Тестовая часть change"
+const TEST_CHECKLIST = `${TEST_CHECKLIST_HEADING}
+
+- [ ] Указать затронутые OpenSpec capability/scenarios
+- [ ] Выбрать уровень проверки: static/contract, unit, component/browser, integration, e2e smoke или live/provider
+- [ ] Добавить или обновить тесты в общем слое тестирования
+- [ ] Зафиксировать команду проверки: \`npm run ...\`
+- [ ] Описать mock/fixture-данные и live credentials, если они нужны
+- [ ] Если покрытие откладывается, добавить запись в \`test/traceability/coverage-plan.json\` с причиной и этапом закрытия
+`
 
 function printUsage() {
   console.error("Использование:")
@@ -64,6 +75,24 @@ function ensureShortField(changeDir) {
   return true
 }
 
+function ensureTestChecklist(changeDir) {
+  const tasksPath = path.join(changeDir, TASKS_FILE)
+
+  if (!fs.existsSync(tasksPath)) {
+    return false
+  }
+
+  const tasks = fs.readFileSync(tasksPath, "utf8")
+
+  if (tasks.includes(TEST_CHECKLIST_HEADING)) {
+    return false
+  }
+
+  const normalized = tasks.endsWith("\n") ? tasks : `${tasks}\n`
+  fs.writeFileSync(tasksPath, `${normalized}\n${TEST_CHECKLIST}`, "utf8")
+  return true
+}
+
 function main() {
   let parsedArgs
 
@@ -97,9 +126,14 @@ function main() {
   }
 
   const addedShort = ensureShortField(changeDir)
+  const addedTestChecklist = ensureTestChecklist(changeDir)
 
   if (addedShort) {
     console.log(`Добавлено поле short в ${path.relative(projectRoot, path.join(changeDir, METADATA_FILE))}`)
+  }
+
+  if (addedTestChecklist) {
+    console.log(`Добавлен тестовый чеклист в ${path.relative(projectRoot, path.join(changeDir, TASKS_FILE))}`)
   }
 }
 

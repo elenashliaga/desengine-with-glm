@@ -14,10 +14,10 @@ import {
   saveTaskCheckResult,
 } from "@/lib/platform/server"
 import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { runStructuredLlmRequest } from "@/lib/llm/llm.server"
-import { readLevelCheckPrompt, readPrompt } from "@/lib/llm/prompts.server"
-import { getTaskCatalogFilePath } from "@/lib/platform/user-state.server"
-import type { TaskCheckResult, TaskData, TaskListItem } from "@/lib/platform/types"
+import { runStructuredLlmRequest } from "@/lib/llm/server"
+import { readLevelCheckPrompt, readPrompt } from "@/lib/prompt/server"
+import { getTaskCatalogFilePath } from "@/lib/user/user-state.server"
+import type { TaskCheckResult, TaskData, TaskListItem } from "@/lib/task/types"
 
 type Params = { taskId: string }
 

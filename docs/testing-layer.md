@@ -27,10 +27,10 @@ npm run test:unit
 | `npm test` | работает | Быстрый локальный прогон, сейчас запускает `test:unit`. |
 | `npm run test:unit` | работает | Запускает Vitest project `unit` по `test/unit/**/*.test.ts`. |
 | `npm run test:storybook` | работает | Запускает Vitest project `storybook`; если story-файлов пока нет, команда завершается успешно. |
-| `npm run test:full` | работает частично | Полный обязательный слой текущего этапа, сейчас запускает `test:unit`. |
+| `npm run test:full` | работает | Полный обязательный слой текущего этапа: unit + strict traceability. |
 | `npm run test:traceability` | работает в мягком режиме | Проверяет `@openSpec` metadata в тестах и сверяет её с `openspec/specs/**`. |
 | `npm run test:integration` | placeholder | Зарезервировано для server/API-flow тестов на mock/fixtures. |
-| `npm run test:e2e` | placeholder | Зарезервировано для коротких browser smoke-сценариев. |
+| `npm run test:e2e` | работает частично | Запускает Playwright route smoke без live credentials; runtime-зависимые маршруты могут быть явно skipped с причиной. |
 | `npm run test:live` | placeholder | Зарезервировано для явных provider/live-проверок с реальными credentials. |
 | `npm run test:spec -- <capability>` | placeholder | Зарезервировано для выборочного запуска по OpenSpec capability. |
 
@@ -70,15 +70,45 @@ npm run test:storybook
 
 Если story-файлов пока нет, команда считается успешной. Это позволяет держать точку входа стабильной и добавлять browser-тесты постепенно.
 
+## E2E smoke
+
+Короткий браузерный smoke запускается так:
+
+```bash
+npm run test:e2e
+```
+
+Команда использует `playwright.e2e.config.ts`, стартует отдельный `next dev` на `127.0.0.1:3410` и принудительно очищает live/provider env для тестового процесса. Поэтому e2e smoke не требует реальных LLM ключей, allowlist-хранилища или `ONBOARDING_REPO_URL`.
+
+По умолчанию Playwright запускается через установленный системный Google Chrome (`channel: chrome`). Если нужно использовать другой канал, задай:
+
+```bash
+PLAYWRIGHT_BROWSER_CHANNEL=chromium npm run test:e2e
+```
+
+Если dev-server уже поднят отдельно, можно запускать против него:
+
+```bash
+DESENGINE_E2E_EXTERNAL_SERVER=1 DESENGINE_E2E_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
+```
+
+Текущий smoke-набор живёт в `test/e2e/route-smoke.spec.ts`:
+
+- публичные маршруты `/auth` и `/config` должны открываться без допуска;
+- защищённый `/` без допуска должен переводить на `/auth`;
+- `/tasks`, `/levels`, task entry и level entry уже перечислены как обязательный набор, но временно skipped, пока параллельный runtime-переезд task/user schema не стабилизирован.
+
+E2E helper снимает snapshot каталога `user/` до и после активных сценариев. Если smoke начнёт менять пользовательское состояние, команда упадёт.
+
 ## Полный прогон
 
-На первом этапе полный прогон ограничен уже работающим обязательным слоем:
+Полный обязательный прогон текущего этапа:
 
 ```bash
 npm run test:full
 ```
 
-Сейчас команда запускает `test:unit`. По мере реализации change в неё будут добавляться строгая traceability-проверка, integration и e2e smoke.
+Сейчас команда запускает `test:unit`, затем `test:traceability`. По мере стабилизации integration/e2e-слоя в неё можно добавлять дополнительные обязательные проверки.
 
 `test:full` не должен запускать live/provider-проверки с реальными внешними сервисами.
 
@@ -151,6 +181,7 @@ LLM provider-проверки используют только выбранны
 Общие тестовые helpers и fixtures живут в `test/**`, отдельно от runtime-кода:
 
 - `test/helpers/test-env.ts` — безопасное чтение env для live-тестов без печати секретных значений;
+- `test/e2e/fixtures/smoke-fixture.ts` — route smoke-набор и snapshot helper для проверки, что e2e не портит `user/`;
 - `test/fixtures/user-state.ts` — детерминированные user-state fixtures;
 - `test/fixtures/task-progress.ts` — уровни, task config и progress-state для сценариев прогресса;
 - `test/fixtures/onboarding-status.ts` — состояния onboarding-маркера и синхронизации;
@@ -166,6 +197,34 @@ LLM provider-проверки используют только выбранны
 - Не храни секреты и реальные provider credentials в тестах.
 - Если сценарий требует внешнего сервиса, на этом этапе добавляй mock/unit-проверку, а live-проверку планируй отдельно.
 - Для behavior-change фиксируй в OpenSpec tasks команду, которой проверяется изменение.
+
+## Тестовая часть change
+
+Каждый новый или изменяющий поведение OpenSpec change должен иметь отдельную тестовую часть. Новый change, созданный через `npm run openspec:new -- <name>`, автоматически получает базовый чеклист в `tasks.md`.
+
+Минимальный пример:
+
+```md
+## Тестовая часть change
+
+- [ ] Указать затронутые OpenSpec capability/scenarios
+- [ ] Выбрать уровень проверки: unit
+- [ ] Добавить unit-тест в `test/unit/example.test.ts`
+- [ ] Зафиксировать команду проверки: `npm run test:unit -- example.test.ts`
+- [ ] Описать mock/fixture-данные: используются локальные fixtures, live credentials не нужны
+- [ ] Если покрытие откладывается, добавить запись в `test/traceability/coverage-plan.json` с причиной и этапом закрытия
+```
+
+Выбор уровня:
+
+- `static/contract` — документация, OpenSpec, source-contract и traceability-инварианты.
+- `unit` — быстрая доменная или server-логика без браузера.
+- `component/browser` — UI-состояния в Storybook/Vitest browser.
+- `integration` — API/server-flow на mock/fixtures.
+- `e2e smoke` — короткий сквозной browser route smoke без live credentials.
+- `live/provider` — только явная проверка с реальными внешними сервисами; не входит в обязательный `test:full`.
+
+Если полный тест сейчас нельзя добавить без крупной runtime-работы, это нормально, но отсрочка должна быть видимой: добавь capability в `test/traceability/coverage-plan.json`, укажи причину, `targetStage` и минимальный follow-up.
 
 ## Следующие этапы change
 

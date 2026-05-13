@@ -1,53 +1,20 @@
 import "server-only"
+import {
+  type LlmProvider,
+  type LlmUsageMetrics,
+  type LlmStatus,
+  type LlmStructuredRequest,
+  type LlmStructuredResponse,
+  type ProviderRuntimeConfig,
+  type LlmRequestRuntime,
+  type LlmAdapter,
+} from "./types"
 
-import type { LlmProvider, LlmStatus, LlmUsageMetrics } from "@/lib/llm/llm.types"
 import localConfig from "../config/local-config.cjs"
 
 localConfig.loadLocalConfig()
 
-type LlmStructuredRequest = {
-  instruction: string
-  imageBase64?: string
-  imageBase64List?: string[]
-  schemaName: string
-  schema: Record<string, unknown>
-  target?: "default" | "init" | "check"
-}
 
-type LlmStructuredResponse = {
-  provider: LlmProvider
-  model: string
-  outputText: string
-  metrics: LlmUsageMetrics
-}
-
-type ProviderRuntimeConfig = {
-  provider: LlmProvider
-  model: string
-  apiKey: string
-  baseUrl: string
-}
-
-type LlmRequestRuntime = {
-  timeoutMs: number | null
-  signal?: AbortSignal
-}
-
-type LlmAdapter = {
-  provider: LlmProvider
-  label: string
-  envVars: {
-    apiKey: string
-    model: string
-    baseUrl: string
-  }
-  buildConfig: () => ProviderRuntimeConfig
-  call: (
-    request: LlmStructuredRequest,
-    config: ProviderRuntimeConfig,
-    runtime: LlmRequestRuntime,
-  ) => Promise<LlmStructuredResponse>
-}
 
 class LlmError extends Error {
   kind: "config" | "auth" | "network" | "timeout" | "provider" | "invalid_response"

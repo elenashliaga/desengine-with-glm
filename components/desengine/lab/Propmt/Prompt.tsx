@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import { BaseProps } from "../Base";
+import { BaseProps } from "@/components/desengine/platform/Base";
 import { Button } from "@/components/ui/button";
-import { formatPromptHistoryTimestamp } from "@/lib/task/prompt-history";
+import { formatPromptHistoryTimestamp } from "@/lib/prompt/history";
 import type { TaskData, TaskListItem } from "@/lib/platform/types";
 import { taskWorkbenchFiles } from "@/lib/platform/client";
 

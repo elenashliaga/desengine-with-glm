@@ -1,7 +1,7 @@
 import Link from "next/link"
-import { TaskListItem } from "@/lib/platform/types";
+import { TaskListItem } from "@/lib/task/types";
 import { BaseProps } from "../platform/Base";
-import { createConfigPath, createHelpPath, createLevelsPath, createTaskPath, createTasksPath } from "@/lib/platform/navigation"
+import { createTaskPath } from "@/lib/platform/navigation"
 import { ProgressDots } from "../platform/ProgressDots";
 
 type TaskItemProps = BaseProps & {

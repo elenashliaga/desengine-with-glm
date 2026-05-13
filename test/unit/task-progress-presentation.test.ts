@@ -12,7 +12,7 @@ import {
   getPromptRemainderText,
   getStatusText,
 } from "../../lib/task/task-progress-presentation"
-import type { TaskListItem } from "../../lib/platform/types"
+import type { TaskListItem } from "../../lib/task/types"
 
 function createTask(overrides: Partial<TaskListItem> = {}): TaskListItem {
   return {
@@ -36,7 +36,6 @@ function createTask(overrides: Partial<TaskListItem> = {}): TaskListItem {
       maxLevel: 3,
       isCompleted: false,
       hasNextLevel: true,
-      completionReason: null,
     },
     ...overrides,
   }
@@ -100,11 +99,10 @@ describe("task progress presentation", () => {
         promptsRemaining: 0,
         isCompleted: true,
         hasNextLevel: false,
-        completionReason: "check_passed",
       },
     })
 
-    expect(getStatusText(task)).toBe("Проверка пройдена, задача завершена")
+    expect(getStatusText(task)).toBe("Задача завершена")
     expect(getLevelBadgeText(task)).toBe("done")
     expect(getIndicatorWidth(task)).toBe("100%")
   })

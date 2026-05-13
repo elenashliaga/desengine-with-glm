@@ -1,4 +1,4 @@
-import { getLlmStatus } from "@/lib/llm/llm.server"
+import { getLlmStatus } from "@/lib/llm/server"
 
 export async function GET() {
   const status = await getLlmStatus()

@@ -1,4 +1,5 @@
-import type { LevelConfig, TaskConfig, TaskProgress } from "../../lib/platform/types"
+import type { LevelConfig } from "../../lib/level/types"
+import type { TaskConfig, TaskProgress } from "../../lib/task/types"
 
 const taskProgressLevels: LevelConfig[] = [
   {
@@ -46,7 +47,6 @@ const taskProgressAfterLevelCompletion: TaskProgress = {
       promptsUsed: 2,
       initializedAt: "2026-05-13T11:00:00.000Z",
       completedAt: "2026-05-13T11:30:00.000Z",
-      completionReason: "check_passed",
       checkAttemptsUsed: 1,
       checkingState: "idle",
     },

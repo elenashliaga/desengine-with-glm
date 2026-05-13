@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises"
 import ts from "typescript"
 
 import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { getUserTaskFilePath } from "@/lib/platform/user-state.server"
+import { getUserTaskFilePath } from "@/lib/user/user-state.server"
 
 type Params = { taskId: string }
 

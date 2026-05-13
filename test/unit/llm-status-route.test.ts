@@ -32,7 +32,7 @@ describe("LLM status contracts", () => {
     process.env.OPENAI_MODEL = "gpt-test"
     process.env.OPENAI_BASE_URL = "https://api.openai.example/v1"
 
-    const { getLlmStatus } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus } = await import("../../lib/llm/server")
 
     await expect(getLlmStatus()).resolves.toMatchObject({
       provider: "openai",
@@ -52,7 +52,7 @@ describe("LLM status contracts", () => {
     const llmStatusRoute = path.join(process.cwd(), "app", "api", "status", "llm", "route.ts")
     const source = fs.readFileSync(llmStatusRoute, "utf8")
 
-    expect(source).toContain('import { getLlmStatus } from "@/lib/llm/llm.server"')
+    expect(source).toContain('import { getLlmStatus } from "@/lib/llm/server"')
     expect(source).toContain("const status = await getLlmStatus()")
     expect(source).toContain("ok: true")
   })
@@ -63,7 +63,7 @@ describe("LLM status contracts", () => {
     process.env.OPENAI_MODEL = "gpt-env-model"
     process.env.OPENAI_BASE_URL = "https://api.openai.example/v1"
 
-    const { getLlmStatus } = await import("../../lib/llm/llm.server")
+    const { getLlmStatus } = await import("../../lib/llm/server")
 
     await expect(getLlmStatus()).resolves.toMatchObject({
       config: {
