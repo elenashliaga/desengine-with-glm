@@ -1,6 +1,9 @@
 import { MermaidDiagram } from "@/components/desengine/platform/renders/MermaidDiagram"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
 
-export default function Page() {
+export default async function Page() {
+    await requireAccessOrRedirect("/playground/mermaid")
+
     const chart = `
     graph TD
     A[Start] --> B[Process]

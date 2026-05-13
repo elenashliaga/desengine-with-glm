@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
 import { createAuthPath, createConfigPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
 
 const helpCards = [
@@ -29,7 +30,9 @@ const helpCards = [
   },
 ]
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  await requireAccessOrRedirect("/help")
+
   return (
     <main className="tool-shell-page">
       <div className="tool-shell-frame">

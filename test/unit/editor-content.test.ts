@@ -1,3 +1,8 @@
+// @openSpec capability: level-labs
+// @openSpec scenarios:
+// @openSpec  - "Пользователь вводит первый символ в чистом файле"
+// @openSpec  - "Пользователь впервые вставляет текст в чистый файл"
+
 import { describe, expect, it } from "vitest"
 
 import { applyFileContentChange } from "../../lib/editor/editor-content"

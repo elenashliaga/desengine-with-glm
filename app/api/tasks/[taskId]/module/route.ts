@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 
 import ts from "typescript"
 
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { getUserTaskFilePath } from "@/lib/platform/user-state.server"
 
 type Params = { taskId: string }
@@ -263,6 +264,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
 
   const componentPath = getUserTaskFilePath(taskId, "Component.tsx")

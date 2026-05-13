@@ -3,6 +3,7 @@ import path from "node:path"
 
 import { NextResponse } from "next/server"
 
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { appConfig } from "@/lib/config/config.server"
 
 const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
@@ -31,6 +32,9 @@ export async function GET(
     }>
   },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { levelId, assetPath } = await context.params
 
   if (

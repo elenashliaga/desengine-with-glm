@@ -13,6 +13,7 @@ import {
   markTaskLevelInProgress,
   readTaskData,
 } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { appConfig } from "@/lib/config/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/llm.server"
 import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/llm/prompts.server"
@@ -164,6 +165,9 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
   const startedAt = Date.now()
 

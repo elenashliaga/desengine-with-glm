@@ -1,0 +1,31 @@
+{
+  "mode": "migration",
+  "description": "План мягкого внедрения traceability для существующих OpenSpec specs. Capability остаётся здесь, пока не покрыт полный набор обязательных scenarios.",
+  "uncoveredCapabilities": {
+    "admin-tools": {
+      "priority": "P2",
+      "reason": "Нужны contract/static проверки документации и административных команд.",
+      "targetStage": "4.4"
+    },
+    "external-local-onboarding": {
+      "priority": "P2",
+      "reason": "Есть частичное покрытие статуса onboarding, но нужны проверки полного локального onboarding-flow и документационных инвариантов.",
+      "targetStage": "4.4"
+    },
+    "navigation": {
+      "priority": "P2",
+      "reason": "Нужны browser/component проверки top-level карты пользовательских URL и Navigation.",
+      "targetStage": "4.4"
+    },
+    "onboarding-repo": {
+      "priority": "P2",
+      "reason": "Нужны integration/static проверки ONBOARDING_REPO_URL и ручного обновления с /config.",
+      "targetStage": "4.4"
+    },
+    "ui-foundation": {
+      "priority": "P2",
+      "reason": "Нужны component/browser проверки shell-паттернов и fallback-boundary подхода.",
+      "targetStage": "4.4"
+    }
+  }
+}

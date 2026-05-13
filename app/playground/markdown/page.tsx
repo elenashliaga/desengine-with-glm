@@ -1,6 +1,7 @@
 // app/markdown-test/page.tsx
 
 import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
+import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
 
 const markdown = `
 # MarkdownContent test
@@ -61,7 +62,9 @@ graph TD
 \`\`\`
 `
 
-export default function Page() {
+export default async function Page() {
+  await requireAccessOrRedirect("/playground/markdown")
+
   return (
     <main className="px-10 py-10">
         <MarkdownContent

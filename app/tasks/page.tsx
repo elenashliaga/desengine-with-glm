@@ -1,9 +1,11 @@
-import { TasksPage } from "@/components/desengine/tasks/TasksPage"
+import { TasksScreen } from "@/components/desengine/tasks/TasksScreen"
 import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { getTaskListItems } from "@/lib/platform/server"
 import { createTasksPath } from "@/lib/platform/navigation"
 
 export default async function Page() {
   await requireAccessOrRedirect(createTasksPath())
+  const tasks = await getTaskListItems()
 
-  return <TasksPage canonicalPath={createTasksPath()} />
+  return <TasksScreen initialTasks={tasks} />
 }

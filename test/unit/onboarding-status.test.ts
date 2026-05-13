@@ -1,3 +1,8 @@
+// @openSpec capability: external-local-onboarding
+// @openSpec scenarios:
+// @openSpec  - "Локальная установка ещё не получила полный `/onboarding`"
+// @openSpec  - "Локальный `/onboarding` пришёл не из того репозитория"
+
 import { describe, expect, it } from "vitest"
 
 import { resolveOnboardingSyncState } from "../../lib/onboarding/onboarding-status"

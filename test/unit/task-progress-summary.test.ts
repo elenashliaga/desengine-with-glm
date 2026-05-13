@@ -1,3 +1,19 @@
+// @openSpec capability: user-progress
+// @openSpec scenarios:
+// @openSpec  - "Пользователь использует систему локально"
+// @openSpec  - "Проверка завершилась техническим сбоем"
+// @openSpec  - "Пользователь видит задачу после технического сбоя проверки"
+// @openSpec  - "Исчерпан лимит содержательных проверок уровня"
+// @openSpec  - "Следующий уровень уже стал текущим, но ещё не начат"
+// @openSpec  - "У задачи более высокий уровень"
+// @openSpec  - "Пользователь сбрасывает задачу"
+// @openSpec  - "Пользователь удалил каталог `user/`"
+// @openSpec capability: task-levels
+// @openSpec scenarios:
+// @openSpec  - "Техническая ошибка проверки не расходует лимит"
+// @openSpec  - "Последняя доступная проверка не пройдена"
+// @openSpec  - "У задачи есть следующий уровень"
+
 import { describe, expect, it } from "vitest"
 
 import { summarizeTaskProgress } from "../../lib/task/task-progress-summary"
@@ -103,5 +119,65 @@ describe("summarizeTaskProgress", () => {
     expect(summary.currentLevelNotStarted).toBe(false)
     expect(summary.currentLevelDisplayStatus).toBe("in_progress")
     expect(summary.promptsRemaining).toBe(4)
+  })
+
+  it("отображает технический сбой проверки как awaiting-check без расхода попытки", () => {
+    const taskProgress: TaskProgress = {
+      currentLevel: 1,
+      levels: {
+        "1": {
+          status: "in_progress",
+          promptsUsed: 1,
+          initializedAt: "2026-05-11T10:00:00.000Z",
+          checkAttemptsUsed: 0,
+          checkingState: "awaiting_retry",
+        },
+      },
+    }
+
+    const summary = summarizeTaskProgress(levels, taskConfig, taskProgress)
+
+    expect(summary.currentLevelDisplayStatus).toBe("awaiting_check_retry")
+    expect(summary.checkAttemptsUsed).toBe(0)
+    expect(summary.checkingState).toBe("awaiting_retry")
+    expect(summary.isCompleted).toBe(false)
+  })
+
+  it("ограничивает текущий уровень максимумом задачи после reset или отсутствия user-state", () => {
+    const taskProgress: TaskProgress = {
+      currentLevel: 999,
+      levels: {},
+    }
+
+    const summary = summarizeTaskProgress(levels, taskConfig, taskProgress)
+
+    expect(summary.currentLevel).toBe(2)
+    expect(summary.currentLevelStarted).toBe(false)
+    expect(summary.promptsUsed).toBe(0)
+    expect(summary.checkAttemptsUsed).toBe(0)
+  })
+
+  it("показывает полное завершение только на максимальном завершённом уровне", () => {
+    const taskProgress: TaskProgress = {
+      currentLevel: 2,
+      levels: {
+        "2": {
+          status: "completed",
+          promptsUsed: 3,
+          initializedAt: "2026-05-11T10:00:00.000Z",
+          completedAt: "2026-05-11T10:30:00.000Z",
+          completionReason: "check_passed",
+          checkAttemptsUsed: 2,
+          checkingState: "idle",
+        },
+      },
+    }
+
+    const summary = summarizeTaskProgress(levels, taskConfig, taskProgress)
+
+    expect(summary.isCompleted).toBe(true)
+    expect(summary.hasNextLevel).toBe(false)
+    expect(summary.completionReason).toBe("check_passed")
+    expect(summary.checkAttemptsUsed).toBe(2)
   })
 })

@@ -4,6 +4,7 @@ import {
   getTaskListItemById,
   resetTask,
 } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 
 type Params = { taskId: string }
 
@@ -11,6 +12,9 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
 
   const taskItem = await getTaskListItemById(taskId)

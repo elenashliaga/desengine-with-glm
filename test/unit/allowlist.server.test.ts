@@ -1,3 +1,11 @@
+// @openSpec capability: access-control
+// @openSpec scenarios:
+// @openSpec  - "Диагностика проверяет базовый URL allowlist-системы"
+// @openSpec  - "Базовый URL allowlist-системы отвечает 404"
+// @openSpec  - "Хранилище не подтверждает marker через HEAD, но отдаёт его через GET"
+// @openSpec  - "HEAD возвращает 404, но GET подтверждает маркер"
+// @openSpec  - "Проверка базового URL allowlist-системы не подменяется marker-check логикой"
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("server-only", () => ({}))

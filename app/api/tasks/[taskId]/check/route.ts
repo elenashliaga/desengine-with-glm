@@ -13,6 +13,7 @@ import {
   readTaskData,
   saveTaskCheckResult,
 } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { runStructuredLlmRequest } from "@/lib/llm/llm.server"
 import { readLevelCheckPrompt, readPrompt } from "@/lib/llm/prompts.server"
 import { getTaskCatalogFilePath } from "@/lib/platform/user-state.server"
@@ -62,6 +63,9 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
   const taskItem = await getTaskListItemById(taskId)
 

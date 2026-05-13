@@ -13,6 +13,7 @@ import {
   readTaskData,
   registerPromptForCurrentLevel,
 } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { appConfig } from "@/lib/config/config.server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/llm.server"
 import { formatPromptHistoryTimestamp, TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/task/prompt-history"
@@ -46,6 +47,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
   const body = (await request.json().catch(() => null)) as Body | null
   const promptText = String(body?.prompt || "").trim()

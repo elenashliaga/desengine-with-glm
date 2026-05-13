@@ -142,6 +142,17 @@ async function requireAccessOrRedirect(pathname: string) {
   redirect(safePath ? createAccessPreparePath(safePath) : createAuthPath())
 }
 
+async function requireAccessOrUnauthorizedResponse() {
+  if ((await getAccessSessionState()) === "valid") {
+    return null
+  }
+
+  return Response.json(
+    { ok: false, error: "Требуется авторизация" },
+    { status: 401 },
+  )
+}
+
 export {
   ACCESS_RETURN_PATH_COOKIE_NAME,
   consumeReturnPathCookie,
@@ -150,5 +161,6 @@ export {
   getAccessControlConfig,
   hasAccessSession,
   requireAccessOrRedirect,
+  requireAccessOrUnauthorizedResponse,
   verifyAllowlistAccess,
 }

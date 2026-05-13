@@ -5,6 +5,7 @@ import {
   getTaskLabContext,
   getTaskListItemById,
 } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
 import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/platform/user-state.server"
 
 type Params = { taskId: string }
@@ -20,6 +21,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<Params> },
 ) {
+  const unauthorizedResponse = await requireAccessOrUnauthorizedResponse()
+  if (unauthorizedResponse) return unauthorizedResponse
+
   const { taskId } = await params
   const body = (await request.json().catch(() => null)) as Body | null
   const taskItem = await getTaskListItemById(taskId)
