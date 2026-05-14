@@ -3,7 +3,7 @@ import "server-only"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 
 import type { PromptKind, PromptName } from "./types"
 

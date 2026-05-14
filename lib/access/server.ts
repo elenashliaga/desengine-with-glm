@@ -2,8 +2,8 @@ import "server-only"
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { checkAllowlistMarkerReachability } from "@/lib/access/allowlist.server"
-import localConfig from "../config/local-config.cjs"
+import { checkAllowlistMarkerReachability } from "@/lib/access/allowlist"
+import localConfig from "../config/local.cjs"
 
 import {
   ACCESS_COOKIE_NAME,
@@ -13,7 +13,7 @@ import {
   normalizeEmail,
   type VerifiedAccessSession,
   verifyAccessSessionValue,
-} from "@/lib/access/access-control"
+} from "@/lib/access/control"
 import {
   createAccessPreparePath,
   createAuthPath,

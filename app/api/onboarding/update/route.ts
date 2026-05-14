@@ -1,4 +1,4 @@
-import { updateOnboardingFromConfig } from "@/lib/onboarding/onboarding-update.server"
+import { updateOnboardingFromConfig } from "@/lib/onboarding/update"
 
 export async function POST() {
   try {

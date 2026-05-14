@@ -14,7 +14,7 @@ import { vi } from "vitest"
 
 vi.mock("server-only", () => ({}))
 
-import { validateGeneratedFilesPayload } from "../../lib/task/workbench-output.server"
+import { validateGeneratedFilesPayload } from "../../lib/lab/workbench"
 
 const allWorkbenchFiles = [
   { id: "component", fileName: "Component.tsx" },

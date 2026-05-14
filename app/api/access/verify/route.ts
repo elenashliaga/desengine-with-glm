@@ -5,12 +5,12 @@ import {
   isPlausibleEmail,
   normalizeEmail,
   shouldUseSecureCookies,
-} from "@/lib/access/access-control"
+} from "@/lib/access/control"
 import {
   consumeReturnPathCookie,
   createAccessCookieValue,
   verifyAllowlistAccess,
-} from "@/lib/access/access-control.server"
+} from "@/lib/access/server"
 
 type Body = {
   email?: string

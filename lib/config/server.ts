@@ -3,8 +3,8 @@ import "server-only"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { appConfigSource } from "@/lib/config/app-config.shared"
-import { AppConfigSchema, type AppConfig } from "@/lib/config/config.schema"
+import { appConfigSource } from "@/lib/config/app"
+import { AppConfigSchema, type AppConfig } from "@/lib/config/schema"
 
 const parsed = AppConfigSchema.parse(appConfigSource)
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")

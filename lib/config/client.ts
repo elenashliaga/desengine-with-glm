@@ -1,6 +1,6 @@
-import type { AppConfig } from "@/lib/config/config.schema"
+import type { AppConfig } from "@/lib/config/schema"
 
-import { appConfigSource } from "@/lib/config/app-config.shared"
+import { appConfigSource } from "@/lib/config/app"
 
 // Конфиг для client components: без node:fs и без нормализации путей.
 // Если понадобится tasksRoot на клиенте, добавим отдельный контракт.

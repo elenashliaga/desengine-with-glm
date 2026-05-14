@@ -5,7 +5,7 @@ import type { LevelOverview as LevelOverviewData } from "@/lib/level/types"
 import type { TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/task/types";
 
 /** Функции */
-import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createTaskPath } from "@/lib/platform/navigation";
+import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createLabUrl } from "@/lib/platform/navigation";
 
 /** Пропсы */
 import { LabProps } from "./props"
@@ -33,7 +33,7 @@ function createLevelHref(levelId?: string | null) {
 }
 
 function createTaskHref(taskId: string, screen?: string | null) {
-    return createTaskPath(taskId, screen);
+    return createLabUrl(taskId, screen);
 }
 
 function createDoneHref(taskId: string) {

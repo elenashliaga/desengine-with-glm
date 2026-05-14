@@ -1,6 +1,6 @@
 import { RootStatusPage } from "@/components/desengine/platform/RootStatusPage"
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
-import { getSystemStatusModel } from "@/lib/config/system-status.server"
+import { requireAccessOrRedirect } from "@/lib/access/server"
+import { getSystemStatusModel } from "@/lib/config/status"
 
 export default async function Page() {
   await requireAccessOrRedirect("/")

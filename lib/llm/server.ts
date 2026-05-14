@@ -10,7 +10,7 @@ import {
   type LlmAdapter,
 } from "./types"
 
-import localConfig from "../config/local-config.cjs"
+import localConfig from "../config/local.cjs"
 
 localConfig.loadLocalConfig()
 

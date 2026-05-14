@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { requireAccessOrRedirect } from "@/lib/access/server"
 import { createLevelsPath } from "@/lib/platform/navigation"
 import { getLevelOverview } from "@/lib/platform/server"
 

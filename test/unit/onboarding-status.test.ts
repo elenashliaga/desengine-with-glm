@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest"
 
-import { resolveOnboardingSyncState } from "../../lib/onboarding/onboarding-status"
+import { resolveOnboardingSyncState } from "../../lib/onboarding/status"
 
 describe("resolveOnboardingSyncState", () => {
   it("возвращает missing, когда `/onboarding` ещё не существует", () => {

@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest"
 
-import { applyFileContentChange } from "../../lib/editor/editor-content"
+import { applyFileContentChange } from "../../lib/lab/editor"
 
 describe("applyFileContentChange", () => {
   it("сохраняет первый введённый символ", () => {

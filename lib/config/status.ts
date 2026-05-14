@@ -3,15 +3,15 @@ import "server-only"
 import {
   checkAllowlistSystemReachability,
   summarizeAllowlistSystemStatus,
-} from "@/lib/access/allowlist.server"
+} from "@/lib/access/allowlist"
 import {
   getAccessControlConfig,
   getAccessSessionState,
-} from "@/lib/access/access-control.server"
+} from "@/lib/access/server"
 import { getLlmStatus } from "@/lib/llm/server"
-import localConfig from "./local-config.cjs"
-import { getOnboardingSyncStatus } from "@/lib/onboarding/onboarding-status.server"
-import { updateOnboardingFromConfig } from "@/lib/onboarding/onboarding-update.server"
+import localConfig from "./local.cjs"
+import { getOnboardingSyncStatus } from "@/lib/onboarding/server"
+import { updateOnboardingFromConfig } from "@/lib/onboarding/update"
 
 localConfig.loadLocalConfig()
 const ONBOARDING_AUTO_SYNC_RETRY_COOLDOWN_MS = 30_000

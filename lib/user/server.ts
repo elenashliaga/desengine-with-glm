@@ -3,7 +3,7 @@ import "server-only"
 import { access, mkdir, rm } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import type { UserProgressStore } from "./types"
 
 const promptHistoryFileName = "prompt-history.json"

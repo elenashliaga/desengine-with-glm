@@ -4,7 +4,7 @@ import {
   getTaskListItemById,
   resetTask,
 } from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
 
 type Params = { taskId: string }
 

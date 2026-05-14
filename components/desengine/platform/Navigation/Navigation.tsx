@@ -3,15 +3,16 @@
 import Link from "next/link"
 
 import {
-  createAuthPath,
   createConfigPath,
   createHelpPath,
   createLevelsPath,
   createTasksPath,
+  createLabPath,
 } from "@/lib/platform/navigation"
 
 const navigationLinks = [
   { href: "/", label: "desengine" },
+  { href: createLabPath(), label: "лаборатория" },
   { href: createLevelsPath(), label: "уровни" },
   { href: createTasksPath(), label: "задачи" },
   { href: createConfigPath(), label: "настройки" },

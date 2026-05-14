@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
-import { createTaskPath, isAccessibleTaskScreen } from "@/lib/platform/navigation"
+import { requireAccessOrRedirect } from "@/lib/access/server"
+import { createLabUrl, isAccessibleTaskScreen } from "@/lib/platform/navigation"
 import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/platform/server"
 
 type Params = {
@@ -34,7 +34,7 @@ export default async function TaskScreenPage({
   params: Promise<Params>
 }) {
   const { taskId, screen } = await params
-  const canonicalPath = createTaskPath(taskId, screen)
+  const canonicalPath = createLabUrl(taskId, screen)
 
   await requireAccessOrRedirect(canonicalPath)
 
@@ -52,7 +52,7 @@ export default async function TaskScreenPage({
   }
 
   if (!isAccessibleTaskScreen(screen, allowedScreens)) {
-    redirect(createTaskPath(taskId))
+    redirect(createLabUrl(taskId))
   }
 
   const started = await isTaskStarted(taskId)

@@ -1,28 +1,19 @@
 import Link from "next/link"
-import { TaskListItem } from "@/lib/task/types";
-import { BaseProps } from "../platform/Base";
-import { createTaskPath } from "@/lib/platform/navigation"
+import { createLabUrl } from "@/lib/platform/navigation"
 import { ProgressDots } from "../platform/ProgressDots";
+import { TaskItemProps as TaskCardProps, TaskItemListProps } from "./props";
 
-type TaskItemProps = BaseProps & {
-    task: TaskListItem
-}
-
-type TaskItemListProps = BaseProps & {
-  tasks: TaskListItem[]
-}
-
-function TaskItem({
+function TaskCard({
     task,
     className="flex w-full gap-1"
-  } : TaskItemProps) {
+  } : TaskCardProps) {
   return (
     <article
       key={task.id}
       className={className}
     >
       <Link
-        href={createTaskPath(task.id)}
+        href={createLabUrl(task.id)}
         className="w-80 shrink-0 items-center font-bold text-black transition-opacity hover:opacity-50"
       >
         {task.id}
@@ -43,7 +34,7 @@ function TaskItemList({
     <div className={className}>
       {tasks.map((task) => {
         return (
-          <TaskItem
+          <TaskCard
             key={task.id}
             task={task}
           />
@@ -53,4 +44,4 @@ function TaskItemList({
   )
 }
 
-export { TaskItem, TaskItemList }
+export { TaskCard as TaskItem, TaskItemList }

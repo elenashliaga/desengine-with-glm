@@ -1,2 +1,2 @@
-export { taskWorkbenchFiles } from "@/lib/config/config.client"
+export { taskWorkbenchFiles } from "@/lib/config/client"
 

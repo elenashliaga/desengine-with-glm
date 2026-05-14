@@ -18,7 +18,7 @@
 
 import { describe, expect, it } from "vitest"
 
-import { summarizeTaskProgress } from "../../lib/task/task-progress-summary"
+import { summarizeTaskProgress } from "../../lib/task/progress"
 import type { LevelConfig } from "../../lib/level/types"
 import type { TaskConfig, TaskProgress } from "../../lib/task/types"
 

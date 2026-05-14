@@ -7,12 +7,12 @@ import { TaskConfigSchema } from "./schema"
 
 import { LevelsCatalogSchema } from "../level/schema"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import { readLevelCommonExplanation } from "@/lib/prompt/server"
 import {
   isLevelStarted,
   summarizeTaskProgress,
-} from "@/lib/task/task-progress-summary"
+} from "@/lib/task/progress"
 import { readPromptHistory } from "@/lib/onboarding/repository"
 import type {
   TaskCheckResult,
@@ -44,7 +44,7 @@ import {
   getTaskCheckResultPath,
   removeUserTaskDir,
   removeTaskCheckResult,
-} from "@/lib/user/user-state.server"
+} from "@/lib/user/server"
 
 type TaskCatalogItem = {
   id: string
@@ -527,7 +527,7 @@ export async function getLevelById(levelId: string) {
   return levels.find((level) => level.id === levelId) ?? null
 }
 
-export async function getTaskListItemsWithProgress(): Promise<TaskListItem[]> {
+export async function getTasks(): Promise<TaskListItem[]> {
   const [levels, store, tasks] = await Promise.all([
     getLevelsCatalog(),
     readUserProgressStore(),
@@ -619,7 +619,7 @@ export async function getAllLevelOverviews(): Promise<LevelOverview[]> {
 }
 
 export async function getTaskListItemById(taskId: string) {
-  const taskListItems = await getTaskListItemsWithProgress()
+  const taskListItems = await getTasks()
   return taskListItems.find((task) => task.id === taskId) ?? null
 }
 

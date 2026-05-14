@@ -23,7 +23,7 @@
 - Сохранить текущую бизнес-логику: уровень завершается только после успешной проверки (`passed = true`), но без записи отдельной completion-причины.
 
 3. Представление и summary
-- В `lib/task/task-progress-summary.ts` и `lib/task/task-progress-presentation.ts` убрать обращения к `completionReason`.
+- В `lib/task/progress.ts` и `lib/task/task-progress-presentation.ts` убрать обращения к `completionReason`.
 - Отображение завершения уровня строится по `status`, `currentLevelStarted`, `checkingState` и лимитам, как и сейчас.
 
 4. Тесты и фикстуры

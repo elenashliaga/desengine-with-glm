@@ -1,4 +1,13 @@
 import type { TaskData, TaskListItem } from "@/lib/platform/types"
+import type { BaseProps } from "../platform/Base"
+
+type TaskItemProps = BaseProps & {
+    task: TaskListItem
+}
+
+type TaskItemListProps = BaseProps & {
+  tasks: TaskListItem[]
+}
 
 type TaskLevelStartProps = {
   taskItem: TaskListItem
@@ -9,4 +18,8 @@ type TaskLevelStartProps = {
   onBackToLevelList: () => void
 }
 
-export { type TaskLevelStartProps }
+export type {
+  TaskLevelStartProps,
+  TaskItemListProps,
+  TaskItemProps,
+}

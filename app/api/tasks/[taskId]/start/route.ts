@@ -13,16 +13,16 @@ import {
   markTaskLevelInProgress,
   readTaskData,
 } from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { appConfig } from "@/lib/config/config.server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+import { appConfig } from "@/lib/config/server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/server"
 import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/prompt/server"
 import {
   ensureUserTaskDir,
   getTaskCatalogFilePath,
   getUserTaskFilePath,
-} from "@/lib/user/user-state.server"
-import { validateGeneratedFilesPayload } from "@/lib/task/workbench-output.server"
+} from "@/lib/user/server"
+import { validateGeneratedFilesPayload } from "@/lib/lab/workbench"
 
 type Params = { taskId: string }
 

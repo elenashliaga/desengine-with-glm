@@ -1,8 +1,8 @@
 import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
-import { createTaskDonePath, createTaskPath } from "@/lib/platform/navigation"
+import { requireAccessOrRedirect } from "@/lib/access/server"
+import { createTaskDonePath, createLabUrl } from "@/lib/platform/navigation"
 import { getLevelOverview, getTaskDoneTransition, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/platform/server"
 
 type Params = {
@@ -28,7 +28,7 @@ export default async function TaskDonePage({
   const transition = await getTaskDoneTransition(taskId)
 
   if (!transition) {
-    redirect(createTaskPath(taskId))
+    redirect(createLabUrl(taskId))
   }
 
   const labContext = await getTaskLabContext(taskItem)

@@ -1,6 +1,6 @@
 import "server-only"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import {
   appendPromptHistory,
   isTaskStarted,
@@ -12,7 +12,7 @@ import {
   filterWorkbenchPayloadByAllowlist,
   getLevelEditableWorkbenchFileMap,
   getLevelEditableWorkbenchFiles,
-} from "@/lib/task/task-workbench.server"
+} from "@/lib/lab/workbench"
 import {
   clearTaskCheckResult,
   failCurrentTaskLevelCheck,
@@ -25,7 +25,7 @@ import {
   getTaskDoneTransition,
   getTaskLabContext,
   getTaskListItemById,
-  getTaskListItemsWithProgress,
+  getTasks,
   getTaskPendingTransition,
   markCurrentTaskLevelInitialized,
   markCurrentTaskLevelCheckTechnicalError,
@@ -34,7 +34,7 @@ import {
   resetTask,
   registerPromptForCurrentLevel,
   saveTaskCheckResult,
-} from "@/lib/task/task-levels.server"
+} from "@/lib/task/server"
 
 export {
   appConfig,
@@ -54,7 +54,7 @@ export {
   getLevelEditableWorkbenchFiles,
   getTaskLabContext,
   getTaskListItemById,
-  getTaskListItemsWithProgress as getTaskListItems,
+  getTasks as getTaskListItems,
   getTaskPendingTransition,
   isTaskStarted,
   markCurrentTaskLevelInitialized,

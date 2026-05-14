@@ -1,4 +1,4 @@
-import type { OnboardingSourceMarker } from "../../lib/onboarding/onboarding-status"
+import type { OnboardingSourceMarker } from "../../lib/onboarding/status"
 
 const onboardingRepoUrl = "https://example.com/desengine-onboarding.git"
 

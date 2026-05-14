@@ -5,8 +5,8 @@ import {
   getTaskLabContext,
   getTaskListItemById,
 } from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/user/user-state.server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+import { ensureUserTaskDir, getUserTaskFilePath } from "@/lib/user/server"
 
 type Params = { taskId: string }
 

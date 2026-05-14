@@ -1,4 +1,4 @@
-import { appConfigSource } from "@/lib/config/app-config.shared"
+import { appConfigSource } from "@/lib/config/app"
 
 const editableTaskScreens = appConfigSource.taskWorkbenchFiles
   .filter((file) => file.edit)
@@ -32,7 +32,11 @@ export function createTasksPath() {
   return "/tasks"
 }
 
-export function createTaskPath(taskId: string, screen?: string | null) {
+
+/** Лабораторные адреса */
+
+/** URL к задаче в лаборатории (с точностью до экрана) */
+export function createLabUrl(taskId: string, screen?: string | null) {
   if (!screen || screen === DEFAULT_TASK_SCREEN) {
     return `/tasks/${encodeURIComponent(taskId)}`
   }
@@ -78,6 +82,10 @@ export function createLevelAssetPath(levelId: string, assetPath?: string | null)
 
 export function createAuthPath() {
   return "/auth"
+}
+
+export function createLabPath() {
+  return "/lab"
 }
 
 export function createAccessPreparePath(returnTo: string) {

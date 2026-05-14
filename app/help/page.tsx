@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
+import { requireAccessOrRedirect } from "@/lib/access/server"
 import { createAuthPath, createConfigPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
 
 const helpCards = [

@@ -1,8 +1,8 @@
 import { readFile, writeFile } from "node:fs/promises"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import { TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt/history"
-import { getLevelEditableWorkbenchFiles } from "@/lib/task/task-workbench.server"
+import { getLevelEditableWorkbenchFiles } from "@/lib/lab/workbench"
 import {
   type TaskLabContext,
   type TaskData,
@@ -14,7 +14,7 @@ import {
   getUserTaskFilePath,
   pathExists,
   promptHistoryFileName,
-} from "@/lib/user/user-state.server"
+} from "@/lib/user/server"
 
 function isStringArray(value: unknown) {
   return Array.isArray(value) && value.every((item) => typeof item === "string")

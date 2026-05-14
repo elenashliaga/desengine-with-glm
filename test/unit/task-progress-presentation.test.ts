@@ -11,7 +11,7 @@ import {
   getLevelBadgeText,
   getPromptRemainderText,
   getStatusText,
-} from "../../lib/task/task-progress-presentation"
+} from "../../lib/task/progress"
 import type { TaskListItem } from "../../lib/task/types"
 
 function createTask(overrides: Partial<TaskListItem> = {}): TaskListItem {

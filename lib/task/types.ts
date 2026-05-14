@@ -87,9 +87,9 @@ export type TaskData = {
 }
 
 
-export type TaskCheckResultKind = "passed" | "failed" | "technical_error" | "failed_and_reset"
+type TaskCheckResultKind = "passed" | "failed" | "technical_error" | "failed_and_reset"
 
-export type TaskCheckResult = {
+type TaskCheckResult = {
   taskId: string
   levelId: string
   levelNumber: number
@@ -102,7 +102,7 @@ export type TaskCheckResult = {
   createdAt: string
 }
 
-export type TaskTransition = {
+type TaskTransition = {
   taskId: string
   fromLevel: LevelConfig
   toLevel: LevelConfig | null
@@ -111,13 +111,12 @@ export type TaskTransition = {
 }
 
 
-export {
-    type TaskListItem,
-    type TaskConfig,
-    type TaskLevelProgress,
-    type TaskProgress,
-    type TaskProgressSummary,
-    TaskConfigSchema,
-    TaskLevelProgressSchema,
-    TaskProgressSchema,
+export type {
+    TaskListItem,
+    TaskConfig,
+    TaskLevelProgress,
+    TaskProgress,
+    TaskProgressSummary,
+    TaskCheckResult,
+    TaskTransition
 }

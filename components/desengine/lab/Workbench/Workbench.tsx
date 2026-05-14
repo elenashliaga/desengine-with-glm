@@ -20,7 +20,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { taskWorkbenchFiles } from "@/lib/platform/client";
-import { applyFileContentChange } from "@/lib/editor/editor-content";
+import { applyFileContentChange } from "@/lib/lab/editor";
 
 type SaveErrorItem = {
     fileId: string;

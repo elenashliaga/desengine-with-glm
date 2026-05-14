@@ -3,13 +3,13 @@ import "server-only"
 import { access, readFile, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import localConfig from "@/lib/config/local-config.cjs"
 import {
   resolveOnboardingSyncState,
   type OnboardingSourceMarker,
   type OnboardingSyncState,
-} from "@/lib/onboarding/onboarding-status"
+} from "@/lib/onboarding/status"
 
 const ONBOARDING_SOURCE_MARKER_FILE = ".desengine-onboarding-source.json"
 

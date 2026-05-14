@@ -3,7 +3,7 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { isEditorSaveHotkey } from "@/lib/editor/editor-shortcuts";
+import { isEditorSaveHotkey } from "@/lib/editor/editors";
 
 type MonacoInstance = {
   languages: {

@@ -3,8 +3,8 @@ import path from "node:path"
 
 import { NextResponse } from "next/server"
 
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
-import { appConfig } from "@/lib/config/config.server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+import { appConfig } from "@/lib/config/server"
 
 const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
   ".gif": "image/gif",

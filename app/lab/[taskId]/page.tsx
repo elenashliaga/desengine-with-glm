@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
-import { createTaskCheckPath, createTaskPath } from "@/lib/platform/navigation"
-import { getLevelOverview, getTaskCheckResult, getTaskDoneTransition, getTaskLabContext, getTaskListItemById, getTaskPendingTransition, isTaskStarted, readTaskData } from "@/lib/platform/server"
+import { requireAccessOrRedirect } from "@/lib/access/server"
+import { createLabUrl, getDefaultTaskScreen, isAccessibleTaskScreen } from "@/lib/platform/navigation"
+import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/platform/server"
 
 type Params = {
   taskId: string
@@ -27,36 +27,34 @@ function createEmptyTaskData(taskId: string, labContext: Awaited<ReturnType<type
   }
 }
 
-export default async function TaskCheckPage({
+export default async function TaskPage({
   params,
 }: {
   params: Promise<Params>
 }) {
   const { taskId } = await params
-  const canonicalPath = createTaskCheckPath(taskId)
+  const canonicalPath = createLabUrl(taskId)
 
   await requireAccessOrRedirect(canonicalPath)
 
-  const [taskItem, checkResult] = await Promise.all([
-    getTaskListItemById(taskId),
-    getTaskCheckResult(taskId),
-  ])
+  const taskItem = await getTaskListItemById(taskId)
 
   if (!taskItem) {
     notFound()
   }
 
-  if (!checkResult) {
-    redirect(createTaskPath(taskId))
+  const labContext = await getTaskLabContext(taskItem)
+  const allowedScreens = labContext?.editableFileIds ?? []
+  const defaultScreen = getDefaultTaskScreen()
+
+  if (allowedScreens.length === 0) {
+    notFound()
   }
 
-  const transition = checkResult.kind === "passed"
-    ? (taskItem.progress.isCompleted
-      ? await getTaskDoneTransition(taskId)
-      : await getTaskPendingTransition(taskId))
-    : null
+  if (!isAccessibleTaskScreen(defaultScreen, allowedScreens)) {
+    redirect(createLabUrl(taskId, allowedScreens[0]))
+  }
 
-  const labContext = await getTaskLabContext(taskItem)
   const started = await isTaskStarted(taskId)
   const taskData = started
     ? await readTaskData(taskItem, labContext)
@@ -66,7 +64,7 @@ export default async function TaskCheckPage({
   return (
     <Lab
       initLevelOverview={levelOverview}
-      initScreen={{ type: "check", result: checkResult, transition }}
+      initScreen={{ type: "task", screen: defaultScreen }}
       initTaskItem={taskItem}
       initTaskData={taskData}
     />

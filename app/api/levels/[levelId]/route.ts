@@ -1,4 +1,4 @@
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/access-control.server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
 import { getLevelOverview } from "@/lib/platform/server"
 
 type Params = { levelId: string }

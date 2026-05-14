@@ -6,12 +6,12 @@ import os from "node:os"
 import path from "node:path"
 import { promisify } from "node:util"
 
-import { appConfig } from "@/lib/config/config.server"
+import { appConfig } from "@/lib/config/server"
 import {
   getConfiguredOnboardingRepoUrl,
   validateOnboardingLayout,
   writeOnboardingSourceMarker,
-} from "@/lib/onboarding/onboarding-status.server"
+} from "@/lib/onboarding/server"
 
 const execFileAsync = promisify(execFile)
 

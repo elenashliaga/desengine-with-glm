@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 
-import { requireAccessOrRedirect } from "@/lib/access/access-control.server"
-import { createTaskNextPath, createTaskPath } from "@/lib/platform/navigation"
+import { requireAccessOrRedirect } from "@/lib/access/server"
+import { createTaskNextPath, createLabUrl } from "@/lib/platform/navigation"
 import { getTaskListItemById, getTaskPendingTransition } from "@/lib/platform/server"
 
 type Params = {
@@ -27,8 +27,8 @@ export default async function TaskNextPage({
   const transition = await getTaskPendingTransition(taskId)
 
   if (!transition || !transition.toLevel) {
-    redirect(createTaskPath(taskId))
+    redirect(createLabUrl(taskId))
   }
 
-  redirect(createTaskPath(taskId))
+  redirect(createLabUrl(taskId))
 }
