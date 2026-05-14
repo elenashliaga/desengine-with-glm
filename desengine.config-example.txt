@@ -37,4 +37,4 @@ ALLOWLIST_SALT=68vBN7EWDTDsMLzoTyOghApJ5zDBI/Mg1ZNGpbrxvIY=
 
 # Источник обучающего контента
 # Вы можете собрать свой собственный
-ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git
+DESENGINE_ONBOARDING_REPO_URL=https://github.com/sobakapav/desengine-onboarding.git
