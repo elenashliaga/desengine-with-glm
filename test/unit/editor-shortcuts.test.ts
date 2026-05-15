@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { isEditorSaveHotkey } from "../../lib/lab/editors"
+import { isEditorSaveHotkey } from "../../lib/lab/editor"
 
 describe("isEditorSaveHotkey", () => {
   it("считает Cmd+S горячей клавишей сохранения", () => {

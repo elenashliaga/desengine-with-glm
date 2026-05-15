@@ -49,10 +49,15 @@ describe("LLM flow source contracts", () => {
   })
 
   it("system status предупреждает о legacy-конфиге без использования его как fallback", () => {
-    const source = readProjectFile("lib", "config", "system-status.server.ts")
+    const source = readProjectFile("lib", "config", "status.ts")
+    const localConfig = readProjectFile("lib", "config", "local.cjs")
 
-    expect(source).toContain("legacyPaths")
-    expect(source).toContain("не используются как fallback")
+    expect(source).toContain("localConfigState.hasLegacyEnv")
+    expect(source).toContain("Обнаружен устаревший .env.local")
+    expect(source).toContain("Старый `.env.local` создаёт двусмысленность")
+    expect(localConfig).toContain('const LOCAL_CONFIG_FILENAME = "desengine.config.txt"')
+    expect(localConfig).toContain('const LEGACY_LOCAL_ENV_FILENAME = ".env.local"')
+    expect(localConfig).not.toContain("readLocalConfig(getLegacyLocalEnvPath")
   })
 
   it("история итераций хранит учебную стоимость отдельно от provider metrics", () => {

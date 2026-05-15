@@ -3,7 +3,7 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { type WorkbenchProps } from "./props";
 
-import { MarkdownContent } from "../../platform/renders/MarkdownContent";
+import { MarkdownContent } from "../../system/MarkdownContent";
 import { InOut } from "../InOut";
 import { Prompt, PromptComposer } from "../Propmt";
 import { CodeList } from "../Code";
@@ -19,7 +19,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { taskWorkbenchFiles } from "@/lib/platform/client";
+import { taskWorkbenchFiles } from "@/lib/system/client";
 import { applyFileContentChange } from "@/lib/lab/editor";
 
 type SaveErrorItem = {

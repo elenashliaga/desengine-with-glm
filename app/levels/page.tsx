@@ -1,11 +1,10 @@
-import { requireAccessOrRedirect } from "@/lib/access/server"
-import { getAllLevelOverviews } from "@/lib/platform/server"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
+import { getAllLevelOverviews } from "@/lib/system/server"
 import { LevelsScreen } from "@/components/desengine/level/LevelsScreen"
-import { createLevelsPath } from "@/lib/platform/navigation"
-
+import { getLevelsRootUrl } from "@/lib/level/navigation"
 
 export default async function LevelsPage() {
-  await requireAccessOrRedirect(createLevelsPath())
+  await requireAccessOrRedirect(getLevelsRootUrl())
 
   const overviews = await getAllLevelOverviews()
 

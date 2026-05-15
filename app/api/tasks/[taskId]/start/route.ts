@@ -12,8 +12,8 @@ import {
   markCurrentTaskLevelInitialized,
   markTaskLevelInProgress,
   readTaskData,
-} from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+} from "@/lib/system/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
 import { appConfig } from "@/lib/config/server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/server"
 import { readLevelIteratePrompt, readLevelStartPrompt, readPrompt } from "@/lib/prompt/server"

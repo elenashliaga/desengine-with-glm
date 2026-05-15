@@ -1,5 +1,5 @@
-import type { TaskData, TaskListItem } from "@/lib/platform/types"
-import type { BaseProps } from "../platform/Base"
+import type { TaskData, TaskListItem } from "@/lib/system/types"
+import type { BaseProps } from "../system/Base"
 
 type TaskItemProps = BaseProps & {
     task: TaskListItem

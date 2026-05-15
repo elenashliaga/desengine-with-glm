@@ -1,8 +1,20 @@
 import { z } from "zod"
 
-const LlmProviderSchema = z.enum(["openai", "deepseek", "gemini"])
+import {
+  LLM_PROVIDER_IDS
+} from "./const"
 
-// Схема конфигурации приложения (desengine.config.json)
+/**
+ * Схема ID LLM-провайдера.
+ * Нужна для схемы конфигурации приложения. 
+ */
+export const LlmProviderIdSchema =
+  z.enum(LLM_PROVIDER_IDS)
+
+/**
+ * Схема конфигурации приложения.
+ * Реализована через zod, потому что хранится во внешнем файле (desengine.config.json).
+ */ 
 const AppConfigSchema = z
   .object({
     onboardingRoot: z.string().optional(),
@@ -19,9 +31,9 @@ const AppConfigSchema = z
     taskImageFile: z.string(),
     llm: z
       .object({
-        provider: LlmProviderSchema.optional(),
+        provider: LlmProviderIdSchema.optional(),
       })
-      .optional(),
+      .optional(), // ? Тут точно нужно два раза optional()?
     taskWorkbenchFiles: z.array(
       z.object({
         id: z.string(),
@@ -63,4 +75,4 @@ const AppConfigSchema = z
 
 export type AppConfig = z.infer<typeof AppConfigSchema>
 
-export { AppConfigSchema, LlmProviderSchema }
+export { AppConfigSchema }

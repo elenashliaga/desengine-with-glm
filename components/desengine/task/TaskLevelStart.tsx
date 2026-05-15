@@ -1,10 +1,10 @@
 "use client"
 
-import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
+import { MarkdownContent } from "@/components/desengine/system/MarkdownContent"
 import { InPicture } from "@/components/desengine/lab/InOut/InPicture"
 import { OutRender } from "@/components/desengine/lab/InOut/OutRender"
 import { Button } from "@/components/ui/button"
-import { createLevelAssetPath } from "@/lib/platform/navigation"
+import { getLevelAssetPath } from "@/lib/level/navigation"
 
 import { type TaskLevelStartProps } from "./props"
 
@@ -20,7 +20,7 @@ function TaskLevelStart({
   const isFirstLevel = currentLevel === 1
   const commonExplanation = taskData.labContext?.commonExplanation ?? ""
   const taskTip = taskData.labContext?.taskTip ?? ""
-  const levelAssetBasePath = taskData.labContext ? createLevelAssetPath(taskData.labContext.levelId) : undefined
+  const levelAssetBasePath = taskData.labContext ? getLevelAssetPath(taskData.labContext.levelId) : undefined
   const hasVisibleImages = (taskData.labContext?.images.filter((image) => image.show).length ?? 0) > 0
 
   return (

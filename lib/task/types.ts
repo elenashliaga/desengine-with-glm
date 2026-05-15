@@ -118,5 +118,6 @@ export type {
     TaskProgress,
     TaskProgressSummary,
     TaskCheckResult,
-    TaskTransition
+    TaskTransition,
+    TaskCheckResultKind,
 }

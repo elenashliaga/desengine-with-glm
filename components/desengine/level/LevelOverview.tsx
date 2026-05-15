@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent";
+import { MarkdownContent } from "@/components/desengine/system/MarkdownContent";
 import { Button } from "@/components/ui/button";
-import { createLevelAssetPath, createLevelsPath } from "@/lib/platform/navigation";
 import type { LevelOverview as LevelOverviewData } from "@/lib/level/types";
 import { LevelTaskCard } from "../level/LevelTaskCard";
+import { getLevelAssetPath, getLevelsRootUrl } from "@/lib/level/navigation";
 
 type LevelOverviewProps = {
   overview: LevelOverviewData;
@@ -34,12 +34,12 @@ export function LevelOverview({
             Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
           </p>
           <MarkdownContent
-            assetBasePath={createLevelAssetPath(overview.level.id)}
+            assetBasePath={getLevelAssetPath(overview.level.id)}
             className="max-w-3xl"
             content={overview.level.description}
           />
           <div className="flex flex-wrap items-center gap-3">
-            <Link className="tool-link-inline" href={createLevelsPath()}>
+            <Link className="tool-link-inline" href={getLevelsRootUrl()}>
               Открыть все уровни
             </Link>
             {overview.level.url ? (

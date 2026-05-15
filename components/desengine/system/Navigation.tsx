@@ -2,21 +2,19 @@
 
 import Link from "next/link"
 
-import {
-  createConfigPath,
-  createHelpPath,
-  createLevelsPath,
-  createTasksPath,
-  createLabPath,
-} from "@/lib/platform/navigation"
+import { getLevelsRootUrl } from "@/lib/level/navigation"
+import { getLabRootUrl } from "@/lib/lab/navigation"
+import { getTasksRootUrl } from "@/lib/task/navigation"
+import { getConfigUrl } from "@/lib/config/navigation"
+import { getHelpRootUrl } from "@/lib/help/navigation"
 
 const navigationLinks = [
   { href: "/", label: "desengine" },
-  { href: createLabPath(), label: "лаборатория" },
-  { href: createLevelsPath(), label: "уровни" },
-  { href: createTasksPath(), label: "задачи" },
-  { href: createConfigPath(), label: "настройки" },
-  { href: createHelpPath(), label: "справка" },
+  { href: getLabRootUrl(), label: "лаборатория" },
+  { href: getLevelsRootUrl(), label: "уровни" },
+  { href: getTasksRootUrl(), label: "задачи" },
+  { href: getConfigUrl(), label: "настройки" },
+  { href: getHelpRootUrl(), label: "справка" },
 ] as const
 
 const contactLinks = [

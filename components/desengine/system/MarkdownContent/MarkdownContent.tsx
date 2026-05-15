@@ -13,7 +13,7 @@ import { isValidElement } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
-import { cn } from "@/lib/platform/utils"
+import { cn } from "@/lib/system/utils"
 import { MermaidDiagram } from "../MermaidDiagram"
 
 import { type MarkdownContentProps } from "./props"

@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/server"
-import { createLabUrl, getDefaultTaskScreen, isAccessibleTaskScreen } from "@/lib/platform/navigation"
-import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/platform/server"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
+import { getLabRootUrl, getLabUrl } from "@/lib/lab/navigation"
+import { getDefaultTaskScreen, isAccessibleTaskScreen } from "@/lib/system/navigation"
+import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/system/server"
 
 type Params = {
   taskId: string
@@ -27,13 +28,13 @@ function createEmptyTaskData(taskId: string, labContext: Awaited<ReturnType<type
   }
 }
 
-export default async function TaskPage({
+export default async function LabTaskPage({
   params,
 }: {
   params: Promise<Params>
 }) {
   const { taskId } = await params
-  const canonicalPath = createLabUrl(taskId)
+  const canonicalPath = getLabUrl(taskId)
 
   await requireAccessOrRedirect(canonicalPath)
 
@@ -52,7 +53,7 @@ export default async function TaskPage({
   }
 
   if (!isAccessibleTaskScreen(defaultScreen, allowedScreens)) {
-    redirect(createLabUrl(taskId, allowedScreens[0]))
+    redirect(getLabUrl(taskId, allowedScreens[0]))
   }
 
   const started = await isTaskStarted(taskId)

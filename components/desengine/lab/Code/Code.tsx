@@ -4,7 +4,7 @@ import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useState } from "r
 import { Check, Copy } from "lucide-react";
 
 import { CodeProps } from "./props";
-import { BaseStyles } from "@/components/desengine/platform/Base";
+import { BaseStyles } from "@/components/desengine/system/Base";
 import { MonacoCodeEditor } from "./MonacoCodeEditor";
 import { Button } from "@/components/ui/button";
 
@@ -15,8 +15,8 @@ import {
   TabsContent,
 } from "@/components/ui/tabs";
 import { TabsStyles } from "./styles"
-import { taskWorkbenchFiles } from "@/lib/platform/client";
-import { isEditorSaveHotkey } from "@/lib/editor/editors";
+import { taskWorkbenchFiles } from "@/lib/system/client";
+import { isEditorSaveHotkey } from "@/lib/lab/editor";
 
 function Code({
   id,

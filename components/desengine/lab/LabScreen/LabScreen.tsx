@@ -5,7 +5,7 @@ import type { LevelOverview as LevelOverviewData } from "@/lib/level/types"
 import type { TaskCheckResult as TaskCheckResultData, TaskData, TaskListItem, TaskTransition } from "@/lib/task/types";
 
 /** Функции */
-import { createLevelsPath, createTaskCheckPath, createTaskDonePath, createLabUrl } from "@/lib/platform/navigation";
+import { createTaskCheckPath, createTaskDonePath, } from "@/lib/system/navigation";
 
 /** Пропсы */
 import { LabProps } from "./props"
@@ -24,17 +24,11 @@ import { TaskCheckResult } from "../../task/TaskCheckResult";
 import { TaskDone } from "../../task/TaskDone";
 import { TaskLevelStart } from "../../task/TaskLevelStart";
 import { TaskLevelTransition } from "../../task/TaskLevelTransition";
+import { getLabUrl } from "@/lib/lab/navigation";
+import { getLevelsRootUrl, getLevelUrl } from "@/lib/level/navigation";
 
 
 
-
-function createLevelHref(levelId?: string | null) {
-    return createLevelsPath(levelId);
-}
-
-function createTaskHref(taskId: string, screen?: string | null) {
-    return createLabUrl(taskId, screen);
-}
 
 function createDoneHref(taskId: string) {
     return createTaskDonePath(taskId);
@@ -49,7 +43,7 @@ function replaceTaskUrl(taskId: string, screen?: string | null) {
         return;
     }
 
-    const nextHref = createTaskHref(taskId, screen);
+    const nextHref = getLabUrl(taskId, screen);
     const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
     if (currentHref === nextHref) {
@@ -89,7 +83,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
 
     async function handleTaskOpen(taskId: string) {
         setStatus("Загрузка задания…");
-        router.push(createTaskHref(taskId));
+        router.push(getLabUrl(taskId));
 
         const res = await fetch(`/api/tasks/${taskId}`, { method: "GET" });
         const data = await res.json();
@@ -106,14 +100,15 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
     }
 
     async function handleNavigateLevel(levelId: string) {
-        router.push(createLevelHref(levelId));
+        router.push(getLevelUrl(levelId));
         setScreen({ type: "level" });
         setStatus("");
         void loadLevelOverview(levelId, { silent: true });
     }
 
     async function handleReturnToLevelList(levelId?: string) {
-        router.push(createLevelHref(levelId));
+        const levelUrl = (levelId) ? getLevelUrl(levelId) : getLevelsRootUrl()
+        router.push(levelUrl);
         setScreen({ type: "level" });
         setStatus("");
         void loadLevelOverview(levelId, { silent: true });
@@ -128,7 +123,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
         if (!transition) return;
 
         if (transition.toLevel) {
-            router.push(createTaskHref(transition.taskId));
+            router.push(getLabUrl(transition.taskId));
             setScreen({ type: "task", screen: "component" });
             return;
         }
@@ -202,7 +197,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     started={taskItem?.started ?? false}
                     pending={status.length > 0}
                     onContinue={() => {
-                        router.push(createTaskHref(screen.transition.taskId));
+                        router.push(getLabUrl(screen.transition.taskId));
                         setScreen({ type: "task", screen: "component" });
                     }}
                     onBackToLevelList={() => handleReturnToLevelList(screen.transition.toLevel?.id)}
@@ -215,7 +210,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     started={taskItem?.started ?? false}
                     pending={status.length > 0}
                     onOpenTask={() => {
-                        router.push(createTaskHref(screen.transition.taskId));
+                        router.push(getLabUrl(screen.transition.taskId));
                         setScreen({ type: "task", screen: "component" });
                     }}
                     onBackToTaskList={() => handleReturnToLevelList()}
@@ -229,7 +224,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     pending={status.length > 0}
                     onContinue={() => {
                         if (screen.transition?.toLevel) {
-                            router.push(createTaskHref(screen.transition.taskId));
+                            router.push(getLabUrl(screen.transition.taskId));
                             setScreen({ type: "task", screen: "component" });
                             return;
                         }
@@ -244,7 +239,7 @@ function Lab({initLevelOverview, initScreen, initTaskItem, initTaskData} : LabPr
                     }}
                     onBackToLab={() => {
                         if (!taskItem) return;
-                        router.push(createTaskHref(taskItem.id));
+                        router.push(getLabUrl(taskItem.id));
                         setScreen({ type: "task", screen: "component" });
                     }}
                     onRetry={async () => {

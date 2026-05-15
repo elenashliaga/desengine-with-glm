@@ -1,5 +1,5 @@
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
-import { getLevelOverview } from "@/lib/platform/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
+import { getLevelOverview } from "@/lib/system/server"
 
 type Params = { levelId: string }
 

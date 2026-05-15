@@ -1,5 +1,5 @@
-import { MermaidDiagram } from "@/components/desengine/platform/renders/MermaidDiagram"
-import { requireAccessOrRedirect } from "@/lib/access/server"
+import { MermaidDiagram } from "@/components/desengine/system/MermaidDiagram"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
 
 export default async function Page() {
     await requireAccessOrRedirect("/playground/mermaid")

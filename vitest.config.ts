@@ -27,6 +27,7 @@ export default defineConfig({
   test: {
     projects: [
       {
+        extends: true,
         test: {
           name: 'unit',
           environment: 'node',

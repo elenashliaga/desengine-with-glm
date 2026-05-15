@@ -1,10 +1,10 @@
 "use client";
 
-import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent";
+import { MarkdownContent } from "@/components/desengine/system/MarkdownContent";
 import { Button } from "@/components/ui/button";
 import { OutRender } from "@/components/desengine/lab/InOut/OutRender/OutRender";
-import { createLevelAssetPath } from "@/lib/platform/navigation";
-import type { TaskTransition } from "@/lib/platform/types";
+import type { TaskTransition } from "@/lib/system/types";
+import { getLevelAssetPath } from "@/lib/level/navigation";
 
 type TaskDoneProps = {
   transition: TaskTransition;
@@ -23,7 +23,7 @@ export function TaskDone({
 }: TaskDoneProps) {
   const previousLevelTaskText = transition.fromTaskTip
     || `В задаче ${transition.taskId} на уровне ${transition.fromLevel.number} удалось закрепить итоговый результат без необходимости перехода дальше.`;
-  const previousLevelAssetBasePath = createLevelAssetPath(transition.fromLevel.id)
+  const previousLevelAssetBasePath = getLevelAssetPath(transition.fromLevel.id)
 
   return (
     <section className="space-y-4 rounded-md border p-6">

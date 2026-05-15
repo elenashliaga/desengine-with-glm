@@ -1,4 +1,5 @@
 import "server-only"
+import { ResourceState } from "../system/types"
 
 export type AllowlistReachabilityResult = {
   ok: boolean
@@ -6,16 +7,14 @@ export type AllowlistReachabilityResult = {
   message: string
 }
 
-type SystemStatusTone = "ready" | "warning" | "blocked"
-
 export function summarizeAllowlistSystemStatus(status: number): {
-  tone: SystemStatusTone
+  state: ResourceState
   summary: string
   detail: string
 } {
   if (status === 200) {
     return {
-      tone: "ready",
+      state: "ready",
       summary: "Allowlist-хранилище доступно",
       detail: "Базовый URL allowlist-системы отвечает кодом 200.",
     }
@@ -23,7 +22,7 @@ export function summarizeAllowlistSystemStatus(status: number): {
 
   if (status === 401 || status === 403) {
     return {
-      tone: "warning",
+      state: "warning",
       summary: "Allowlist-хранилище доступно, но запрос отклонён",
       detail: `Базовый URL allowlist-системы отвечает кодом ${status}. Проверьте публикацию и права доступа.`,
     }
@@ -31,7 +30,7 @@ export function summarizeAllowlistSystemStatus(status: number): {
 
   if (status === 404) {
     return {
-      tone: "warning",
+      state: "warning",
       summary: "Базовый URL allowlist отвечает 404",
       detail:
         "Базовый URL allowlist-системы должен отдавать 200. Проверьте публикацию корневой точки или health-entry.",
@@ -39,7 +38,7 @@ export function summarizeAllowlistSystemStatus(status: number): {
   }
 
   return {
-    tone: "warning",
+    state: "warning",
     summary: "Allowlist-хранилище отвечает нестандартно",
     detail: `Базовый URL allowlist-системы отвечает кодом ${status}. В штатной ситуации нужен ответ 200.`,
   }

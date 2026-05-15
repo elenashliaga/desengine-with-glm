@@ -4,7 +4,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { appConfigSource } from "@/lib/config/app"
-import { AppConfigSchema, type AppConfig } from "@/lib/config/schema"
+import { AppConfigSchema, type AppConfig } from "@/lib/system/schema"
 
 const parsed = AppConfigSchema.parse(appConfigSource)
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")

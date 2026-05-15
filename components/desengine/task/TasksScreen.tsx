@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import type { TaskListItem } from "@/lib/platform/types"
+import type { TaskListItem } from "@/lib/system/types"
 
-import { TaskItemList } from "./TaskItem"
+import { TaskItemList } from "./TaskCard"
 
 type TasksScreenProps = {
   tasks: TaskListItem[]

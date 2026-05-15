@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 // Набор свойств, типичный для компонента
 // Используется через пересечение: ComponentProps = BaseProps & { … }
 type BaseProps = {
-    title?: string;
+    title?: number | string;
     className?: string;
     children?: ReactNode;
 }

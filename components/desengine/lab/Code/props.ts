@@ -1,5 +1,5 @@
-import type { TaskData } from "@/lib/platform/types";
-import { BaseProps } from "@/components/desengine/platform/Base";
+import type { TaskData } from "@/lib/system/types";
+import { BaseProps } from "@/components/desengine/system/Base";
 
 type CodeProps = BaseProps & {
     taskData: TaskData;

@@ -12,8 +12,8 @@ import {
   passCurrentTaskLevelCheck,
   readTaskData,
   saveTaskCheckResult,
-} from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+} from "@/lib/system/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
 import { runStructuredLlmRequest } from "@/lib/llm/server"
 import { readLevelCheckPrompt, readPrompt } from "@/lib/prompt/server"
 import { getTaskCatalogFilePath } from "@/lib/user/server"
