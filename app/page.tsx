@@ -1,5 +1,5 @@
-import { RootStatusPage } from "@/components/desengine/platform/RootStatusPage"
-import { requireAccessOrRedirect } from "@/lib/access/server"
+import { ConfigScreen } from "@/components/desengine/system/ConfigScreen"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
 import { getSystemStatusModel } from "@/lib/config/status"
 
 export default async function Page() {
@@ -8,10 +8,10 @@ export default async function Page() {
   const status = await getSystemStatusModel()
 
   return (
-    <RootStatusPage
-      accessState={status.accessState}
+    <ConfigScreen
+      authState={status.authState}
       configured={status.allowlistConfigured}
-      statusItems={status.items}
+      resources={status.items}
       instructions={status.instructions}
     />
   )

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import type { InPictureProps } from "./props";
-import type { TaskLabImage } from "@/lib/platform/types";
+import type { TaskLabImage } from "@/lib/system/types";
 
 function ImageCard({
     task,

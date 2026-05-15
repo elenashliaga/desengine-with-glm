@@ -4,7 +4,7 @@ import { access, readFile, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import { appConfig } from "@/lib/config/server"
-import localConfig from "@/lib/config/local-config.cjs"
+import localConfig from "@/lib/config/local.cjs"
 import {
   resolveOnboardingSyncState,
   type OnboardingSourceMarker,
@@ -49,7 +49,7 @@ export function getConfiguredOnboardingRepoUrl() {
   return process.env.DESENGINE_ONBOARDING_REPO_URL?.trim() ?? ""
 }
 
-export function getOnboardingSourceMarkerPath(root = appConfig.onboardingRoot) {
+function getOnboardingSourceMarkerPath(root = appConfig.onboardingRoot) {
   return path.join(root, ONBOARDING_SOURCE_MARKER_FILE)
 }
 
@@ -296,4 +296,5 @@ export type {
   OnboardingSyncStatus,
 }
 
-export { ONBOARDING_SOURCE_MARKER_FILE }
+// TODO Нигде не используется. Если так и не потребуется — убрать.
+// export { ONBOARDING_SOURCE_MARKER_FILE }

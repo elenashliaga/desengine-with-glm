@@ -1,32 +1,42 @@
 import Link from "next/link"
 
-import { requireAccessOrRedirect } from "@/lib/access/server"
-import { createAuthPath, createConfigPath, createLevelsPath, createTasksPath } from "@/lib/platform/navigation"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
+import { getLabRootUrl } from "@/lib/lab/navigation"
+import { getLevelsRootUrl } from "@/lib/level/navigation"
+import { getTasksRootUrl } from "@/lib/task/navigation"
+import { getAuthUrl } from "@/lib/auth/navigation"
+import { getConfigUrl } from "@/lib/config/navigation"
 
 const helpCards = [
   {
-    title: "1. Получить допуск",
-    text: "Откройте страницу допуска, введите email из allowlist и дождитесь успешной проверки.",
-    href: createAuthPath(),
-    label: "Открыть /auth",
+    title: "1. Войти в систему",
+    text: "Откройте страницу аутентификации и введите свой email.",
+    href: getAuthUrl(),
+    label: "Войти в систему",
   },
   {
-    title: "2. Выбрать задачу",
-    text: "После допуска перейдите в каталог задач и откройте нужную задачу по её каноническому адресу.",
-    href: createTasksPath(),
-    label: "Открыть /tasks",
+    title: "2. Решить задачу",
+    text: "После входа вы сразу окажетесь в лаборатории. И там увидите список задач. Выбирайте любую задачу и кликайте на неё.",
+    href: getLabRootUrl(),
+    label: "Перейти в лабораторию",
   },
   {
-    title: "3. Смотреть уровни",
-    text: "Если нужно понять progression по лаборатории, используйте обзор всех уровней и экран конкретного уровня.",
-    href: createLevelsPath(),
-    label: "Открыть /levels",
+    title: "3. Узнать больше про задачу",
+    text: "Из каталога задач можно перейти на страницу с подробностями по каждой задаче.",
+    href: getTasksRootUrl(),
+    label: "Открыть каталог задач",
   },
   {
-    title: "4. Проверить окружение",
+    title: "4. Смотреть уровни",
+    text: "У каждого уровня — своё описание и свой набор доступных задач. Можно решать оттуда.",
+    href: getLevelsRootUrl(),
+    label: "Посмотреть все уровни",
+  },
+  {
+    title: "5. Проверить настройки",
     text: "Если что-то не работает, на странице конфигурации видны сетевые проверки и инструкции для пользователя и администратора.",
-    href: createConfigPath(),
-    label: "Открыть /config",
+    href: getConfigUrl(),
+    label: "Dashboard настроек",
   },
 ]
 

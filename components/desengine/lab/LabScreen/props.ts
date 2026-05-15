@@ -1,5 +1,5 @@
-import type { LabScreenState, LevelOverview, TaskData, TaskListItem } from "@/lib/platform/types";
-import { BaseProps } from "../../platform/Base";
+import type { LabScreenState, LevelOverview, TaskData, TaskListItem } from "@/lib/system/types";
+import { BaseProps } from "../../system/Base";
 type LabProps = BaseProps & {
     initLevelOverview: LevelOverview;
     initScreen: LabScreenState;

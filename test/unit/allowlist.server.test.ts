@@ -31,7 +31,7 @@ describe("allowlist HTTP contracts", () => {
       .mockResolvedValueOnce(new Response("ok", { status: 200 }))
     vi.stubGlobal("fetch", fetchMock)
 
-    const { checkAllowlistSystemReachability } = await import("../../lib/access/allowlist")
+    const { checkAllowlistSystemReachability } = await import("../../lib/auth/allowlist")
 
     const result = await checkAllowlistSystemReachability("https://example.com/allowlist/")
 
@@ -42,7 +42,7 @@ describe("allowlist HTTP contracts", () => {
   })
 
   it("не считает 404 штатным ответом базового URL allowlist", async () => {
-    const { summarizeAllowlistSystemStatus } = await import("../../lib/access/allowlist")
+    const { summarizeAllowlistSystemStatus } = await import("../../lib/auth/allowlist")
 
     expect(summarizeAllowlistSystemStatus(404)).toEqual({
       tone: "warning",
@@ -59,7 +59,7 @@ describe("allowlist HTTP contracts", () => {
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
     vi.stubGlobal("fetch", fetchMock)
 
-    const { checkAllowlistMarkerReachability } = await import("../../lib/access/allowlist")
+    const { checkAllowlistMarkerReachability } = await import("../../lib/auth/allowlist")
 
     await expect(checkAllowlistMarkerReachability("https://example.com/allowlist/marker")).resolves.toMatchObject({
       ok: false,
@@ -78,7 +78,7 @@ describe("allowlist HTTP contracts", () => {
       .mockResolvedValueOnce(new Response("ok", { status: 200 }))
     vi.stubGlobal("fetch", fetchMock)
 
-    const { checkAllowlistMarkerReachability } = await import("../../lib/access/allowlist")
+    const { checkAllowlistMarkerReachability } = await import("../../lib/auth/allowlist")
 
     await expect(checkAllowlistMarkerReachability("https://example.com/allowlist/marker")).resolves.toMatchObject({
       ok: true,

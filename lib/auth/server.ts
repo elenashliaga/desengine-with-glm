@@ -2,7 +2,7 @@ import "server-only"
 
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { checkAllowlistMarkerReachability } from "@/lib/access/allowlist"
+import { checkAllowlistMarkerReachability } from "@/lib/auth/allowlist"
 import localConfig from "../config/local.cjs"
 
 import {
@@ -13,13 +13,9 @@ import {
   normalizeEmail,
   type VerifiedAccessSession,
   verifyAccessSessionValue,
-} from "@/lib/access/control"
-import {
-  createAccessPreparePath,
-  createAuthPath,
-  createTasksPath,
-  sanitizeReturnPath,
-} from "@/lib/platform/navigation"
+} from "@/lib/auth/control"
+import { getTasksRootUrl } from "../task/navigation"
+import { getAuthPrepareUrl, getAuthUrl, sanitizeReturnPath } from "./navigation"
 
 const ACCESS_RETURN_PATH_COOKIE_NAME = "desengine-return-path"
 
@@ -130,7 +126,7 @@ async function consumeReturnPathCookie() {
 
   cookieStore.delete(ACCESS_RETURN_PATH_COOKIE_NAME)
 
-  return safePath ?? createTasksPath()
+  return safePath ?? getTasksRootUrl()
 }
 
 async function requireAccessOrRedirect(pathname: string) {
@@ -139,7 +135,7 @@ async function requireAccessOrRedirect(pathname: string) {
   }
 
   const safePath = sanitizeReturnPath(pathname)
-  redirect(safePath ? createAccessPreparePath(safePath) : createAuthPath())
+  redirect(safePath ? getAuthPrepareUrl(safePath) : getAuthUrl())
 }
 
 async function requireAccessOrUnauthorizedResponse() {

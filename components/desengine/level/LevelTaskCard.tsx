@@ -3,8 +3,8 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { createLabUrl } from "@/lib/platform/navigation";
-import type { LevelOverviewTaskItem } from "@/lib/platform/types";
+import type { LevelOverviewTaskItem } from "@/lib/system/types";
+import { getLabUrl } from "@/lib/lab/navigation";
 
 type LevelTaskCardProps = {
   task: LevelOverviewTaskItem;
@@ -52,7 +52,7 @@ export function LevelTaskCard({
           ) : (
             <Link
               className="tool-link"
-              href={createLabUrl(task.id)}
+              href={getLabUrl(task.id)}
             >
               Открыть задачу
             </Link>

@@ -12,8 +12,8 @@ import {
   isTaskStarted,
   readTaskData,
   registerPromptForCurrentLevel,
-} from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+} from "@/lib/system/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
 import { appConfig } from "@/lib/config/server"
 import { runStructuredLlmRequest, toLlmErrorResponse } from "@/lib/llm/server"
 import { formatPromptHistoryTimestamp, TEACHING_COST_PER_ITERATION_CENTS } from "@/lib/prompt/history"

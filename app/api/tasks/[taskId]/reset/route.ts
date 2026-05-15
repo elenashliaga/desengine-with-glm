@@ -3,8 +3,8 @@ import {
   getTaskLabContext,
   getTaskListItemById,
   resetTask,
-} from "@/lib/platform/server"
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+} from "@/lib/system/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
 
 type Params = { taskId: string }
 

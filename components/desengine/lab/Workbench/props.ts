@@ -1,5 +1,5 @@
-import { BaseProps } from "../../platform/Base";
-import type { TaskCheckResult, TaskData, TaskListItem, TaskTransition } from "@/lib/platform/types";
+import { BaseProps } from "../../system/Base";
+import type { TaskCheckResult, TaskData, TaskListItem, TaskTransition } from "@/lib/system/types";
 
 type WorkbenchProps = BaseProps & {
     taskItem: TaskListItem;

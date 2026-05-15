@@ -5,17 +5,18 @@ import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createTasksPath } from "@/lib/platform/navigation"
-import { SystemStatusPanel, type Instruction, type StatusItem } from "@/components/desengine/platform/SystemStatusPanel"
+import { getTasksRootUrl } from "@/lib/task/navigation"
+import { Instruction, Resource } from "@/lib/system/types"
+import { SystemStatusPanel } from "../system/SystemStatusPanel"
 
-type AccessGateProps = {
-  accessState: "valid" | "missing" | "expired"
+type AuthGateProps = {
+  authState: "valid" | "missing" | "expired"
   configured: boolean
-  statusItems: StatusItem[]
+  statusItems: Resource[]
   instructions: Instruction[]
 }
 
-function AccessGate({ accessState, configured, statusItems, instructions }: AccessGateProps) {
+function AuthGate({ authState, configured, statusItems, instructions }: AuthGateProps) {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
@@ -26,7 +27,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
     setError("")
 
     startTransition(async () => {
-      const response = await fetch("/api/access/verify", {
+      const response = await fetch("/api/auth/verify", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -43,7 +44,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
         return
       }
 
-      router.push(data.redirectTo || createTasksPath())
+      router.push(data.redirectTo || getTasksRootUrl())
       router.refresh()
     })
   }
@@ -60,7 +61,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
               </p>
             </div>
 
-            {accessState === "expired" && (
+            {authState === "expired" && (
               <p className="mt-4 tool-notice-warning">
                 Предыдущий допуск истёк. Повторно введите email из allowlist, чтобы открыть защищённую часть лаборатории.
               </p>
@@ -120,7 +121,7 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
 
             <div className="mt-7">
               <SystemStatusPanel
-                statusItems={statusItems}
+                resources={statusItems}
                 instructions={instructions}
                 title="Страница допуска показывает, что уже готово для запуска лаборатории, а что ещё нужно настроить."
                 description="До допуска здесь доступны только диагностика и инструкция. Список задач и рабочая часть лаборатории откроются только после успешной allowlist-проверки по email."
@@ -135,4 +136,6 @@ function AccessGate({ accessState, configured, statusItems, instructions }: Acce
   )
 }
 
-export { AccessGate }
+export {
+  AuthGate
+}

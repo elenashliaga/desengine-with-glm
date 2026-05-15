@@ -3,31 +3,38 @@
 import { FormEvent, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
-import { SystemStatusPanel, type Instruction, type StatusItem } from "@/components/desengine/platform/SystemStatusPanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { createTasksPath } from "@/lib/platform/navigation"
+import { getTasksRootUrl } from "@/lib/task/navigation"
+import { Instruction, Resource } from "@/lib/system/types"
+import { SystemStatusPanel } from "./SystemStatusPanel"
+import { AuthGate } from "../auth/AuthGate"
 
-type RootStatusPageProps = {
-  accessState: "valid" | "missing" | "expired"
+type ConfigScreenProps = {
+  authState: "valid" | "missing" | "expired"
   configured: boolean
-  statusItems: StatusItem[]
+  resources: Resource[]
   instructions: Instruction[]
 }
 
-export function RootStatusPage({ accessState, configured, statusItems, instructions }: RootStatusPageProps) {
+export function ConfigScreen({
+  authState,
+  configured,
+  resources,
+  instructions }: ConfigScreenProps) {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition()
-  const hasAccess = accessState === "valid"
+  const hasAccess = authState === "valid"
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError("")
 
+    // TODO Убрать жёстко зашитые адреса
     startTransition(async () => {
-      const response = await fetch("/api/access/verify", {
+      const response = await fetch("/api/auth/verify", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -44,7 +51,7 @@ export function RootStatusPage({ accessState, configured, statusItems, instructi
         return
       }
 
-      router.push(data.redirectTo || createTasksPath())
+      router.push(data.redirectTo || getTasksRootUrl())
       router.refresh()
     })
   }
@@ -53,7 +60,7 @@ export function RootStatusPage({ accessState, configured, statusItems, instructi
     <main className="tool-shell-page">
       <div className="tool-shell-frame">
         <section className="tool-shell-surface">
-          <div className="tool-panel-strong">
+          {/* <div className="tool-panel-strong">
             <div className="space-y-2">
               <h2 className="font-semibold text-black">Допуск в лабораторию</h2>
               <p className="text-black/60">
@@ -94,18 +101,18 @@ export function RootStatusPage({ accessState, configured, statusItems, instructi
                 {isPending ? "Проверяем доступ…" : "Открыть защищённую лабораторию"}
               </Button>
             </form>
-          </div>
+          </div> */}
 
           <div className="mt-6">
             <SystemStatusPanel
-              statusItems={statusItems}
+              resources={resources}
               instructions={instructions}
               title="Начало работы"
               description="Важно указать LLM-ключ и ввести email"
             />
           </div>
 
-          <div className="mt-6 grid gap-3 text-black/70 md:grid-cols-3">
+          {/* <div className="mt-6 grid gap-3 text-black/70 md:grid-cols-3">
             <div className="tool-subcard">
               `/` остаётся публичной страницей состояния даже при неполной конфигурации локальной установки.
             </div>
@@ -115,11 +122,11 @@ export function RootStatusPage({ accessState, configured, statusItems, instructi
             <div className="tool-subcard">
               {hasAccess
                 ? "Текущий допуск уже выдан. Рабочий каталог задач доступен на `/tasks`."
-                : accessState === "expired"
+                : authState === "expired"
                   ? "Предыдущий допуск истёк. Для защищённой части нужно снова пройти проверку на `/auth`."
                   : "Если диагностика уже зелёная, следующий пользовательский шаг — пройти проверку на `/auth`."}
             </div>
-          </div>
+          </div> */}
         </section>
       </div>
     </main>

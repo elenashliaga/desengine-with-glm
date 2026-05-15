@@ -3,7 +3,7 @@ import path from "node:path"
 
 import { NextResponse } from "next/server"
 
-import { requireAccessOrUnauthorizedResponse } from "@/lib/access/server"
+import { requireAccessOrUnauthorizedResponse } from "@/lib/auth/server"
 import { appConfig } from "@/lib/config/server"
 
 const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {

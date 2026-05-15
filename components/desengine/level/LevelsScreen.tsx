@@ -6,11 +6,10 @@
 
 import Link from "next/link"
 
-import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
+import { MarkdownContent } from "@/components/desengine/system/MarkdownContent"
 import { LevelTaskCard } from "@/components/desengine/level/LevelTaskCard"
 import { LevelsScreenProps } from "./props"
-
-import { createLevelAssetPath, createLevelsPath } from "@/lib/platform/navigation"
+import { getLevelUrl } from "@/lib/level/navigation"
 
 function LevelsScreen({overviews}: LevelsScreenProps) {
     return(
@@ -35,7 +34,7 @@ function LevelsScreen({overviews}: LevelsScreenProps) {
                         <div className="space-y-2">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <h2 className="font-semibold">{overview.level.title}</h2>
-                            <Link className="tool-link" href={createLevelsPath(overview.level.id)}>
+                            <Link className="tool-link" href={getLevelUrl(overview.level.id)}>
                             Открыть уровень
                             </Link>
                         </div>
@@ -43,7 +42,7 @@ function LevelsScreen({overviews}: LevelsScreenProps) {
                             Уровень {overview.level.number}. Лимит промптов на задачу: {overview.level.maxPromptsPerTask}.
                         </p>
                         <MarkdownContent
-                            assetBasePath={createLevelAssetPath(overview.level.id)}
+                            assetBasePath={getLevelUrl(overview.level.id)}
                             className="max-w-3xl"
                             content={overview.level.description}
                         />

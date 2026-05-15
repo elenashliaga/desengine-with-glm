@@ -88,6 +88,8 @@
 // @openSpec capability: user-progress
 // @openSpec scenarios:
 // @openSpec  - "Runtime читает и пишет пользовательский прогресс"
+// @openSpec  - "Уровень успешно проверен"
+// @openSpec  - "В check-result есть успешное прохождение"
 
 import fs from "node:fs"
 import path from "node:path"
@@ -121,7 +123,7 @@ describe("P1 source contracts", () => {
   })
 
   it("level/task server читает level catalog, task metadata и строит lab context из level-config", () => {
-    const source = readProjectFile("lib", "task", "task-levels.server.ts")
+    const source = readProjectFile("lib", "task", "server.ts")
 
     expect(source).toContain("readLevelsCatalogRaw")
     expect(source).toContain("LevelsCatalogSchema.parse")
@@ -134,19 +136,25 @@ describe("P1 source contracts", () => {
   })
 
   it("user progress читается и пишется только через user-owned progress storage", () => {
-    const source = readProjectFile("lib", "task", "task-levels.server.ts")
-    const configSchema = readProjectFile("lib", "config", "config.schema.ts")
+    const source = readProjectFile("lib", "task", "server.ts")
+    const configSchema = readProjectFile("lib", "config", "schema.ts")
 
     expect(configSchema).toContain('userRoot = value.userRoot ?? "user"')
     expect(configSchema).toContain("userProgressFile")
     expect(source).toContain("readUserProgressStore")
     expect(source).toContain("writeUserProgressStore")
     expect(source).toContain("appConfig.userProgressFile")
+    expect(source).toContain("repairProgressFromCheckResult")
+    expect(source).toContain("checkResult.passed")
+    expect(source).toContain('checkResult.kind !== "passed"')
+    expect(source).toContain('levelProgress.status = "completed"')
+    expect(source).toContain("levelProgress.isPassed = true")
+    expect(source).toContain("expectedCurrentLevel")
     expect(source).not.toContain("env/user-progress.json")
   })
 
   it("level transitions, checks, reset и forbidden-file cleanup представлены отдельными server mutations", () => {
-    const source = readProjectFile("lib", "task", "task-levels.server.ts")
+    const source = readProjectFile("lib", "task", "server.ts")
     const startRoute = readProjectFile("app", "api", "tasks", "[taskId]", "start", "route.ts")
     const iterateRoute = readProjectFile("app", "api", "tasks", "[taskId]", "iterate", "route.ts")
     const checkRoute = readProjectFile("app", "api", "tasks", "[taskId]", "check", "route.ts")
@@ -164,7 +172,7 @@ describe("P1 source contracts", () => {
 
   it("level pages and task pages are path-based entry points for reloadable contexts", () => {
     const levelPageExists = fs.existsSync(path.join(process.cwd(), "app", "levels", "[levelId]", "page.tsx"))
-    const taskPageExists = fs.existsSync(path.join(process.cwd(), "app", "tasks", "[taskId]", "[screen]", "page.tsx"))
+    const taskPageExists = fs.existsSync(path.join(process.cwd(), "app", "lab", "[taskId]", "[screen]", "page.tsx"))
     const levelsPage = readProjectFile("app", "levels", "page.tsx")
 
     expect(levelPageExists).toBe(true)

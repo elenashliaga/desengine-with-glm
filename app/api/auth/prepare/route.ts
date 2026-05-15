@@ -1,9 +1,9 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-import { shouldUseSecureCookies } from "@/lib/access/control"
-import { ACCESS_RETURN_PATH_COOKIE_NAME } from "@/lib/access/server"
-import { createAuthPath, sanitizeReturnPath } from "@/lib/platform/navigation"
+import { shouldUseSecureCookies } from "@/lib/auth/control"
+import { ACCESS_RETURN_PATH_COOKIE_NAME } from "@/lib/auth/server"
+import { getAuthUrl, sanitizeReturnPath } from "@/lib/system/navigation"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
   if (!returnTo) {
     cookieStore.delete(ACCESS_RETURN_PATH_COOKIE_NAME)
-    return NextResponse.redirect(new URL(createAuthPath(), url))
+    return NextResponse.redirect(new URL(getAuthUrl(), url))
   }
 
   cookieStore.set(ACCESS_RETURN_PATH_COOKIE_NAME, returnTo, {
@@ -22,5 +22,5 @@ export async function GET(request: Request) {
     path: "/",
   })
 
-  return NextResponse.redirect(new URL(createAuthPath(), url))
+  return NextResponse.redirect(new URL(getAuthUrl(), url))
 }

@@ -225,7 +225,7 @@ describe("P2 source contracts", () => {
 
     expect(navigation).toContain('href: "/"')
     expect(navigation).toContain("createLevelsPath()")
-    expect(navigation).toContain("createTasksPath()")
+    expect(navigation).toContain("getTasksRootUrl()")
     expect(navigation).toContain("createConfigPath()")
     expect(navigation).toContain("createHelpPath()")
   })

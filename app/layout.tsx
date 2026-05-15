@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Navigation } from "@/components/desengine/platform/Navigation";
+import { Navigation } from "@/components/desengine/system/Navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import "./tool-ui.css";

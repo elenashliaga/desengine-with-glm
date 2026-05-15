@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation"
 
 import { Lab } from "@/components/desengine/lab/LabScreen"
-import { requireAccessOrRedirect } from "@/lib/access/server"
-import { createLabUrl, isAccessibleTaskScreen } from "@/lib/platform/navigation"
-import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/platform/server"
+import { requireAccessOrRedirect } from "@/lib/auth/server"
+import { createLabUrl, isAccessibleTaskScreen } from "@/lib/system/navigation"
+import { getLevelOverview, getTaskLabContext, getTaskListItemById, isTaskStarted, readTaskData } from "@/lib/system/server"
 
 type Params = {
   taskId: string
