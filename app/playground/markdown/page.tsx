@@ -1,6 +1,6 @@
 // app/markdown-test/page.tsx
 
-import { MarkdownContent } from "@/components/desengine/platform/renders/MarkdownContent"
+import { MarkdownContent } from "@/components/desengine/system/MarkdownContent"
 import { requireAccessOrRedirect } from "@/lib/auth/server"
 
 const markdown = `

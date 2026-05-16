@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 
 import { shouldUseSecureCookies } from "@/lib/auth/control"
 import { ACCESS_RETURN_PATH_COOKIE_NAME } from "@/lib/auth/server"
-import { getAuthUrl, sanitizeReturnPath } from "@/lib/system/navigation"
+import { getAuthUrl, sanitizeReturnPath } from "@/lib/auth/navigation"
 
 export async function GET(request: Request) {
   const url = new URL(request.url)

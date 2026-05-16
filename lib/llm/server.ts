@@ -32,13 +32,13 @@ function getLlmProvider(): LlmProvider {
     return "openai"
   }
 
-  if (rawProvider === "openai" || rawProvider === "deepseek" || rawProvider === "gemini") {
+  if (rawProvider === "openai" || rawProvider === "deepseek" || rawProvider === "gemini" || rawProvider === "glm") {
     return rawProvider
   }
 
   throw new LlmError(
     "config",
-    `Неподдерживаемый LLM_PROVIDER: ${rawProvider}. Поддерживаются: openai, deepseek, gemini.`,
+    `Неподдерживаемый LLM_PROVIDER: ${rawProvider}. Поддерживаются: openai, deepseek, gemini, glm.`,
   )
 }
 
@@ -67,6 +67,16 @@ function getGeminiModel(): string {
 
   if (!model) {
     throw new LlmError("config", "Для режима Google Gemini не настроен GEMINI_MODEL")
+  }
+
+  return model
+}
+
+function getGlmModel(): string {
+  const model = process.env.GLM_MODEL?.trim()
+
+  if (!model) {
+    throw new LlmError("config", "Для режима GLM не настроен GLM_MODEL")
   }
 
   return model
@@ -282,6 +292,58 @@ function getGeminiMetrics(data: unknown): LlmUsageMetrics {
   }
 }
 
+function getOutputTextFromGlm(data: unknown): string {
+  const choices =
+    data &&
+    typeof data === "object" &&
+    "choices" in data &&
+    Array.isArray(data.choices)
+      ? data.choices
+      : []
+
+  const firstChoice = choices[0]
+  const message =
+    firstChoice &&
+    typeof firstChoice === "object" &&
+    "message" in firstChoice &&
+    firstChoice.message &&
+    typeof firstChoice.message === "object"
+      ? (firstChoice.message as Record<string, unknown>)
+      : null
+
+  if (message && typeof message.content === "string" && message.content.trim()) {
+    return message.content
+  }
+
+  throw new LlmError("invalid_response", "GLM вернул ответ без итогового текста")
+}
+
+function getGlmMetrics(data: unknown): LlmUsageMetrics {
+  const usage =
+    data &&
+    typeof data === "object" &&
+    "usage" in data &&
+    data.usage &&
+    typeof data.usage === "object"
+      ? (data.usage as Record<string, unknown>)
+      : null
+
+  if (!usage) {
+    return {
+      status: "unavailable",
+      reason: "provider_did_not_return_metrics",
+    }
+  }
+
+  return {
+    status: "available",
+    inputTokens: typeof usage.prompt_tokens === "number" ? usage.prompt_tokens : null,
+    outputTokens: typeof usage.completion_tokens === "number" ? usage.completion_tokens : null,
+    totalTokens: typeof usage.total_tokens === "number" ? usage.total_tokens : null,
+    costUsd: null,
+  }
+}
+
 function mapFetchError(error: unknown, fallbackMessage: string): never {
   if (error instanceof LlmError) {
     throw error
@@ -381,6 +443,130 @@ function ensureGeminiConfig(): ProviderRuntimeConfig {
 
 function getGeminiModelPath(model: string): string {
   return model.startsWith("models/") ? model : `models/${model}`
+}
+
+function ensureGlmConfig(): ProviderRuntimeConfig {
+  if (!process.env.GLM_API_KEY?.trim()) {
+    throw new LlmError("config", "Для режима GLM не настроен GLM_API_KEY")
+  }
+  if (!process.env.GLM_BASE_URL?.trim()) {
+    throw new LlmError("config", "Для режима GLM не настроен GLM_BASE_URL")
+  }
+
+  return {
+    provider: "glm",
+    model: getGlmModel(),
+    apiKey: process.env.GLM_API_KEY,
+    baseUrl: process.env.GLM_BASE_URL.trim(),
+  }
+}
+
+async function callGlm(
+  request: LlmStructuredRequest,
+  config: ProviderRuntimeConfig,
+  runtime: LlmRequestRuntime,
+): Promise<LlmStructuredResponse> {
+  const images = request.imageBase64List ?? (request.imageBase64 ? [request.imageBase64] : [])
+  const startedAt = Date.now()
+  const instruction =
+    images.length > 0
+      ? `${request.instruction}
+
+[СИСТЕМНОЕ ОГРАНИЧЕНИЕ ПРОВАЙДЕРА]
+Изображения текущего уровня в этом вызове недоступны. Не придумывай конкретные визуальные детали, которых нет в текстовом контексте.`
+      : request.instruction
+
+  let res: Response
+  try {
+    console.log("[desengine][glm] start", {
+      target: request.target ?? "default",
+      model: config.model,
+      imageCount: images.length,
+      instructionLength: instruction.length,
+      schemaName: request.schemaName,
+      timeoutMs: runtime.timeoutMs,
+    })
+
+    if (images.length > 0) {
+      console.warn("[desengine][glm] images_omitted", {
+        target: request.target ?? "default",
+        model: config.model,
+        imageCount: images.length,
+      })
+    }
+
+    res = await fetch(`${config.baseUrl}/chat/completions`, {
+      method: "POST",
+      signal: runtime.signal,
+      headers: {
+        authorization: `Bearer ${config.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [
+          {
+            role: "system",
+            content:
+              "Верни только валидный JSON-объект без markdown и без пояснений. Строго соблюдай ограничения из запроса пользователя.",
+          },
+          {
+            role: "user",
+            content: instruction,
+          },
+        ],
+        response_format: {
+          type: "json_object",
+        },
+        stream: false,
+      }),
+    })
+  } catch (error) {
+    console.error("[desengine][glm] network_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      durationMs: Date.now() - startedAt,
+      message: error instanceof Error ? error.message : String(error),
+    })
+    mapFetchError(error, "Не удалось подключиться к GLM API")
+  }
+
+  const data = await res.json().catch(() => null)
+  if (!res.ok) {
+    const providerMessage =
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      data.error &&
+      typeof data.error === "object" &&
+      "message" in data.error &&
+      typeof data.error.message === "string"
+        ? data.error.message
+        : "Ошибка GLM API"
+    const errorKind = res.status === 401 || res.status === 403 ? "auth" : "provider"
+    console.error("[desengine][glm] provider_error", {
+      target: request.target ?? "default",
+      model: config.model,
+      status: res.status,
+      durationMs: Date.now() - startedAt,
+      message: providerMessage,
+    })
+    throw new LlmError(errorKind, providerMessage)
+  }
+
+  console.log("[desengine][glm] success", {
+    target: request.target ?? "default",
+    model: config.model,
+    status: res.status,
+    durationMs: Date.now() - startedAt,
+  })
+
+  return {
+    provider: "glm",
+    model: config.model,
+    outputText: getOutputTextFromGlm(data),
+    metrics: getGlmMetrics(data),
+  }
 }
 
 async function callOpenAI(
@@ -722,6 +908,17 @@ const ADAPTERS: Record<LlmProvider, LlmAdapter> = {
     buildConfig: ensureGeminiConfig,
     call: callGemini,
   },
+  glm: {
+    provider: "glm",
+    label: "GLM (Zhipu AI / z-ai)",
+    envVars: {
+      apiKey: "GLM_API_KEY",
+      model: "GLM_MODEL",
+      baseUrl: "GLM_BASE_URL",
+    },
+    buildConfig: ensureGlmConfig,
+    call: callGlm,
+  },
 }
 
 function getActiveAdapter(): LlmAdapter {
@@ -741,6 +938,10 @@ function listConfiguredProviders(): LlmProvider[] {
 
   if (process.env.GEMINI_API_KEY?.trim() || process.env.GEMINI_MODEL?.trim()) {
     configured.push("gemini")
+  }
+
+  if (process.env.GLM_API_KEY?.trim() || process.env.GLM_MODEL?.trim()) {
+    configured.push("glm")
   }
 
   return configured

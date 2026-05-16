@@ -4,10 +4,10 @@
 
 # LLM
 # Можно выбирать, какой LLM пользоваться
-# Варианты: openai | deepseek | gemini
+# Варианты: openai | deepseek | gemini | glm
 # Конечно, у вас должен быть ключ к этой LLM
 # И ключ этот надо записать в одну из переменных ниже
-LLM_PROVIDER=deepseek
+LLM_PROVIDER=glm
 
 # OPENAI_API_KEY создаётся в OpenAI Platform
 # Модель выбирайте попроще, чтобы не тратить токены зря
@@ -26,6 +26,12 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
 GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta
+
+# GLM_API_KEY — ключ от z.ai / Zhipu AI
+# Поддерживает модели GLM (glm-5, glm-5.1 и др.)
+GLM_API_KEY=
+GLM_MODEL=glm-5
+GLM_BASE_URL=https://api.z.ai/api/coding/paas/v4
 
 # # # # # # # # # # # # # # # # # # # # #
 

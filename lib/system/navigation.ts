@@ -47,5 +47,15 @@ export function createTaskCheckPath(taskId: string) {
   return `/tasks/${encodeURIComponent(taskId)}/check`
 }
 
+export function createLabUrl(taskId: string, screen?: string) {
+  const base = `/lab/${encodeURIComponent(taskId)}`
+  return screen ? `${base}/${screen}` : base
+}
+
+export function createLevelsPath(levelId?: string) {
+  if (!levelId) return "/levels"
+  return `/levels/${encodeURIComponent(levelId)}`
+}
+
 
 

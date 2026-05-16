@@ -49,3 +49,21 @@ export type {
   Instruction,
   LlmProviderId,
 }
+
+// Re-exports from domain modules for backward compatibility
+export type {
+  TaskData,
+  TaskListItem,
+  TaskLabImage,
+  TaskCheckResult,
+  TaskTransition,
+} from "@/lib/task/types"
+
+export type {
+  LevelOverview,
+  LevelConfig,
+} from "@/lib/level/types"
+
+type LabScreenState = "loading" | "ready" | "error"
+
+export type { LabScreenState }

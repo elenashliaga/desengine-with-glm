@@ -7,7 +7,8 @@
 const LLM_PROVIDERS = [
   "openai",
   "deepseek",
-  "gemini"
+  "gemini",
+  "glm"
 ] as const
 
 type LlmProvider =
